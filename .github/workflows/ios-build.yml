@@ -51,8 +51,8 @@ jobs:
           mkdir Payload
           cp -r "$APP_NAME" Payload/
           zip -r App.ipa Payload
-          # Move it to the root of the repository
-          mv App.ipa ../../../../../App-unsigned.ipa
+          # Move it to the root of the repository using absolute path
+          mv App.ipa "$GITHUB_WORKSPACE/App-unsigned.ipa"
 
       - name: Upload Build Artifact
         uses: actions/upload-artifact@v4
