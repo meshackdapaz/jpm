@@ -347,7 +347,7 @@ function ProfileContent() {
       )}
 
       {/* Mobile Profile Header — Threads style */}
-      <div className="sm:hidden sticky top-0 z-30 bg-white dark:bg-black border-b border-zinc-100 dark:border-zinc-900">
+      <div className="sm:hidden sticky top-0 z-30 bg-white dark:bg-black border-b border-zinc-100 dark:border-zinc-900 pt-[env(safe-area-inset-top)]">
         <div className="flex items-center justify-between px-4 h-14">
           {/* Analytics / insights icon top-left - Only for owner */}
           {isOwner ? (

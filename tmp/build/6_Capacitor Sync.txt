@@ -1,0 +1,20 @@
+﻿2026-03-10T22:49:52.1484300Z ##[group]Run npx cap sync ios
+2026-03-10T22:49:52.1484920Z [36;1mnpx cap sync ios[0m
+2026-03-10T22:49:52.1592460Z shell: /bin/bash -e {0}
+2026-03-10T22:49:52.1592750Z ##[endgroup]
+2026-03-10T22:49:53.8247340Z ✔ Copying web assets from out to ios/App/App/public in 76.51ms
+2026-03-10T22:49:53.8290160Z ✔ Creating capacitor.config.json in ios/App/App in 560.00μs
+2026-03-10T22:49:53.8540380Z ✔ copy ios in 120.82ms
+2026-03-10T22:49:53.8699030Z ✔ Updating iOS plugins in 3.41ms
+2026-03-10T22:49:53.8837780Z [info] All plugins have a Package.swift file and will be included in Package.swift
+2026-03-10T22:49:53.8839290Z [info] Writing Package.swift
+2026-03-10T22:49:53.9075490Z [info] Found 7 Capacitor plugins for ios:
+2026-03-10T22:49:53.9077450Z        @capacitor-firebase/messaging@8.1.0
+2026-03-10T22:49:53.9080320Z        @capacitor/app@8.0.1
+2026-03-10T22:49:53.9080870Z        @capacitor/keyboard@8.0.1
+2026-03-10T22:49:53.9081650Z        @capacitor/local-notifications@8.0.2
+2026-03-10T22:49:53.9082090Z        @capacitor/push-notifications@8.0.2
+2026-03-10T22:49:53.9082600Z        @capacitor/splash-screen@8.0.1
+2026-03-10T22:49:53.9083050Z        @capawesome/capacitor-app-update@8.0.3
+2026-03-10T22:49:53.9212010Z ✔ update ios in 59.85ms
+2026-03-10T22:49:53.9276110Z [info] Sync finished in 0.231s

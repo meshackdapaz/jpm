@@ -124,7 +124,7 @@ export default function SearchPage() {
   return (
     <AppLayout>
       <div className="max-w-2xl mx-auto min-h-screen pb-20 sm:pb-0">
-        <div className="sticky top-0 sm:top-16 z-40 bg-white/90 dark:bg-[#101010]/90 backdrop-blur-md px-4 py-4 border-b border-zinc-200 dark:border-zinc-800">
+        <div className="sticky top-0 sm:top-16 z-40 bg-white/90 dark:bg-[#101010]/90 backdrop-blur-md px-4 pb-4 pt-[calc(1rem+env(safe-area-inset-top))] border-b border-zinc-200 dark:border-zinc-800">
           <h1 className="text-xl font-bold text-center mb-4">Search</h1>
           <div className="relative group">
             <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">

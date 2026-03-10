@@ -1,0 +1,21 @@
+﻿2026-03-10T22:49:56.8378860Z ##[group]Run cd ios/App
+2026-03-10T22:49:56.8379090Z [36;1mcd ios/App[0m
+2026-03-10T22:49:56.8379250Z [36;1mcat << 'EOF' > add_plist.rb[0m
+2026-03-10T22:49:56.8379510Z [36;1mrequire 'xcodeproj'[0m
+2026-03-10T22:49:56.8379770Z [36;1mproject = Xcodeproj::Project.open('App.xcodeproj')[0m
+2026-03-10T22:49:56.8380160Z [36;1mtarget = project.targets.find { |t| t.name == 'App' }[0m
+2026-03-10T22:49:56.8380500Z [36;1mgroup = project.main_group.find_subpath('App', true)[0m
+2026-03-10T22:49:56.8380960Z [36;1munless group.files.any? { |f| f.path == 'GoogleService-Info.plist' || f.name == 'GoogleService-Info.plist' }[0m
+2026-03-10T22:49:56.8381490Z [36;1m  file = group.new_file('GoogleService-Info.plist')[0m
+2026-03-10T22:49:56.8381770Z [36;1m  target.add_resources([file])[0m
+2026-03-10T22:49:56.8382020Z [36;1m  project.save[0m
+2026-03-10T22:49:56.8382270Z [36;1m  puts "Added GoogleService-Info.plist to project"[0m
+2026-03-10T22:49:56.8382500Z [36;1mend[0m
+2026-03-10T22:49:56.8382680Z [36;1mEOF[0m
+2026-03-10T22:49:56.8382970Z [36;1mgem install xcodeproj --no-document[0m
+2026-03-10T22:49:56.8383290Z [36;1mruby add_plist.rb[0m
+2026-03-10T22:49:56.8445220Z shell: /bin/bash -e {0}
+2026-03-10T22:49:56.8445450Z ##[endgroup]
+2026-03-10T22:49:58.1176730Z Successfully installed xcodeproj-1.27.0
+2026-03-10T22:49:58.1177360Z 1 gem installed
+2026-03-10T22:49:58.3473670Z Added GoogleService-Info.plist to project

@@ -30,7 +30,7 @@ const config: CapacitorConfig = {
       sound: 'beep.wav',
     },
     Keyboard: {
-      resize: KeyboardResize.Body,
+      resize: KeyboardResize.Native,
       resizeOnFullScreen: true,
     },
   },

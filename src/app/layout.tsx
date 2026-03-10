@@ -20,6 +20,7 @@ export const metadata: Metadata = {
 export const viewport = {
   width: 'device-width',
   initialScale: 1,
+  maximumScale: 1,
   viewportFit: 'cover',
   userScalable: false,
 };
@@ -27,7 +28,6 @@ export const viewport = {
 import { I18nProvider } from "@/lib/i18n";
 import { AuthProvider } from "@/components/AuthProvider";
 import { ThemeProvider } from "@/components/ThemeProvider";
-import { SplashScreen } from "@/components/SplashScreen";
 import { CallProvider } from "@/components/CallProvider";
 import { CallUI } from "@/components/CallUI";
 
@@ -43,7 +43,6 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased font-sans`}
       >
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
-          <SplashScreen />
           <AuthProvider>
             <I18nProvider>
               <CallProvider>

@@ -1,0 +1,25 @@
+﻿2026-03-10T22:49:53.9709350Z ##[group]Run npm run assets:generate
+2026-03-10T22:49:53.9709700Z [36;1mnpm run assets:generate[0m
+2026-03-10T22:49:53.9759370Z shell: /bin/bash -e {0}
+2026-03-10T22:49:53.9759690Z ##[endgroup]
+2026-03-10T22:49:54.1946010Z 
+2026-03-10T22:49:54.1947980Z > web@0.1.0 assets:generate
+2026-03-10T22:49:54.1949770Z > npx @capacitor/assets generate --ios
+2026-03-10T22:49:54.1951220Z 
+2026-03-10T22:49:55.5429970Z [log] xml(load) at /Users/runner/work/jpm/jpm/android/app/src/main/AndroidManifest.xml
+2026-03-10T22:49:55.5432320Z [log] xml(load) Found root namespaces in XML file: http://schemas.android.com/apk/res/android
+2026-03-10T22:49:55.6712850Z Generating assets for ios
+2026-03-10T22:49:56.8137010Z CREATE ios icon /Users/runner/work/jpm/jpm/ios/App/App/Assets.xcassets/AppIcon.appiconset/AppIcon-512@2x.png (233.15 KB)
+2026-03-10T22:49:56.8241980Z CREATE ios splash /Users/runner/work/jpm/jpm/ios/App/App/Assets.xcassets/Splash.imageset/Default@1x~universal~anyany.png (51.26 KB)
+2026-03-10T22:49:56.8309280Z CREATE ios splash /Users/runner/work/jpm/jpm/ios/App/App/Assets.xcassets/Splash.imageset/Default@2x~universal~anyany.png (51.26 KB)
+2026-03-10T22:49:56.8340760Z CREATE ios splash /Users/runner/work/jpm/jpm/ios/App/App/Assets.xcassets/Splash.imageset/Default@3x~universal~anyany.png (51.26 KB)
+2026-03-10T22:49:56.8342320Z CREATE ios splash-dark /Users/runner/work/jpm/jpm/ios/App/App/Assets.xcassets/Splash.imageset/Default@1x~universal~anyany-dark.png (167.94 KB)
+2026-03-10T22:49:56.8343360Z CREATE ios splash-dark /Users/runner/work/jpm/jpm/ios/App/App/Assets.xcassets/Splash.imageset/Default@2x~universal~anyany-dark.png (167.94 KB)
+2026-03-10T22:49:56.8344340Z CREATE ios splash-dark /Users/runner/work/jpm/jpm/ios/App/App/Assets.xcassets/Splash.imageset/Default@3x~universal~anyany-dark.png (167.94 KB)
+2026-03-10T22:49:56.8345310Z CREATE ios splash /Users/runner/work/jpm/jpm/ios/App/App/Assets.xcassets/Splash.imageset/Default@1x~universal~anyany.png (962.22 KB)
+2026-03-10T22:49:56.8347100Z CREATE ios splash /Users/runner/work/jpm/jpm/ios/App/App/Assets.xcassets/Splash.imageset/Default@2x~universal~anyany.png (962.22 KB)
+2026-03-10T22:49:56.8348050Z CREATE ios splash /Users/runner/work/jpm/jpm/ios/App/App/Assets.xcassets/Splash.imageset/Default@3x~universal~anyany.png (962.22 KB)
+2026-03-10T22:49:56.8348520Z 
+2026-03-10T22:49:56.8348530Z 
+2026-03-10T22:49:56.8348640Z Totals:
+2026-03-10T22:49:56.8348860Z ios: 10 generated, 3.69 MB total

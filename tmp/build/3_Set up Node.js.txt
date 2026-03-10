@@ -1,0 +1,26 @@
+﻿2026-03-10T22:48:53.4265470Z ##[group]Run actions/setup-node@v4
+2026-03-10T22:48:53.4266410Z with:
+2026-03-10T22:48:53.4266940Z   node-version: 22
+2026-03-10T22:48:53.4270420Z   cache: npm
+2026-03-10T22:48:53.4271150Z   cache-dependency-path: package-lock.json
+2026-03-10T22:48:53.4271990Z   always-auth: false
+2026-03-10T22:48:53.4272600Z   check-latest: false
+2026-03-10T22:48:53.4273560Z   token: ***
+2026-03-10T22:48:53.4274080Z ##[endgroup]
+2026-03-10T22:48:53.6199750Z Found in cache @ /Users/runner/hostedtoolcache/node/22.22.0/arm64
+2026-03-10T22:48:53.6201450Z ##[group]Environment details
+2026-03-10T22:48:54.4042450Z node: v22.22.0
+2026-03-10T22:48:54.4062110Z npm: 10.9.4
+2026-03-10T22:48:54.4097550Z yarn: 1.22.22
+2026-03-10T22:48:54.4111290Z ##[endgroup]
+2026-03-10T22:48:54.4114010Z [command]/Users/runner/hostedtoolcache/node/22.22.0/arm64/bin/npm config get cache
+2026-03-10T22:48:54.6077460Z /Users/runner/.npm
+2026-03-10T22:48:54.9742700Z Cache hit for: node-cache-macOS-arm64-npm-feb426e7e25f023df94eb052adf44519f0a05f71c07bdc59e7847c8aed40ed4f
+2026-03-10T22:48:56.2870270Z Received 0 of 135231298 (0.0%), 0.0 MBs/sec
+2026-03-10T22:48:57.2875110Z Received 62914560 of 135231298 (46.5%), 29.4 MBs/sec
+2026-03-10T22:48:58.3137300Z Received 134217728 of 135231298 (99.3%), 41.7 MBs/sec
+2026-03-10T22:48:58.4928620Z Received 135231298 of 135231298 (100.0%), 39.7 MBs/sec
+2026-03-10T22:48:58.4948730Z Cache Size: ~129 MB (135231298 B)
+2026-03-10T22:48:58.4979790Z [command]/opt/homebrew/bin/gtar -xf /Users/runner/work/_temp/5080a38a-e5f4-43e1-960e-96b62a86d192/cache.tzst -P -C /Users/runner/work/jpm/jpm --delay-directory-restore --use-compress-program unzstd
+2026-03-10T22:48:59.1365210Z Cache restored successfully
+2026-03-10T22:48:59.1461540Z Cache restored from key: node-cache-macOS-arm64-npm-feb426e7e25f023df94eb052adf44519f0a05f71c07bdc59e7847c8aed40ed4f

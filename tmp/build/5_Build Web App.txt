@@ -1,0 +1,56 @@
+﻿2026-03-10T22:49:32.8813090Z ##[group]Run npm run build
+2026-03-10T22:49:32.8813480Z [36;1mnpm run build[0m
+2026-03-10T22:49:32.9579240Z shell: /bin/bash -e {0}
+2026-03-10T22:49:32.9579680Z env:
+2026-03-10T22:49:32.9580010Z   NEXT_PUBLIC_SUPABASE_URL: https://tgfuufsgkelgjjktbugg.supabase.co
+2026-03-10T22:49:32.9580490Z   NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: sb_publishable_BfvqG2R0d19EpcX8Xeu9nQ_93liMI2h
+2026-03-10T22:49:32.9581300Z   NEXT_PUBLIC_INSFORGE_URL: https://g76b2t5b.eu-central.insforge.app
+2026-03-10T22:49:32.9583170Z   NEXT_PUBLIC_INSFORGE_ANON_KEY: ***
+2026-03-10T22:49:32.9583510Z ##[endgroup]
+2026-03-10T22:49:33.2990900Z 
+2026-03-10T22:49:33.2994260Z > web@0.1.0 build
+2026-03-10T22:49:33.2994620Z > next build
+2026-03-10T22:49:33.2994830Z 
+2026-03-10T22:49:34.4282170Z ⚠ No build cache found. Please configure build caching for faster rebuilds. Read more: https://nextjs.org/docs/messages/no-cache
+2026-03-10T22:49:34.4543010Z Attention: Next.js now collects completely anonymous telemetry regarding usage.
+2026-03-10T22:49:34.4544200Z This information is used to shape Next.js' roadmap and prioritize features.
+2026-03-10T22:49:34.4553180Z You can learn more, including how to opt-out if you'd not like to participate in this anonymous program, by visiting the following URL:
+2026-03-10T22:49:34.4555520Z https://nextjs.org/telemetry
+2026-03-10T22:49:34.4570410Z 
+2026-03-10T22:49:34.4663470Z ▲ Next.js 16.1.6 (Turbopack)
+2026-03-10T22:49:34.4691360Z ⚠ The "middleware" file convention is deprecated. Please use "proxy" instead. Learn more: https://nextjs.org/docs/messages/middleware-to-proxy
+2026-03-10T22:49:34.4691960Z 
+2026-03-10T22:49:34.5229600Z   Creating an optimized production build ...
+2026-03-10T22:49:43.2956900Z ✓ Compiled successfully in 8.3s
+2026-03-10T22:49:43.3182850Z   Running TypeScript ...
+2026-03-10T22:49:50.6170020Z   Collecting page data using 2 workers ...
+2026-03-10T22:49:51.5499270Z   Generating static pages using 2 workers (0/14) ...
+2026-03-10T22:49:51.8155020Z   Generating static pages using 2 workers (3/14) 
+2026-03-10T22:49:51.8160040Z   Generating static pages using 2 workers (6/14) 
+2026-03-10T22:49:51.9427380Z   Generating static pages using 2 workers (10/14) 
+2026-03-10T22:49:51.9492140Z ✓ Generating static pages using 2 workers (14/14) in 393.6ms
+2026-03-10T22:49:51.9529410Z   Finalizing page optimization ...
+2026-03-10T22:49:51.9950490Z ⚠ Statically exporting a Next.js application via `next export` disables API routes and middleware.
+2026-03-10T22:49:51.9957150Z This command is meant for static-only hosts, and is not necessary to make your application static.
+2026-03-10T22:49:51.9959050Z Pages in your application without server-side data dependencies will be automatically statically exported by `next build`, including pages powered by `getStaticProps`.
+2026-03-10T22:49:51.9961600Z Learn more: https://nextjs.org/docs/messages/api-routes-static-export
+2026-03-10T22:49:52.0898690Z 
+2026-03-10T22:49:52.0917210Z Route (app)
+2026-03-10T22:49:52.0919200Z ┌ ○ /
+2026-03-10T22:49:52.0920320Z ├ ○ /_not-found
+2026-03-10T22:49:52.0921580Z ├ ○ /auth/callback
+2026-03-10T22:49:52.0922590Z ├ ○ /insights
+2026-03-10T22:49:52.0923130Z ├ ○ /login
+2026-03-10T22:49:52.0923510Z ├ ○ /messages
+2026-03-10T22:49:52.0923890Z ├ ○ /notifications
+2026-03-10T22:49:52.0924310Z ├ ○ /profile
+2026-03-10T22:49:52.0925250Z ├ ○ /search
+2026-03-10T22:49:52.0925650Z ├ ○ /settings
+2026-03-10T22:49:52.0926630Z ├ ○ /signup
+2026-03-10T22:49:52.0927050Z └ ○ /trending
+2026-03-10T22:49:52.0933650Z 
+2026-03-10T22:49:52.0933800Z 
+2026-03-10T22:49:52.0934420Z ƒ Proxy (Middleware)
+2026-03-10T22:49:52.0940610Z 
+2026-03-10T22:49:52.0942030Z ○  (Static)  prerendered as static content
+2026-03-10T22:49:52.0942540Z 

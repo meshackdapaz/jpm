@@ -1,0 +1,73 @@
+﻿2026-03-10T22:48:51.8869100Z ##[group]Run actions/checkout@v4
+2026-03-10T22:48:51.8869780Z with:
+2026-03-10T22:48:51.8870100Z   repository: meshackurassa2-design/jpm
+2026-03-10T22:48:51.8870670Z   token: ***
+2026-03-10T22:48:51.8870940Z   ssh-strict: true
+2026-03-10T22:48:51.8871220Z   ssh-user: git
+2026-03-10T22:48:51.8871500Z   persist-credentials: true
+2026-03-10T22:48:51.8871810Z   clean: true
+2026-03-10T22:48:51.8872100Z   sparse-checkout-cone-mode: true
+2026-03-10T22:48:51.8872430Z   fetch-depth: 1
+2026-03-10T22:48:51.8872700Z   fetch-tags: false
+2026-03-10T22:48:51.8872980Z   show-progress: true
+2026-03-10T22:48:51.8873270Z   lfs: false
+2026-03-10T22:48:51.8873530Z   submodules: false
+2026-03-10T22:48:51.8873820Z   set-safe-directory: true
+2026-03-10T22:48:51.8874230Z ##[endgroup]
+2026-03-10T22:48:52.2891210Z Syncing repository: meshackurassa2-design/jpm
+2026-03-10T22:48:52.2894750Z ##[group]Getting Git version info
+2026-03-10T22:48:52.2895560Z Working directory is '/Users/runner/work/jpm/jpm'
+2026-03-10T22:48:52.2898480Z [command]/opt/homebrew/bin/git version
+2026-03-10T22:48:52.3256910Z git version 2.53.0
+2026-03-10T22:48:52.3298280Z ##[endgroup]
+2026-03-10T22:48:52.3317540Z Copying '/Users/runner/.gitconfig' to '/Users/runner/work/_temp/6a034cc2-3be4-44fc-ab79-bc06b8055275/.gitconfig'
+2026-03-10T22:48:52.3327150Z Temporarily overriding HOME='/Users/runner/work/_temp/6a034cc2-3be4-44fc-ab79-bc06b8055275' before making global git config changes
+2026-03-10T22:48:52.3328170Z Adding repository directory to the temporary git global config as a safe directory
+2026-03-10T22:48:52.3336250Z [command]/opt/homebrew/bin/git config --global --add safe.directory /Users/runner/work/jpm/jpm
+2026-03-10T22:48:52.3470460Z Deleting the contents of '/Users/runner/work/jpm/jpm'
+2026-03-10T22:48:52.3474540Z ##[group]Initializing the repository
+2026-03-10T22:48:52.3479650Z [command]/opt/homebrew/bin/git init /Users/runner/work/jpm/jpm
+2026-03-10T22:48:52.3694260Z hint: Using 'master' as the name for the initial branch. This default branch name
+2026-03-10T22:48:52.3697670Z hint: will change to "main" in Git 3.0. To configure the initial branch name
+2026-03-10T22:48:52.3699510Z hint: to use in all of your new repositories, which will suppress this warning,
+2026-03-10T22:48:52.3700000Z hint: call:
+2026-03-10T22:48:52.3700300Z hint:
+2026-03-10T22:48:52.3700700Z hint: 	git config --global init.defaultBranch <name>
+2026-03-10T22:48:52.3701110Z hint:
+2026-03-10T22:48:52.3701490Z hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+2026-03-10T22:48:52.3702120Z hint: 'development'. The just-created branch can be renamed via this command:
+2026-03-10T22:48:52.3702650Z hint:
+2026-03-10T22:48:52.3703010Z hint: 	git branch -m <name>
+2026-03-10T22:48:52.3703710Z hint:
+2026-03-10T22:48:52.3707510Z hint: Disable this message with "git config set advice.defaultBranchName false"
+2026-03-10T22:48:52.3708340Z Initialized empty Git repository in /Users/runner/work/jpm/jpm/.git/
+2026-03-10T22:48:52.3709700Z [command]/opt/homebrew/bin/git remote add origin https://github.com/meshackurassa2-design/jpm
+2026-03-10T22:48:52.3853370Z ##[endgroup]
+2026-03-10T22:48:52.3854090Z ##[group]Disabling automatic garbage collection
+2026-03-10T22:48:52.3857170Z [command]/opt/homebrew/bin/git config --local gc.auto 0
+2026-03-10T22:48:52.3969620Z ##[endgroup]
+2026-03-10T22:48:52.3970450Z ##[group]Setting up auth
+2026-03-10T22:48:52.3971360Z [command]/opt/homebrew/bin/git config --local --name-only --get-regexp core\.sshCommand
+2026-03-10T22:48:52.4052070Z [command]/opt/homebrew/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2026-03-10T22:48:52.5227940Z [command]/opt/homebrew/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-03-10T22:48:52.5307150Z [command]/opt/homebrew/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2026-03-10T22:48:52.6383580Z [command]/opt/homebrew/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-03-10T22:48:52.6456930Z [command]/opt/homebrew/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+2026-03-10T22:48:52.7463530Z [command]/opt/homebrew/bin/git config --local http.https://github.com/.extraheader AUTHORIZATION: basic ***
+2026-03-10T22:48:52.7537480Z ##[endgroup]
+2026-03-10T22:48:52.7538900Z ##[group]Fetching the repository
+2026-03-10T22:48:52.7543730Z [command]/opt/homebrew/bin/git -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --depth=1 origin +3f4dfffd6ef3d11b8f1b3b89309de1515fb545d0:refs/remotes/origin/main
+2026-03-10T22:48:53.2988670Z From https://github.com/meshackurassa2-design/jpm
+2026-03-10T22:48:53.3092280Z  * [new ref]         3f4dfffd6ef3d11b8f1b3b89309de1515fb545d0 -> origin/main
+2026-03-10T22:48:53.3094620Z ##[endgroup]
+2026-03-10T22:48:53.3095380Z ##[group]Determining the checkout info
+2026-03-10T22:48:53.3096200Z ##[endgroup]
+2026-03-10T22:48:53.3096700Z [command]/opt/homebrew/bin/git sparse-checkout disable
+2026-03-10T22:48:53.3182100Z [command]/opt/homebrew/bin/git config --local --unset-all extensions.worktreeConfig
+2026-03-10T22:48:53.3260700Z ##[group]Checking out the ref
+2026-03-10T22:48:53.3266070Z [command]/opt/homebrew/bin/git checkout --progress --force -B main refs/remotes/origin/main
+2026-03-10T22:48:53.3748780Z Switched to a new branch 'main'
+2026-03-10T22:48:53.3759100Z branch 'main' set up to track 'origin/main'.
+2026-03-10T22:48:53.3767400Z ##[endgroup]
+2026-03-10T22:48:53.3854550Z [command]/opt/homebrew/bin/git log -1 --format=%H
+2026-03-10T22:48:53.3920200Z 3f4dfffd6ef3d11b8f1b3b89309de1515fb545d0
