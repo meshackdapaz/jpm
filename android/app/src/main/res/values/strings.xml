@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">JPM</string>
+    <string name="title_activity_main">JPM</string>
+    <string name="package_name">com.jpm.app</string>
+    <string name="custom_url_scheme">com.jpm.app</string>
+</resources>

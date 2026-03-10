@@ -1,0 +1,77 @@
+{
+  "project_info": {
+    "project_number": "169047141158",
+    "firebase_url": "https://mrmovies-63983-default-rtdb.firebaseio.com",
+    "project_id": "mrmovies-63983",
+    "storage_bucket": "mrmovies-63983.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:169047141158:android:c360998c7b54e7b54d2fe7",
+        "android_client_info": {
+          "package_name": "Mr.movie.com.tz"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "169047141158-q6nku6h17j66dg56mga7cu038vsc5n7q.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "Mr.movie.com.tz",
+            "certificate_hash": "61ed377e85d386a8dfee6b864bd85b0bfaa5af81"
+          }
+        },
+        {
+          "client_id": "169047141158-ktu6pkc57ke0hoqnirs3u6e6c52f010r.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBHlpg_FgusJDJcTV5SBOnmD8IIMZQqiQU"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "169047141158-ktu6pkc57ke0hoqnirs3u6e6c52f010r.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:169047141158:android:61bc9333fd89785a4d2fe7",
+        "android_client_info": {
+          "package_name": "com.jpm.app"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "169047141158-ktu6pkc57ke0hoqnirs3u6e6c52f010r.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBHlpg_FgusJDJcTV5SBOnmD8IIMZQqiQU"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "169047141158-ktu6pkc57ke0hoqnirs3u6e6c52f010r.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

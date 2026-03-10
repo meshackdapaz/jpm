@@ -1,0 +1,56 @@
+name: iOS Build
+
+on:
+  push:
+    branches: [ main, master ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: macos-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-path: 'web/package-lock.json'
+
+      - name: Install dependencies
+        run: |
+          cd web
+          npm install --legacy-peer-deps
+
+      - name: Build Web App
+        run: |
+          cd web
+          npm run build
+          # Ensure 'out' directory is populated if using static export
+          # If using 'output: export' in next.config.ts, this is automatic
+
+      - name: Capacitor Sync
+        run: |
+          cd web
+          npx cap sync ios
+
+      - name: Build iOS App
+        run: |
+          cd web/ios/App
+          xcodebuild -workspace App.xcworkspace -scheme App -sdk iphoneos -configuration Release archive -archivePath $PWD/build/App.xcarchive CODE_SIGNING_ALLOWED=NO
+
+      - name: Export IPA (Unsigned)
+        run: |
+          cd web/ios/App/build/App.xcarchive/Products/Applications
+          mkdir Payload
+          cp -r App.app Payload/
+          zip -r App.ipa Payload
+          mv App.ipa ../../../../../App-unsigned.ipa
+
+      - name: Upload Build Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ios-ipa-unsigned
+          path: web/App-unsigned.ipa

@@ -1,0 +1,172 @@
+/* ── Google Fonts (must be first) ──────────────────────────────────────────── */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ── Design tokens ─────────────────────────────────────────────────────────── */
+:root {
+  --background: #ffffff;
+  --surface: #f8f8f8;
+  --foreground: #0f0f0f;
+  --muted: #71717a;
+  --border: #e4e4e7;
+  --accent: #18181b;
+
+  /* Glow colours */
+  --glow-blue:   rgba(59,  130, 246, 0.15);
+  --glow-violet: rgba(139, 92,  246, 0.15);
+  --glow-rose:   rgba(244, 63,  94,  0.15);
+}
+
+.dark {
+  --background: #0a0a0a;
+  --surface:    #111111;
+  --foreground: #fafafa;
+  --muted:      #71717a;
+  --border:     #27272a;
+  --accent:     #fafafa;
+}
+
+/* ── Reset ─────────────────────────────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; }
+
+html { color-scheme: light dark; }
+
+body {
+  font-family: 'Inter', var(--font-geist-sans), -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  color: var(--foreground);
+  background: var(--background);
+  overscroll-behavior: none;
+  min-width: 320px;
+  -webkit-tap-highlight-color: transparent;
+  text-rendering: optimizeLegibility;
+}
+
+/* ── Scrollbar — hidden on app/mobile ──────────────────────────────────────── */
+::-webkit-scrollbar { width: 0; height: 0; display: none; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: transparent; }
+
+.hide-scrollbar::-webkit-scrollbar { display: none; }
+.hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+/* Hide all scrollbars globally */
+* { scrollbar-width: none; -ms-overflow-style: none; }
+
+/* ── Safe area ─────────────────────────────────────────────────────────────── */
+.pb-safe { padding-bottom: env(safe-area-inset-bottom); }
+
+/* ── Typography ────────────────────────────────────────────────────────────── */
+.font-display { font-variation-settings: 'wght' 800; letter-spacing: -0.04em; }
+
+/* ── Glassmorphism ─────────────────────────────────────────────────────────── */
+.glass {
+  background: rgba(255,255,255,0.72);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border-bottom: 1px solid rgba(0,0,0,0.06);
+}
+.dark .glass {
+  background: rgba(10,10,10,0.80);
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+}
+
+/* ── Animations ────────────────────────────────────────────────────────────── */
+@keyframes fade-up {
+  from { opacity:0; transform:translateY(8px); }
+  to   { opacity:1; transform:translateY(0);   }
+}
+@keyframes pop {
+  0%   { transform:scale(1); }
+  40%  { transform:scale(1.18); }
+  100% { transform:scale(1); }
+}
+@keyframes shimmer {
+  0%   { background-position:-400px 0; }
+  100% { background-position: 400px 0; }
+}
+@keyframes slide-up {
+  from { opacity:0; transform:translateY(16px); }
+  to   { opacity:1; transform:translateY(0); }
+}
+@keyframes pulse-dot {
+  0%, 100% { transform: scale(1); opacity:1; }
+  50%       { transform: scale(1.4); opacity:0.7; }
+}
+@keyframes voice-bar {
+  0%, 100% { transform: scaleY(0.4); }
+  50%       { transform: scaleY(1.0); }
+}
+@keyframes record-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.6); }
+  50%       { box-shadow: 0 0 0 8px rgba(239, 68, 68, 0); }
+}
+
+.animate-fade-up   { animation: fade-up  0.35s cubic-bezier(.16,1,.3,1) both; }
+.animate-slide-up  { animation: slide-up 0.4s  cubic-bezier(.16,1,.3,1) both; }
+.animate-pop       { animation: pop      0.3s  cubic-bezier(.34,1.56,.64,1); }
+.animate-pulse-dot { animation: pulse-dot 1.8s infinite; }
+.animate-voice-bar { animation: voice-bar 0.9s ease-in-out infinite; }
+.animate-record    { animation: record-pulse 1.2s ease-in-out infinite; }
+
+/* Staggered children */
+.stagger > *:nth-child(1) { animation-delay: 0ms; }
+.stagger > *:nth-child(2) { animation-delay: 60ms; }
+.stagger > *:nth-child(3) { animation-delay: 120ms; }
+.stagger > *:nth-child(4) { animation-delay: 180ms; }
+.stagger > *:nth-child(5) { animation-delay: 240ms; }
+
+/* ── Shimmer skeleton ──────────────────────────────────────────────────────── */
+.shimmer {
+  background: linear-gradient(90deg, #e4e4e7 25%, #f4f4f5 50%, #e4e4e7 75%);
+  background-size: 800px 100%;
+  animation: shimmer 1.4s infinite linear;
+}
+.dark .shimmer {
+  background: linear-gradient(90deg, #27272a 25%, #3f3f46 50%, #27272a 75%);
+  background-size: 800px 100%;
+}
+
+/* ── Button press micro-animation ──────────────────────────────────────────── */
+.btn-press {
+  transition: transform 0.1s cubic-bezier(.34,1.56,.64,1), opacity 0.15s;
+}
+.btn-press:active { transform: scale(0.92); opacity:0.85; }
+
+/* ── Like heart pop ────────────────────────────────────────────────────────── */
+.heart-liked { animation: pop 0.35s cubic-bezier(.34,1.56,.64,1); }
+
+/* ── Post card hover ───────────────────────────────────────────────────────── */
+.post-row {
+  transition: background-color 0.12s;
+}
+.post-row:hover { background-color: rgba(0,0,0,0.017); }
+.dark .post-row:hover { background-color: rgba(255,255,255,0.025); }
+
+/* ── Avatar ring glow on hover ─────────────────────────────────────────────── */
+.avatar-link:hover img,
+.avatar-link:hover .avatar-fallback {
+  box-shadow: 0 0 0 2px var(--background), 0 0 0 4px var(--accent);
+  transition: box-shadow 0.2s;
+}
+
+/* ── Nav active indicator ──────────────────────────────────────────────────── */
+.nav-active-dot {
+  width: 4px; height: 4px;
+  border-radius: 99px;
+  background: currentColor;
+  animation: fade-up 0.2s ease both;
+}
+
+/* ── Input focus ring ──────────────────────────────────────────────────────── */
+input:focus, textarea:focus {
+  outline: none;
+}
+
+/* ── Line clamp ────────────────────────────────────────────────────────────── */
+.line-clamp-2 { display:-webkit-box; -webkit-line-clamp:2; line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
+.line-clamp-3 { display:-webkit-box; -webkit-line-clamp:3; line-clamp:3; -webkit-box-orient:vertical; overflow:hidden; }
