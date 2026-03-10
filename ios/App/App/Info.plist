@@ -47,5 +47,15 @@
 	</array>
 	<key>UIViewControllerBasedStatusBarAppearance</key>
 	<true/>
+	<key>UIBackgroundModes</key>
+	<array>
+		<string>remote-notification</string>
+	</array>
+	<key>NSCameraUsageDescription</key>
+	<string>To take photos for your posts</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>To select photos for your posts</string>
+	<key>NSPhotoLibraryAddUsageDescription</key>
+	<string>To save photos to your gallery</string>
 </dict>
 </plist>

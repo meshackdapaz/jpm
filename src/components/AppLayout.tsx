@@ -349,7 +349,7 @@ export function AppLayout({ children, fullBleed = false }: { children: React.Rea
 
       {/* ── Mobile Top Header (Home page only) ─────────────────────────────── */}
       {pathname === '/' && (
-      <header className="sm:hidden fixed top-0 left-0 right-0 h-14 z-40 bg-white dark:bg-black flex items-center px-4">
+      <header className="sm:hidden fixed top-0 left-0 right-0 z-40 bg-white dark:bg-black flex items-center px-4 pt-[env(safe-area-inset-top)] h-[calc(3.5rem+env(safe-area-inset-top))]">
         {/* Left Column (fixed width) */}
         <div className="w-10 flex items-center">
           {pathname === '/' && (
