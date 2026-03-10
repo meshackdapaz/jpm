@@ -43,10 +43,15 @@ jobs:
 
       - name: Export IPA (Unsigned)
         run: |
+          # Find the .app file regardless of its name
+          APP_PATH=$(find ios/App/build/App.xcarchive/Products/Applications -name "*.app" | head -n 1)
+          APP_NAME=$(basename "$APP_PATH")
+          
           cd ios/App/build/App.xcarchive/Products/Applications
           mkdir Payload
-          cp -r App.app Payload/
+          cp -r "$APP_NAME" Payload/
           zip -r App.ipa Payload
+          # Move it to the root of the repository
           mv App.ipa ../../../../../App-unsigned.ipa
 
       - name: Upload Build Artifact
