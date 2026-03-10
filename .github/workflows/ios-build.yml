@@ -36,6 +36,10 @@ jobs:
         run: |
           npx cap sync ios
 
+      - name: Generate App Assets
+        run: |
+          npm run assets:generate
+
       - name: Build iOS App
         run: |
           cd ios/App

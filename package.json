@@ -8,7 +8,8 @@
     "start": "next start",
     "lint": "eslint",
     "mobile:build": "next build && npx cap sync",
-    "mobile:open": "npx cap open android"
+    "mobile:open": "npx cap open android",
+    "assets:generate": "npx @capacitor/assets generate --ios"
   },
   "dependencies": {
     "@capacitor-firebase/messaging": "^8.1.0",
@@ -46,6 +47,7 @@
     "postcss": "^8.5.8",
     "sharp": "^0.34.5",
     "tailwindcss": "^3.4.1",
-    "typescript": "^5"
+    "typescript": "^5",
+    "@capacitor/assets": "^3.0.5"
   }
 }
