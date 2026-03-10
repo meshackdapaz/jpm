@@ -43,7 +43,7 @@ jobs:
       - name: Build iOS App
         run: |
           cd ios/App
-          xcodebuild -project App.xcodeproj -scheme App -sdk iphoneos -configuration Release archive -archivePath $PWD/build/App.xcarchive CODE_SIGNING_ALLOWED=NO
+          xcodebuild -project App.xcodeproj -scheme App -sdk iphoneos -configuration Release clean archive -archivePath $PWD/build/App.xcarchive CODE_SIGNING_ALLOWED=NO COMPILER_INDEX_STORE_ENABLE=NO
 
       - name: Export IPA (Unsigned)
         run: |
