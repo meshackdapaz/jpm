@@ -61,15 +61,15 @@ jobs:
       - name: Build iOS App
         run: |
           cd ios/App
-          xcodebuild -project App.xcodeproj -scheme App -sdk iphoneos -configuration Release clean archive -archivePath $PWD/build/App.xcarchive CODE_SIGNING_ALLOWED=NO COMPILER_INDEX_STORE_ENABLE=NO
+          xcodebuild -project App.xcodeproj -scheme App -sdk iphoneos -configuration Release clean build -derivedDataPath $PWD/DerivedData CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO CODE_SIGN_IDENTITY="" COMPILER_INDEX_STORE_ENABLE=NO
 
       - name: Export IPA (Unsigned)
         run: |
-          # Find the .app file regardless of its name
-          APP_PATH=$(find ios/App/build/App.xcarchive/Products/Applications -name "*.app" | head -n 1)
+          # Find the .app file in the DerivedData build directory
+          APP_PATH=$(find ios/App/DerivedData/Build/Products/Release-iphoneos -name "*.app" | head -n 1)
           APP_NAME=$(basename "$APP_PATH")
           
-          cd ios/App/build/App.xcarchive/Products/Applications
+          cd $(dirname "$APP_PATH")
           mkdir Payload
           cp -r "$APP_NAME" Payload/
           zip -r App.ipa Payload
