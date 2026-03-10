@@ -49,7 +49,7 @@ jobs:
           target = project.targets.find { |t| t.name == 'App' }
           group = project.main_group.find_subpath('App', true)
           unless group.files.any? { |f| f.path == 'GoogleService-Info.plist' || f.name == 'GoogleService-Info.plist' }
-            file = group.new_file('App/GoogleService-Info.plist')
+            file = group.new_file('GoogleService-Info.plist')
             target.add_resources([file])
             project.save
             puts "Added GoogleService-Info.plist to project"
