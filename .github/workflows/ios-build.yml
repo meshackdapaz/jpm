@@ -40,6 +40,24 @@ jobs:
         run: |
           npm run assets:generate
 
+      - name: Link GoogleService-Info.plist
+        run: |
+          cd ios/App
+          cat << 'EOF' > add_plist.rb
+          require 'xcodeproj'
+          project = Xcodeproj::Project.open('App.xcodeproj')
+          target = project.targets.find { |t| t.name == 'App' }
+          group = project.main_group.find_subpath('App', true)
+          unless group.files.any? { |f| f.path == 'GoogleService-Info.plist' || f.name == 'GoogleService-Info.plist' }
+            file = group.new_file('App/GoogleService-Info.plist')
+            target.add_resources([file])
+            project.save
+            puts "Added GoogleService-Info.plist to project"
+          end
+          EOF
+          gem install xcodeproj --no-document
+          ruby add_plist.rb
+
       - name: Build iOS App
         run: |
           cd ios/App
