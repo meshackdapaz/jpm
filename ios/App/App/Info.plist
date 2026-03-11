@@ -53,6 +53,8 @@
 	</array>
 	<key>NSCameraUsageDescription</key>
 	<string>To take photos for your posts</string>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>To use your microphone for voice and video calls</string>
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>To select photos for your posts</string>
 	<key>NSPhotoLibraryAddUsageDescription</key>

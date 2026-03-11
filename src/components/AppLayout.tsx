@@ -38,7 +38,9 @@ import { useAuth } from './AuthProvider'
 import { CreatePost } from './CreatePost'
 import { RightSidebar } from './RightSidebar'
 import { ToastNotification } from './ToastNotification'
+import { App } from '@capacitor/app'
 import { PushNotifications } from '@capacitor/push-notifications'
+import { FirebaseMessaging } from '@capacitor-firebase/messaging'
 
 // ── Pull-to-refresh threshold (px) ─────────────────────────────────────────
 const PTR_THRESHOLD = 72
@@ -117,7 +119,6 @@ export function AppLayout({ children, fullBleed = false }: { children: React.Rea
     
     // ── Push Notifications ──
     if (isNative) {
-      // Create channels for Android 8+
       PushNotifications.createChannel({
         id: 'messages',
         name: 'Messages',
@@ -136,19 +137,24 @@ export function AppLayout({ children, fullBleed = false }: { children: React.Rea
         vibration: true,
       }).catch(e => console.error('Failed to create calls channel:', e))
 
-      PushNotifications.requestPermissions().then(result => {
+      // Use FirebaseMessaging for correct FCM tokens on iOS & Android
+      FirebaseMessaging.requestPermissions().then(result => {
         if (result.receive === 'granted') {
-          PushNotifications.register()
+          FirebaseMessaging.getToken().then(({ token }) => {
+            console.log('Firebase Push token:', token)
+            supabase.from('profiles').update({ fcm_token: token }).eq('id', currentUser.id)
+          }).catch(e => console.error('Token fetch failed:', e))
         }
       })
 
-      PushNotifications.addListener('registration', async (token) => {
-        console.log('Push token:', token.value)
-        await supabase.from('profiles').update({ fcm_token: token.value }).eq('id', currentUser.id)
+      // Listener for token refreshes
+      FirebaseMessaging.addListener('tokenReceived', async (event) => {
+        console.log('Push token refresh:', event.token)
+        await supabase.from('profiles').update({ fcm_token: event.token }).eq('id', currentUser.id)
       })
 
-      PushNotifications.addListener('pushNotificationReceived', (notification) => {
-        console.log('Push received:', notification)
+      FirebaseMessaging.addListener('notificationReceived', (event) => {
+        console.log('Push received:', event.notification)
         fetchUnread()
       })
     }
