@@ -346,7 +346,7 @@ function ProfileContent() {
         </div>
       )}
 
-      {/* Mobile Profile Header — Threads style */}
+      {/* Mobile Profile Header — JPM style */}
       <div className="sm:hidden sticky top-0 z-30 bg-white dark:bg-black border-b border-zinc-100 dark:border-zinc-900 pt-[env(safe-area-inset-top)]">
         <div className="flex items-center justify-between px-4 h-14">
           {/* Analytics / insights icon top-left - Only for owner */}
@@ -637,7 +637,7 @@ function ProfileContent() {
       )}
 
 
-      {/* ── Content Tabs — Threads style ── */}
+      {/* ── Content Tabs — JPM style ── */}
       <div className="border-t border-zinc-100 dark:border-zinc-900 mt-2">
         <div className="flex border-b border-zinc-100 dark:border-zinc-900 overflow-x-auto hide-scrollbar">
           {(isOwner 
@@ -653,7 +653,7 @@ function ProfileContent() {
                   : 'text-zinc-400 dark:text-zinc-500 hover:text-zinc-600 dark:hover:text-zinc-300'
               }`}
             >
-              {tab === 'posts' ? 'Threads' : tab.charAt(0).toUpperCase() + tab.slice(1)}
+              {tab === 'posts' ? 'JPM' : tab.charAt(0).toUpperCase() + tab.slice(1)}
               {activeTab === tab && (
                 <span className="absolute bottom-0 left-1/2 -translate-x-1/2 w-10 h-[2px] bg-black dark:bg-white rounded-full" />
               )}
@@ -679,13 +679,13 @@ function ProfileContent() {
               if (activeTab === 'archive') return post.is_archived && !post.is_repost && !post.is_liked_tab
               if (activeTab === 'media')   return !post.is_repost && !post.is_liked_tab && !post.is_archived && (post.image_url || (post.image_urls && post.image_urls.length > 0))
               if (activeTab === 'replies') return !post.is_repost && !post.is_liked_tab && !post.is_archived && post.parent_id
-              return !post.is_repost && !post.is_archived && !post.is_liked_tab // 'posts' (Threads) tab
+              return !post.is_repost && !post.is_archived && !post.is_liked_tab // 'posts' (JPM) tab
             })
 
             return (
               <>
                 {filteredPosts.map((post: any) => <Post key={`${post.id}-${post.is_repost}`} post={post} />)}
-                {filteredPosts.length === 0 && <div className="p-8 text-center text-zinc-400 text-sm">No {activeTab === 'posts' ? 'threads' : activeTab} yet.</div>}
+                {filteredPosts.length === 0 && <div className="p-8 text-center text-zinc-400 text-sm">No {tab === 'posts' ? 'jpm' : tab} yet.</div>}
               </>
             )
           })()}

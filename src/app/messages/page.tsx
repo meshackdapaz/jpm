@@ -22,6 +22,12 @@ import {
   EllipsisHorizontalIcon,
   XMarkIcon,
   CheckIcon,
+  BellSlashIcon,
+  NoSymbolIcon,
+  HandRaisedIcon,
+  ExclamationTriangleIcon,
+  Square2StackIcon,
+  Bars3Icon,
 } from '@heroicons/react/24/outline'
 import { useAuth } from '@/components/AuthProvider'
 import { useCall } from '@/components/CallProvider'
@@ -122,6 +128,8 @@ function MessagesContent() {
   const [recording, setRecording] = useState(false)
   const mediaRecorderRef = useRef<MediaRecorder | null>(null)
   const audioChunksRef = useRef<Blob[]>([])
+  const [showOptions, setShowOptions] = useState(false)
+  const [selectedFollowers, setSelectedFollowers] = useState(0)
 
   const bottomRef = useRef<HTMLDivElement>(null)
   const inputRef  = useRef<HTMLInputElement>(null)
@@ -311,6 +319,25 @@ function MessagesContent() {
       setMessages([]) // Clear old messages so skeleton is obvious
       fetchMessages()
       checkRequestStatus(selected.id)
+      
+      // Fetch follower count (excluding people YOU follow, per user request)
+      supabase
+        .from('follows')
+        .select('follower_id')
+        .eq('following_id', selected.id)
+        .then(async ({ data: followersData }) => {
+          if (!followersData) { setSelectedFollowers(0); return }
+          
+          // Get IDs of people I follow
+          const { data: myFollows } = await supabase
+            .from('follows')
+            .select('following_id')
+            .eq('follower_id', user.id)
+          
+          const myFollowedIds = new Set(myFollows?.map(f => f.following_id) || [])
+          const filteredCount = followersData.filter(f => !myFollowedIds.has(f.follower_id)).length
+          setSelectedFollowers(filteredCount)
+        })
     }
   }, [selected, user])
 
@@ -480,6 +507,10 @@ function MessagesContent() {
 
   // ── Voice note recording ─────────────────────────────────────────────────
   const startRecording = async () => {
+    if (recording) {
+      stopAndSendVoiceNote()
+      return
+    }
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
       const mr = new MediaRecorder(stream, { mimeType: MediaRecorder.isTypeSupported('audio/webm') ? 'audio/webm' : 'audio/mp4' })
@@ -488,6 +519,7 @@ function MessagesContent() {
       mr.start(100)
       mediaRecorderRef.current = mr
       setRecording(true)
+      triggerHaptic(ImpactStyle.Medium)
     } catch (e) {
       console.error('[Voice] Mic access denied:', e)
     }
@@ -733,7 +765,7 @@ function MessagesContent() {
           {selected ? (
             <>
               {/* Chat header */}
-              <div className="flex-none flex items-center gap-3 px-3 pb-2 min-h-[64px] border-b border-zinc-100 dark:border-zinc-900 bg-white dark:bg-black" style={{ paddingTop: 'calc(env(safe-area-inset-top) + 0.25rem)' }}>
+              <div className="flex-none flex items-center gap-3 px-3 pb-2 min-h-[64px] border-b border-zinc-100 dark:border-zinc-900 bg-white/80 dark:bg-black/80 backdrop-blur-md sticky top-0 z-20" style={{ paddingTop: 'calc(env(safe-area-inset-top) + 0.25rem)' }}>
                 <button onClick={() => setSelected(null)} className="sm:hidden w-9 h-9 flex items-center justify-center rounded-full hover:bg-zinc-100 dark:hover:bg-zinc-900 transition-colors flex-none">
                   <ChevronLeftIcon className="w-5 h-5" />
                 </button>
@@ -751,14 +783,23 @@ function MessagesContent() {
                 </Link>
                 {/* Audio call button — only show when messaging is allowed */}
                 {requestStatus === 'allowed' && (
-                  <button
-                    onClick={() => startCall(selected.id, selected.full_name, selected.avatar_url || null)}
-                    disabled={callState !== 'idle'}
-                    className="flex-none w-9 h-9 flex items-center justify-center rounded-full hover:bg-zinc-100 dark:hover:bg-zinc-900 transition-colors disabled:opacity-40"
-                    aria-label="Start audio call"
-                  >
-                    <PhoneIcon className="w-5 h-5" />
-                  </button>
+                  <div className="flex items-center gap-1.5 flex-none">
+                    <button
+                      onClick={() => startCall(selected.id, selected.full_name, selected.avatar_url || null)}
+                      disabled={callState !== 'idle'}
+                      className="w-10 h-10 flex items-center justify-center rounded-full hover:bg-zinc-100 dark:hover:bg-zinc-900 transition-colors disabled:opacity-40"
+                      aria-label="Start audio call"
+                    >
+                      <PhoneIcon className="w-5 h-5" />
+                    </button>
+                    <button
+                      onClick={() => setShowOptions(true)}
+                      className="w-10 h-10 flex items-center justify-center rounded-full hover:bg-zinc-100 dark:hover:bg-zinc-900 transition-colors"
+                      aria-label="Options"
+                    >
+                      <Bars3Icon className="w-6 h-6" />
+                    </button>
+                  </div>
                 )}
               </div>
 
@@ -809,6 +850,27 @@ function MessagesContent() {
                     <p className="text-[13px] text-center max-w-[240px] text-zinc-400 leading-relaxed">
                       🔒 End-to-end encrypted. Only you two can read these.
                     </p>
+                  </div>
+                )}
+
+                {/* ── Chat Profile Header (Visible when messages exist or while loading) ── */}
+                {!loadingMessages && messages.length > 0 && (
+                  <div className="flex flex-col items-center justify-center py-10 px-6 border-b border-zinc-50 dark:border-zinc-900/40 mb-2">
+                    <Link href={`/profile?id=${selected.id}`} className="block relative mb-4 active:scale-95 transition-transform">
+                      <div className="w-24 h-24 rounded-full overflow-hidden border-2 border-zinc-100 dark:border-zinc-800">
+                        <Avatar profile={selected} size={96} />
+                      </div>
+                    </Link>
+                    <div className="text-center">
+                      <h2 className="text-[20px] font-black">{selected.full_name}</h2>
+                      <p className="text-[13px] text-zinc-400 mb-2">@{selected.username}</p>
+                      <p className="text-[13px] text-zinc-500 font-medium">
+                        <span className="font-bold text-zinc-700 dark:text-zinc-300">{selectedFollowers}</span> followers
+                      </p>
+                      <p className="text-[12px] text-zinc-400 mt-4 leading-relaxed">
+                        You're both on JPM
+                      </p>
+                    </div>
                   </div>
                 )}
 
@@ -964,15 +1026,13 @@ function MessagesContent() {
                     {!input.trim() && (
                       <button
                         type="button"
-                        onPointerDown={startRecording}
-                        onPointerUp={stopAndSendVoiceNote}
-                        onPointerLeave={stopAndSendVoiceNote}
+                        onClick={startRecording}
                         className={`p-2 transition-colors ${
                           recording
                             ? 'text-red-500 animate-record'
                             : 'text-zinc-400 dark:text-zinc-500 hover:text-blue-600'
                         }`}
-                        aria-label="Hold to record voice note"
+                        aria-label="Tap to record voice note"
                       >
                         <MicrophoneIcon className="w-6 h-6" />
                       </button>
@@ -1052,7 +1112,80 @@ function MessagesContent() {
               </div>
             </div>
           )}
+
+          {/* Options Popup (Bottom Sheet) */}
+          {showOptions && selected && (
+            <div className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center p-0 sm:p-4">
+              <div 
+                className="absolute inset-0 bg-black/40 backdrop-blur-sm transition-opacity"
+                onClick={() => setShowOptions(false)}
+              />
+              <div className="relative w-full max-w-sm bg-white dark:bg-zinc-900 rounded-t-[24px] sm:rounded-[24px] shadow-2xl overflow-hidden animate-in slide-in-from-bottom-full duration-300">
+                {/* Handle for mobile */}
+                <div className="sm:hidden flex justify-center py-3">
+                  <div className="w-10 h-1 bg-zinc-200 dark:bg-zinc-800 rounded-full" />
+                </div>
+                
+                <div className="px-4 pb-4 sm:pt-4">
+                  <div className="flex flex-col gap-1 mb-4 sm:mb-6">
+                    <div className="flex justify-center mb-2">
+                      <Avatar profile={selected} size={56} />
+                    </div>
+                    <p className="text-center font-bold text-[17px]">{selected.full_name}</p>
+                    <p className="text-center text-[13px] text-zinc-400">@{selected.username}</p>
+                  </div>
+
+                  <div className="space-y-1">
+                    <button className="w-full flex items-center gap-3 px-4 py-3.5 rounded-xl hover:bg-zinc-50 dark:hover:bg-zinc-800/50 transition-colors text-left group">
+                      <div className="p-2 bg-zinc-100 dark:bg-zinc-800 rounded-lg group-hover:bg-white dark:group-hover:bg-zinc-700 transition-colors">
+                        <Square2StackIcon className="w-5 h-5" />
+                      </div>
+                      <span className="font-semibold text-[15px]">Shared content</span>
+                    </button>
+                    
+                    <button className="w-full flex items-center gap-3 px-4 py-3.5 rounded-xl hover:bg-zinc-50 dark:hover:bg-zinc-800/50 transition-colors text-left group">
+                      <div className="p-2 bg-zinc-100 dark:bg-zinc-800 rounded-lg group-hover:bg-white dark:group-hover:bg-zinc-700 transition-colors">
+                        <BellSlashIcon className="w-5 h-5" />
+                      </div>
+                      <span className="font-semibold text-[15px]">Mute</span>
+                    </button>
+
+                    <button className="w-full flex items-center gap-3 px-4 py-3.5 rounded-xl hover:bg-zinc-50 dark:hover:bg-zinc-800/50 transition-colors text-left group">
+                      <div className="p-2 bg-zinc-100 dark:bg-zinc-800 rounded-lg group-hover:bg-white dark:group-hover:bg-zinc-700 transition-colors">
+                        <NoSymbolIcon className="w-5 h-5" />
+                      </div>
+                      <span className="font-semibold text-[15px]">Restrict</span>
+                    </button>
+
+                    <div className="h-[1px] bg-zinc-100 dark:bg-zinc-800 my-2" />
+
+                    <button className="w-full flex items-center gap-3 px-4 py-3.5 rounded-xl hover:bg-red-50 dark:hover:bg-red-900/10 transition-colors text-left group text-red-500">
+                      <div className="p-2 bg-red-50 dark:bg-red-900/20 rounded-lg group-hover:bg-white dark:group-hover:bg-red-900/30 transition-colors">
+                        <HandRaisedIcon className="w-5 h-5" />
+                      </div>
+                      <span className="font-bold text-[15px]">Block</span>
+                    </button>
+
+                    <button className="w-full flex items-center gap-3 px-4 py-3.5 rounded-xl hover:bg-red-50 dark:hover:bg-red-900/10 transition-colors text-left group text-red-500">
+                      <div className="p-2 bg-red-50 dark:bg-red-900/20 rounded-lg group-hover:bg-white dark:group-hover:bg-red-900/30 transition-colors">
+                        <ExclamationTriangleIcon className="w-5 h-5" />
+                      </div>
+                      <span className="font-bold text-[15px]">Report</span>
+                    </button>
+                  </div>
+
+                  <button 
+                    onClick={() => setShowOptions(false)}
+                    className="w-full mt-4 py-3.5 bg-zinc-100 dark:bg-zinc-800 rounded-xl font-bold text-[15px] active:scale-[0.98] transition-all"
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
+
 
       </div>
     </AppLayout>

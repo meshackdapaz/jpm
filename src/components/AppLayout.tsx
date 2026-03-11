@@ -647,7 +647,7 @@ export function AppLayout({ children, fullBleed = false }: { children: React.Rea
               <button onClick={() => setIsPostModalOpen(false)} className="text-zinc-500 font-semibold text-[15px]">
                 Cancel
               </button>
-              <h2 className="font-bold text-[16px]">New thread</h2>
+              <h2 className="font-bold text-[16px]">New jpm</h2>
               <div className="w-14" />
             </div>
             <CreatePost inModal={true} onSuccess={() => setIsPostModalOpen(false)} />

@@ -204,7 +204,7 @@ export function CreatePost({ inModal = false, onSuccess }: { inModal?: boolean, 
     setLoading(false)
   }
 
-  // ── Threads-style render ──────────────────────────────────────────────────────
+  // ── JPM-style render ──────────────────────────────────────────────────────
   return (
     <div className="flex flex-col">
       <form onSubmit={handleSubmit} className="flex flex-col">
@@ -212,7 +212,7 @@ export function CreatePost({ inModal = false, onSuccess }: { inModal?: boolean, 
         {/* ── Main composer row ── */}
         <div className="flex gap-3 px-4 pt-4 pb-2">
 
-          {/* Left: avatar + thread line */}
+          {/* Left: avatar + jpm line */}
           <div className="flex flex-col items-center flex-none" style={{ width: 40 }}>
             <div className="w-10 h-10 rounded-full bg-zinc-200 dark:bg-zinc-800 overflow-hidden">
               {currentProfile?.avatar_url ? (
@@ -313,14 +313,14 @@ export function CreatePost({ inModal = false, onSuccess }: { inModal?: boolean, 
           </div>
         </div>
 
-        {/* ── "Add to thread" row ── */}
+        {/* ── "Add to jpm" row ── */}
         <div className="flex gap-3 px-4 py-2 items-center">
           <div className="flex-none flex justify-center" style={{ width: 40 }}>
             <div className="w-6 h-6 rounded-full bg-zinc-200 dark:bg-zinc-700 overflow-hidden opacity-50">
               {currentProfile?.avatar_url && <Image src={currentProfile.avatar_url} alt="" width={24} height={24} className="w-full h-full object-cover" unoptimized />}
             </div>
           </div>
-          <span className="text-[14px] text-zinc-400">Add to thread</span>
+          <span className="text-[14px] text-zinc-400">Add to jpm</span>
         </div>
 
         <input type="file" hidden ref={fileInputRef} accept="image/*" multiple onChange={handleImageChange} />
