@@ -94,6 +94,7 @@ function MessagesContent() {
   const [selected, setSelected] = useState<any>(null)
   const [messages, setMessages] = useState<any[]>([])
   const [loadingMessages, setLoadingMessages] = useState(false)
+  const [loadingConvos, setLoadingConvos] = useState(true)
   const [input, setInput] = useState('')
   const [search, setSearch] = useState('')
   const [sending, setSending] = useState(false)
@@ -142,7 +143,7 @@ function MessagesContent() {
       if (m.receiver_id === user.id && !m.is_read && !localSeenRefs.current.has(other))
         unread.set(other, (unread.get(other) || 0) + 1)
     }
-    if (!seen.size) { setConvos([]); return }
+    if (!seen.size) { setConvos([]); setLoadingConvos(false); return }
 
     const { data: profiles } = await supabase
       .from('profiles')
@@ -165,6 +166,7 @@ function MessagesContent() {
     list.sort((a: any, b: any) =>
       +new Date(b.lastMsg?.created_at || 0) - +new Date(a.lastMsg?.created_at || 0))
     setConvos(list)
+    setLoadingConvos(false)
   }, [user])
 
   // ── Fetch inbound pending message requests ─────────────────────────────────
@@ -648,7 +650,19 @@ function MessagesContent() {
           {/* ── INBOX TAB ── */}
           {activeTab === 'Inbox' && (
             <>
-              {filtered.length === 0 && (
+              {loadingConvos ? (
+                <div className="flex flex-col gap-4 px-4 py-6">
+                  {[1, 2, 3, 4, 5].map(i => (
+                    <div key={i} className="flex items-center gap-3 animate-pulse">
+                      <div className="w-[52px] h-[52px] rounded-full bg-zinc-200 dark:bg-zinc-800 flex-none" />
+                      <div className="flex-1 space-y-2">
+                        <div className="h-3.5 bg-zinc-200 dark:bg-zinc-800 rounded w-1/3" />
+                        <div className="h-3 bg-zinc-200 dark:bg-zinc-800 rounded w-2/3" />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : filtered.length === 0 && (
                 <div className="flex flex-col items-center justify-center flex-grow gap-4 px-8 py-16 text-center">
                   <div className="w-16 h-16 rounded-full bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center mb-1">
                     <ChatBubbleLeftRightIcon className="w-8 h-8 text-zinc-400" />
