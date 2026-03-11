@@ -513,7 +513,10 @@ function MessagesContent() {
     }
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
-      const mr = new MediaRecorder(stream, { mimeType: MediaRecorder.isTypeSupported('audio/webm') ? 'audio/webm' : 'audio/mp4' })
+      // iOS Safari supports audio/mp4; Android Chrome supports audio/webm
+      const preferredTypes = ['audio/mp4', 'audio/aac', 'audio/webm;codecs=opus', 'audio/webm', 'audio/ogg']
+      const mimeType = preferredTypes.find(t => MediaRecorder.isTypeSupported(t)) || ''
+      const mr = new MediaRecorder(stream, mimeType ? { mimeType } : {})
       audioChunksRef.current = []
       mr.ondataavailable = (e) => { if (e.data.size > 0) audioChunksRef.current.push(e.data) }
       mr.start(100)
@@ -535,12 +538,15 @@ function MessagesContent() {
 
     await new Promise<void>(res => { mr.onstop = () => res() })
 
-    const blob = new Blob(audioChunksRef.current, { type: mr.mimeType })
+    const blob = new Blob(audioChunksRef.current, { type: mr.mimeType || 'audio/mp4' })
     if (blob.size < 1000) return
 
-    const ext = mr.mimeType.includes('webm') ? 'webm' : 'm4a'
+    // Determine extension from mimeType
+    const mt = (mr.mimeType || '').toLowerCase()
+    const ext = mt.includes('webm') ? 'webm' : mt.includes('ogg') ? 'ogg' : 'm4a'
     const path = `${user.id}/${Date.now()}.${ext}`
-    const { data: uploaded, error } = await supabase.storage.from('voice-notes').upload(path, blob, { contentType: mr.mimeType })
+    const uploadMime = mt || 'audio/mp4'
+    const { data: uploaded, error } = await supabase.storage.from('voice-notes').upload(path, blob, { contentType: uploadMime })
     if (error || !uploaded) { console.error('[Voice] Upload failed:', error); return }
 
     const { data: urlData } = supabase.storage.from('voice-notes').getPublicUrl(path)
