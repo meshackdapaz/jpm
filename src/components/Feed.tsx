@@ -13,7 +13,7 @@ import { InlineFeedAd } from './InlineFeedAd'
 
 // ── Skeleton ──────────────────────────────────────────────────────────────────
 
-function PostSkeleton() {
+export function PostSkeleton() {
   return (
     <div className="px-4 py-4 border-b border-zinc-100 dark:border-zinc-900 animate-pulse">
       <div className="flex gap-3">
