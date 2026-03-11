@@ -27,7 +27,7 @@ export function SplashScreen() {
         fadeOut ? 'opacity-0' : 'opacity-100'
       }`}
     >
-      <div className="font-black text-[64px] tracking-tighter text-white animate-pulse">Jpm</div>
+      <div className="font-black text-[72px] tracking-tighter text-white animate-pulse">JP</div>
     </div>
   )
 }

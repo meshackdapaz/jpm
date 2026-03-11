@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { ChevronRightIcon, ChevronLeftIcon, InformationCircleIcon } from '@heroicons/react/24/outline'
 import { createClient } from '@/lib/supabase/client'
 import { useAuth } from '@/components/AuthProvider'
+import { Post } from '@/components/Post'
 
 const TIME_RANGES = [
   { label: '7 days', value: 7 },
@@ -24,6 +25,7 @@ export default function InsightsPage() {
   const [interactions, setInteractions] = useState(0)
   const [followers, setFollowers] = useState(0)
   const [loading, setLoading] = useState(true)
+  const [topPosts, setTopPosts] = useState<any[]>([])
 
   const fetchData = useCallback(async () => {
     if (!user) return
@@ -35,12 +37,22 @@ export default function InsightsPage() {
     // 1. Fetch Views (Sum of view_count on posts created within date range)
     const { data: viewsData } = await supabase
       .from('posts')
-      .select('view_count')
+      .select('*, profiles:creator_id(id, full_name, username, avatar_url, is_verified, last_seen, settings), likes(count), comments(count), reposts(count)')
       .eq('creator_id', user.id)
       .gte('created_at', startDate)
+      .order('view_count', { ascending: false })
     
-    const totalViews = viewsData?.reduce((acc: number, post: any) => acc + (post.view_count || 0), 0) || 0
+    const posts = viewsData?.map(p => ({
+      ...p,
+      is_repost: false,
+      likes_count: p.likes?.[0]?.count || 0,
+      comments_count: p.comments?.[0]?.count || 0,
+      reposts_count: p.reposts?.[0]?.count || 0
+    })) || []
+    
+    const totalViews = posts.reduce((acc: number, post: any) => acc + (post.view_count || 0), 0) || 0
     setViews(totalViews)
+    setTopPosts(posts.slice(0, 5))
 
     // 2. Fetch Interactions (Likes + Comments + Reposts on user's posts within date range)
     // First get user's post IDs (even those created before, because interactions might happen now)
@@ -219,8 +231,14 @@ export default function InsightsPage() {
             <ChevronRightIcon className="w-5 h-5 text-zinc-400" />
           </div>
           
-          <div className="bg-white dark:bg-zinc-900/50 rounded-2xl py-3 px-4 text-center border border-zinc-200/50 dark:border-zinc-800/50">
-            <p className="text-zinc-400 text-sm font-medium">No posts in this period</p>
+          <div className="divide-y divide-zinc-200 dark:divide-zinc-800 border-t border-zinc-200 dark:border-zinc-800">
+            {topPosts.length === 0 ? (
+              <div className="bg-white dark:bg-zinc-900/50 rounded-2xl py-6 px-4 text-center border border-zinc-200/50 dark:border-zinc-800/50 mt-4">
+                <p className="text-zinc-400 text-sm font-medium">No posts in this period</p>
+              </div>
+            ) : (
+              topPosts.map(post => <Post key={`insight-${post.id}`} post={post} />)
+            )}
           </div>
         </div>
       </main>

@@ -33,9 +33,9 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-white dark:bg-black overflow-hidden relative">
+    <div className="min-h-screen flex flex-col items-center pt-[15vh] pb-24 bg-white dark:bg-black relative">
       {/* Decorative Background Rings */}
-      <div className="absolute inset-0 z-0 pointer-events-none select-none overflow-hidden">
+      <div className="absolute inset-0 z-0 pointer-events-none select-none overflow-hidden fixed">
         <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] border-[1.5px] border-black/10 dark:border-white/10 rounded-full">
           <div className="absolute inset-[10%] border-[1.5px] border-black/10 dark:border-white/10 rounded-full" />
         </div>
