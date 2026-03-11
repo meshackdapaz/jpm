@@ -6,7 +6,6 @@ import { createClient } from '@/lib/supabase/client'
 import { useAuth } from '@/components/AuthProvider'
 import { MagnifyingGlassIcon, ChevronLeftIcon } from '@heroicons/react/24/outline'
 import { VerifiedBadge } from '@/components/VerifiedBadge'
-import Image from 'next/image'
 import Link from 'next/link'
 import { Haptics, ImpactStyle } from '@capacitor/haptics'
 import { Capacitor } from '@capacitor/core'
@@ -76,6 +75,7 @@ export default function SearchPage() {
     fetchSuggestions(currentUser)
   }, [currentUser])
 
+
   useEffect(() => {
     async function performSearch() {
       if (searchQuery.trim().length < 2) {
@@ -134,29 +134,31 @@ export default function SearchPage() {
 
   return (
     <AppLayout>
-      <div className="w-full max-w-[100vw] overflow-x-hidden">
-        <div className="max-w-2xl mx-auto min-h-[100dvh] pb-20 sm:pb-0">
-          <div className="sticky top-0 sm:top-16 z-40 bg-white/90 dark:bg-black/90 backdrop-blur-md px-4 pb-4 pt-[calc(1.25rem+env(safe-area-inset-top))] w-full overflow-x-hidden">
-            <div className="flex items-center gap-2 mb-4">
+      <div className="max-w-2xl mx-auto w-full relative min-h-screen">
+        <div 
+          className="sticky top-0 z-30 bg-white dark:bg-black border-b border-zinc-100 dark:border-zinc-900 pt-[env(safe-area-inset-top)]"
+        >
+          <div className="px-4 pt-3 pb-3 flex items-center gap-2">
               <button onClick={() => window.history.back()} className="p-1 -ml-1 text-black dark:text-white">
                 <ChevronLeftIcon className="w-6 h-6" strokeWidth={2.5} />
               </button>
               <h1 className="text-[28px] font-black tracking-tight text-black dark:text-white">Search</h1>
             </div>
-            <div className="relative group w-full">
-              <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
-                <MagnifyingGlassIcon className="h-5 w-5 text-zinc-500 transition-colors" />
+            <div className="px-4 pb-3">
+              <div className="relative group w-full">
+                <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
+                  <MagnifyingGlassIcon className="h-5 w-5 text-zinc-500 transition-colors" />
+                </div>
+                <input
+                  type="text"
+                  placeholder="Search users..."
+                  className="block w-full bg-zinc-100 dark:bg-[#1c1c1e] border-none rounded-[10px] py-2 pl-[38px] pr-4 text-[16px] focus:outline-none transition-all m-0 appearance-none text-black dark:text-white placeholder-zinc-500"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                />
               </div>
-              <input
-                type="text"
-                placeholder="Search"
-                className="block w-full bg-zinc-100 dark:bg-[#1c1c1e] border-none rounded-[10px] py-2 pl-[38px] pr-4 text-[16px] focus:outline-none transition-all m-0 appearance-none text-black dark:text-white placeholder-zinc-500"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-              />
             </div>
           </div>
-        </div>
 
         {/* Search History Skeleton (Visible when not actively searching) */}
         {!isSearchMode && (
@@ -176,8 +178,8 @@ export default function SearchPage() {
           </div>
         )}
 
-        {/* Dynamic Display Logic based on your prompt (Suggest Users when empty, Search when typing) */}
-        <div className="px-4 py-4 border-t border-zinc-100 dark:border-zinc-900">
+
+        <div className="px-4 py-4">
           <h2 className="text-black dark:text-zinc-500 font-bold text-[16px] mb-4">
             {isSearchMode ? 'Search results' : 'Follow suggestions'}
           </h2>
@@ -186,14 +188,14 @@ export default function SearchPage() {
             {loading && !isSearchMode ? (
               <div className="p-8 text-center text-zinc-500">Loading suggestions...</div>
             ) : displayUsers.length === 0 ? (
-              <div className="p-8 text-center text-zinc-500">No users found.</div>
+              !isSearchMode && <div className="p-8 text-center text-zinc-500">No users found.</div>
             ) : (
               displayUsers.map(user => (
                 <div key={user.id} className="py-4 flex items-start justify-between group">
                   <Link href={`/profile?id=${user.id}`} className="flex items-start gap-4 overflow-hidden flex-grow">
                     <div className="w-12 h-12 rounded-full overflow-hidden relative border border-zinc-100 dark:border-zinc-800 flex-shrink-0">
                       {user.avatar_url ? (
-                        <Image src={user.avatar_url} alt={user.username} fill className="object-cover" />
+                        <img src={user.avatar_url} alt={user.username || 'user'} className="w-full h-full object-cover" />
                       ) : (
                         <div className="w-full h-full flex items-center justify-center bg-zinc-200 dark:bg-zinc-800 font-bold text-zinc-500">
                           {user.full_name?.[0] || 'U'}
@@ -234,6 +236,9 @@ export default function SearchPage() {
             )}
           </div>
         </div>
+
+        {/* Bottom spacer for mobile nav */}
+        <div className="h-28 sm:h-8" style={{ paddingBottom: 'env(safe-area-inset-bottom)' }} />
       </div>
     </AppLayout>
   )
