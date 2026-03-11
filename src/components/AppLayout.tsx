@@ -41,6 +41,7 @@ import { ToastNotification } from './ToastNotification'
 import { App } from '@capacitor/app'
 import { PushNotifications } from '@capacitor/push-notifications'
 import { FirebaseMessaging } from '@capacitor-firebase/messaging'
+import { Haptics, ImpactStyle } from '@capacitor/haptics'
 
 // ── Pull-to-refresh threshold (px) ─────────────────────────────────────────
 const PTR_THRESHOLD = 72
@@ -248,6 +249,7 @@ export function AppLayout({ children, fullBleed = false }: { children: React.Rea
     if (!isPulling.current) return
     isPulling.current = false
     if (ptrPull >= PTR_THRESHOLD && !ptrRefreshing) {
+      if (isNative) Haptics.impact({ style: ImpactStyle.Medium })
       setPtrRefreshing(true)
       setPtrPull(PTR_THRESHOLD)
 
@@ -511,8 +513,10 @@ export function AppLayout({ children, fullBleed = false }: { children: React.Rea
               </div>
             )
 
-            if (tab.action) return <button key={tab.name} onClick={tab.action} className="flex-1 h-full">{iconEl}</button>
-            return <Link key={tab.name} href={tab.href as string} className="flex-1 h-full">{iconEl}</Link>
+            const triggerHaptic = () => { if (isNative) Haptics.impact({ style: ImpactStyle.Light }) }
+
+            if (tab.action) return <button key={tab.name} onClick={(e) => { triggerHaptic(); tab.action?.() }} className="flex-1 h-full">{iconEl}</button>
+            return <Link key={tab.name} href={tab.href as string} onClick={triggerHaptic} className="flex-1 h-full">{iconEl}</Link>
           })}
         </div>
       </nav>

@@ -8,7 +8,14 @@ import { MagnifyingGlassIcon, ChevronLeftIcon } from '@heroicons/react/24/outlin
 import { VerifiedBadge } from '@/components/VerifiedBadge'
 import Image from 'next/image'
 import Link from 'next/link'
+import { Haptics, ImpactStyle } from '@capacitor/haptics'
+import { Capacitor } from '@capacitor/core'
 
+const triggerHaptic = (style = ImpactStyle.Light) => {
+  if (Capacitor.isNativePlatform()) {
+    Haptics.impact({ style }).catch(() => {})
+  }
+}
 export default function SearchPage() {
   const [suggestedUsers, setSuggestedUsers] = useState<any[]>([])
   const [searchQuery, setSearchQuery] = useState('')
@@ -108,6 +115,7 @@ export default function SearchPage() {
   const handleFollow = async (e: React.MouseEvent, targetId: string) => {
     e.preventDefault()
     if (!currentUser) return alert('Please login to follow')
+    triggerHaptic(ImpactStyle.Medium)
     
     const { error } = await supabase.from('follows').insert({ follower_id: currentUser.id, following_id: targetId })
     if (!error) {

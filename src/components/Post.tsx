@@ -19,6 +19,14 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useAuth } from './AuthProvider'
+import { Haptics, ImpactStyle } from '@capacitor/haptics'
+import { Capacitor } from '@capacitor/core'
+
+const triggerHaptic = (style = ImpactStyle.Light) => {
+  if (Capacitor.isNativePlatform()) {
+    Haptics.impact({ style }).catch(() => {})
+  }
+}
 
 function formatRelativeTime(dateString: string) {
   const now = new Date()
@@ -60,11 +68,13 @@ export function Post({ post }: { post: any }) {
 
   const handleNextImage = (e: React.MouseEvent) => {
     e.stopPropagation()
+    triggerHaptic(ImpactStyle.Light)
     setImageIndex((prev) => (prev + 1) % images.length)
   }
 
   const handlePrevImage = (e: React.MouseEvent) => {
     e.stopPropagation()
+    triggerHaptic(ImpactStyle.Light)
     setImageIndex((prev) => (prev - 1 + images.length) % images.length)
   }
 
@@ -151,6 +161,7 @@ export function Post({ post }: { post: any }) {
 
   const handleLike = async (e: React.MouseEvent) => {
     e.stopPropagation()
+    triggerHaptic(isLiked ? ImpactStyle.Light : ImpactStyle.Medium)
     handleReaction('like')
   }
 
@@ -166,6 +177,7 @@ export function Post({ post }: { post: any }) {
   const handleRepost = async (e: React.MouseEvent) => {
     e.stopPropagation()
     if (!currentUser) return alert('Please login to repost')
+    triggerHaptic(isReposted ? ImpactStyle.Light : ImpactStyle.Medium)
 
     try {
       if (isReposted) {

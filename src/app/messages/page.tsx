@@ -28,6 +28,14 @@ import { useCall } from '@/components/CallProvider'
 import { VoiceNote } from '@/components/VoiceNote'
 import Image from 'next/image'
 import Link from 'next/link'
+import { Haptics, ImpactStyle } from '@capacitor/haptics'
+import { Capacitor } from '@capacitor/core'
+
+const triggerHaptic = (style = ImpactStyle.Light) => {
+  if (Capacitor.isNativePlatform()) {
+    Haptics.impact({ style }).catch(() => {})
+  }
+}
 
 const INSFORGE_PUSH_URL = `${process.env.NEXT_PUBLIC_INSFORGE_URL}/functions/send-push`
 const INSFORGE_ANON_KEY  = process.env.NEXT_PUBLIC_INSFORGE_ANON_KEY
@@ -385,6 +393,7 @@ function MessagesContent() {
     const text = input.trim()
     setInput('')
     inputRef.current?.focus()
+    triggerHaptic(ImpactStyle.Light)
     
     if ((window as any).typingChannel) {
       void (window as any).typingChannel.track({ user: user.id, typing: false })
