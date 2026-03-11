@@ -13,21 +13,7 @@ import { Capacitor } from '@capacitor/core'
 import { Post } from '@/components/Post'
 import { PostSkeleton } from '@/components/Feed'
 
-const POST_SEL = `
-  id,
-  content,
-  image_url,
-  image_urls,
-  created_at,
-  creator_id,
-  likes_count,
-  comments_count,
-  reposts_count,
-  view_count,
-  hide_counts,
-  is_archived,
-  profiles ( id, username, full_name, avatar_url, is_verified )
-`
+const POST_SEL = `id, content, image_url, image_urls, title, created_at, creator_id, view_count, hide_counts, is_archived, profiles:creator_id(id, full_name, username, avatar_url, is_verified, last_seen, settings), likes(count), comments(count), reposts(count)`
 
 const triggerHaptic = (style = ImpactStyle.Light) => {
   if (Capacitor.isNativePlatform()) {
@@ -47,7 +33,7 @@ export default function SearchPage() {
     async function fetchExplorePosts() {
       const currentUserId = currentUser?.id
 
-      const [{ data: pd }, { data: md }, { data: ld }] = await Promise.all([
+      const [{ data: pd, error }, { data: md }, { data: ld }] = await Promise.all([
         supabase.from('posts').select(POST_SEL).order('created_at', { ascending: false }).limit(20),
         currentUserId
           ? supabase.from('reposts').select('post_id').eq('user_id', currentUserId)
@@ -56,6 +42,10 @@ export default function SearchPage() {
           ? supabase.from('likes').select('post_id, reaction_type').eq('user_id', currentUserId)
           : Promise.resolve({ data: [] }),
       ])
+      
+      if (error) {
+        console.error("Explore feed fetch error:", error)
+      }
 
       const myReposts = new Set((md || []).map((r: any) => r.post_id))
       const myLikes = ld || []
