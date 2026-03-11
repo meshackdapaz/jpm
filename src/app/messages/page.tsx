@@ -325,11 +325,11 @@ function MessagesContent() {
         .from('follows')
         .select('follower_id')
         .eq('following_id', selected.id)
-        .then(async ({ data: followersData }) => {
+        .then(async ({ data: followersData }: { data: any[] | null }) => {
           if (!followersData) { setSelectedFollowers(0); return }
           
           // Get IDs of people I follow
-          const { data: myFollows } = await supabase
+          const { data: myFollows }: { data: any[] | null } = await supabase
             .from('follows')
             .select('following_id')
             .eq('follower_id', user.id)
