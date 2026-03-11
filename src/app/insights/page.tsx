@@ -42,7 +42,7 @@ export default function InsightsPage() {
       .gte('created_at', startDate)
       .order('view_count', { ascending: false })
     
-    const posts = viewsData?.map(p => ({
+    const posts = viewsData?.map((p: any) => ({
       ...p,
       is_repost: false,
       likes_count: p.likes?.[0]?.count || 0,
