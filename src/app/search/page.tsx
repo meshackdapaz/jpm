@@ -4,7 +4,7 @@ import React, { useEffect, useState } from 'react'
 import { AppLayout } from '@/components/AppLayout'
 import { createClient } from '@/lib/supabase/client'
 import { useAuth } from '@/components/AuthProvider'
-import { MagnifyingGlassIcon } from '@heroicons/react/24/outline'
+import { MagnifyingGlassIcon, ChevronLeftIcon } from '@heroicons/react/24/outline'
 import { VerifiedBadge } from '@/components/VerifiedBadge'
 import Image from 'next/image'
 import Link from 'next/link'
@@ -125,16 +125,21 @@ export default function SearchPage() {
     <AppLayout>
       <div className="w-full max-w-[100vw] overflow-x-hidden">
         <div className="max-w-2xl mx-auto min-h-[100dvh] pb-20 sm:pb-0">
-          <div className="sticky top-0 sm:top-16 z-40 bg-white/90 dark:bg-[#101010]/90 backdrop-blur-md px-4 pb-4 pt-[calc(1rem+env(safe-area-inset-top))] border-b border-zinc-200 dark:border-zinc-800 w-full overflow-x-hidden">
-            <h1 className="text-xl font-bold text-center mb-4">Search</h1>
+          <div className="sticky top-0 sm:top-16 z-40 bg-white/90 dark:bg-black/90 backdrop-blur-md px-4 pb-4 pt-[calc(1.25rem+env(safe-area-inset-top))] w-full overflow-x-hidden">
+            <div className="flex items-center gap-2 mb-4">
+              <button onClick={() => window.history.back()} className="p-1 -ml-1 text-black dark:text-white">
+                <ChevronLeftIcon className="w-6 h-6" strokeWidth={2.5} />
+              </button>
+              <h1 className="text-[28px] font-black tracking-tight text-black dark:text-white">Search</h1>
+            </div>
             <div className="relative group w-full">
-              <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                <MagnifyingGlassIcon className="h-5 w-5 text-zinc-500 group-focus-within:text-blue-500 transition-colors" />
+              <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
+                <MagnifyingGlassIcon className="h-5 w-5 text-zinc-500 transition-colors" />
               </div>
               <input
                 type="text"
-                placeholder="Search JPM Users..."
-                className="block w-full bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl py-3 pl-12 pr-4 text-[16px] focus:ring-2 focus:ring-blue-500 outline-none transition-all m-0 appearance-none"
+                placeholder="Search"
+                className="block w-full bg-zinc-100 dark:bg-[#1c1c1e] border-none rounded-[10px] py-2 pl-[38px] pr-4 text-[16px] focus:outline-none transition-all m-0 appearance-none text-black dark:text-white placeholder-zinc-500"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
               />
@@ -143,7 +148,7 @@ export default function SearchPage() {
         </div>
 
         <div className="px-4 py-4">
-          <h2 className="text-zinc-500 font-bold mb-4">
+          <h2 className="text-black dark:text-zinc-500 font-bold text-[16px] mb-4">
             {isSearchMode ? 'Search results' : 'Follow suggestions'}
           </h2>
 
@@ -166,18 +171,14 @@ export default function SearchPage() {
                       )}
                     </div>
                     <div className="flex-grow min-w-0 pr-4">
-                      <div className="font-bold text-base truncate flex items-center gap-1 group-hover:underline">
-                        {user.full_name || user.username}
+                      <div className="font-bold text-[16px] truncate flex items-center gap-1 group-hover:underline text-black dark:text-white">
+                        {user.username}
                         {user.is_verified && <VerifiedBadge className="w-4 h-4" />}
                       </div>
-                      <div className="text-zinc-500 text-sm truncate mb-1">@{user.username}</div>
-                      {user.bio && (
-                        <div className="text-zinc-700 dark:text-zinc-300 text-sm line-clamp-2 mt-1">
-                          {user.bio}
-                        </div>
-                      )}
-                      {/* Real followers count mimicking Threads styling */}
-                      <div className="text-zinc-500 text-xs mt-2">
+                      <div className="text-zinc-500 text-[15px] truncate mb-0.5 mt-[-2px]">
+                        {user.full_name || user.username}
+                      </div>
+                      <div className="text-black dark:text-white font-medium text-[14px] mt-1.5">
                         {user.follower_count >= 1000 
                           ? `${(user.follower_count / 1000).toFixed(1)}K` 
                           : user.follower_count} followers
@@ -188,7 +189,7 @@ export default function SearchPage() {
                   {!user.isFollowedLocally && currentUser?.id !== user.id && (
                     <button
                       onClick={(e) => handleFollow(e, user.id)}
-                      className="bg-black dark:bg-white text-white dark:text-black hover:bg-zinc-800 dark:hover:bg-zinc-200 text-sm font-bold py-1.5 px-6 rounded-xl transition-colors flex-shrink-0 border border-zinc-200 dark:border-zinc-800"
+                      className="bg-black dark:bg-white text-white dark:text-black hover:bg-zinc-800 dark:hover:bg-zinc-200 text-[15px] font-bold py-1.5 px-6 rounded-[10px] transition-colors flex-shrink-0"
                     >
                       Follow
                     </button>
