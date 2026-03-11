@@ -147,12 +147,17 @@ export default function SearchPage() {
             <div className="px-4 pb-3">
               <div className="relative group w-full">
                 <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
-                  <MagnifyingGlassIcon className="h-5 w-5 text-zinc-500 transition-colors" />
+                  <MagnifyingGlassIcon className={`h-5 w-5 text-zinc-500 transition-colors ${loading && isSearchMode ? 'opacity-0' : 'opacity-100'}`} />
                 </div>
+                {loading && isSearchMode && (
+                  <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
+                    <div className="h-4 w-4 border-2 border-zinc-500 border-t-transparent rounded-full animate-spin" />
+                  </div>
+                )}
                 <input
                   type="text"
-                  placeholder="Search users..."
-                  className="block w-full bg-zinc-100 dark:bg-[#1c1c1e] border-none rounded-[10px] py-2 pl-[38px] pr-4 text-[16px] focus:outline-none transition-all m-0 appearance-none text-black dark:text-white placeholder-zinc-500"
+                  placeholder="Search"
+                  className="block w-full bg-zinc-100 dark:bg-[#1c1c1e] border-none rounded-[10px] py-1.5 pl-[38px] pr-4 text-[16px] focus:outline-none transition-all m-0 appearance-none text-black dark:text-white placeholder-zinc-500"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                 />
@@ -184,15 +189,15 @@ export default function SearchPage() {
             {isSearchMode ? 'Search results' : 'Follow suggestions'}
           </h2>
 
-          <div className="divide-y divide-zinc-200 dark:divide-zinc-800">
+          <div className="space-y-1">
             {loading && !isSearchMode ? (
               <div className="p-8 text-center text-zinc-500">Loading suggestions...</div>
             ) : displayUsers.length === 0 ? (
               !isSearchMode && <div className="p-8 text-center text-zinc-500">No users found.</div>
             ) : (
               displayUsers.map(user => (
-                <div key={user.id} className="py-4 flex items-start justify-between group">
-                  <Link href={`/profile?id=${user.id}`} className="flex items-start gap-4 overflow-hidden flex-grow">
+                <div key={user.id} className="py-4 flex items-center justify-between group">
+                  <Link href={`/profile?id=${user.id}`} className="flex items-center gap-4 overflow-hidden flex-grow px-0">
                     <div className="w-12 h-12 rounded-full overflow-hidden relative border border-zinc-100 dark:border-zinc-800 flex-shrink-0">
                       {user.avatar_url ? (
                         <img src={user.avatar_url} alt={user.username || 'user'} className="w-full h-full object-cover" />
@@ -202,15 +207,15 @@ export default function SearchPage() {
                         </div>
                       )}
                     </div>
-                    <div className="flex-grow min-w-0 pr-4">
-                      <div className="font-bold text-[16px] truncate flex items-center gap-1 group-hover:underline text-black dark:text-white">
+                    <div className="flex-grow min-w-0 pr-2">
+                      <div className="font-bold text-[16px] truncate flex items-center gap-1 text-black dark:text-white">
                         {user.username}
                         {user.is_verified && <VerifiedBadge className="w-4 h-4" />}
                       </div>
-                      <div className="text-zinc-500 text-[15px] truncate mb-0.5 mt-[-2px]">
+                      <div className="text-zinc-500 text-[15px] truncate mt-[-1px]">
                         {user.full_name || user.username}
                       </div>
-                      <div className="text-black dark:text-white font-medium text-[14px] mt-1.5">
+                      <div className="text-black dark:text-[#f3f5f7] text-[14px] mt-1">
                         {user.follower_count >= 1000 
                           ? `${(user.follower_count / 1000).toFixed(1)}K` 
                           : user.follower_count} followers
@@ -221,13 +226,13 @@ export default function SearchPage() {
                   {!user.isFollowedLocally && currentUser?.id !== user.id && (
                     <button
                       onClick={(e) => handleFollow(e, user.id)}
-                      className="bg-black dark:bg-white text-white dark:text-black hover:bg-zinc-800 dark:hover:bg-zinc-200 text-[15px] font-bold py-1.5 px-6 rounded-[10px] transition-colors flex-shrink-0"
+                      className="bg-black dark:bg-white text-white dark:text-black hover:opacity-90 text-[15px] font-bold py-1.5 px-6 rounded-[10px] transition-all flex-shrink-0 ml-2"
                     >
                       Follow
                     </button>
                   )}
                   {user.isFollowedLocally && (
-                    <button disabled className="bg-transparent border border-zinc-200 dark:border-zinc-800 text-zinc-500 text-sm font-bold py-1.5 px-6 rounded-xl flex-shrink-0">
+                    <button disabled className="bg-transparent border border-zinc-200 dark:border-zinc-800 text-zinc-500 text-sm font-bold py-1.5 px-6 rounded-xl flex-shrink-0 ml-2">
                       Following
                     </button>
                   )}
