@@ -134,9 +134,9 @@ export default function SearchPage() {
 
   return (
     <AppLayout>
-      <div className="max-w-2xl mx-auto w-full relative min-h-screen">
+      <div className="w-full max-w-full overflow-x-hidden">
         <div 
-          className="sticky top-0 z-30 bg-white dark:bg-black border-b border-zinc-100 dark:border-zinc-900 pt-[env(safe-area-inset-top)]"
+          className="sticky top-0 z-30 bg-white dark:bg-black border-b border-zinc-100 dark:border-zinc-900 pt-[env(safe-area-inset-top)] w-full"
         >
           <div className="px-4 pt-3 pb-3 flex items-center gap-2">
               <button onClick={() => window.history.back()} className="p-1 -ml-1 text-black dark:text-white">

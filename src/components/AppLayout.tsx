@@ -344,7 +344,7 @@ export function AppLayout({ children, fullBleed = false }: { children: React.Rea
 
   return (
     <div
-      className="flex min-h-screen min-h-[100dvh] bg-white dark:bg-black text-[#101010] dark:text-[#f3f5f7]"
+      className="flex w-full overflow-x-hidden min-h-screen min-h-[100dvh] bg-white dark:bg-black text-[#101010] dark:text-[#f3f5f7]"
       style={{
         '--nav-height': navHidden || keyboardVisible ? '0px' : '56px'
       } as React.CSSProperties}
