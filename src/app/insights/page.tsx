@@ -46,22 +46,29 @@ export default function InsightsPage() {
     // First get user's post IDs (even those created before, because interactions might happen now)
     // But usually "Insights for 30 days" means interactions THAT OCCURRED in the last 30 days.
     
-    const [likes, comments, reposts] = await Promise.all([
-      supabase.from('likes')
-        .select('id', { count: 'exact', head: true })
-        .gte('created_at', startDate)
-        .in('post_id', supabase.from('posts').select('id').eq('creator_id', user.id)),
-      supabase.from('comments')
-        .select('id', { count: 'exact', head: true })
-        .gte('created_at', startDate)
-        .in('post_id', supabase.from('posts').select('id').eq('creator_id', user.id)),
-      supabase.from('reposts')
-        .select('id', { count: 'exact', head: true })
-        .gte('created_at', startDate)
-        .in('post_id', supabase.from('posts').select('id').eq('creator_id', user.id))
-    ])
-    
-    setInteractions((likes.count || 0) + (comments.count || 0) + (reposts.count || 0))
+    const { data: userPosts } = await supabase.from('posts').select('id').eq('creator_id', user.id)
+    const postIds = userPosts?.map((p: { id: string }) => p.id) || []
+
+    if (postIds.length > 0) {
+      const [likes, comments, reposts] = await Promise.all([
+        supabase.from('likes')
+          .select('id', { count: 'exact', head: true })
+          .gte('created_at', startDate)
+          .in('post_id', postIds),
+        supabase.from('comments')
+          .select('id', { count: 'exact', head: true })
+          .gte('created_at', startDate)
+          .in('post_id', postIds),
+        supabase.from('reposts')
+          .select('id', { count: 'exact', head: true })
+          .gte('created_at', startDate)
+          .in('post_id', postIds)
+      ])
+      
+      setInteractions((likes.count || 0) + (comments.count || 0) + (reposts.count || 0))
+    } else {
+      setInteractions(0)
+    }
 
     // 3. Fetch Followers gained in this period
     const { count: followerCount } = await supabase
@@ -96,7 +103,7 @@ export default function InsightsPage() {
   return (
     <div className="min-h-screen bg-[#f3f5f7] dark:bg-black text-black dark:text-white font-sans">
       {/* ── Top Bar ── */}
-      <header className="sticky top-0 z-50 bg-white dark:bg-zinc-950 px-4 h-14 flex items-center justify-between border-b border-zinc-200 dark:border-zinc-800">
+      <header className="sticky top-0 z-50 bg-white dark:bg-zinc-950 px-4 pt-[env(safe-area-inset-top)] h-[calc(3.5rem+env(safe-area-inset-top))] flex items-center justify-between border-b border-zinc-200 dark:border-zinc-800">
         <button 
           onClick={() => router.back()} 
           className="flex items-center gap-1 text-[17px] font-medium text-zinc-900 dark:text-zinc-100"

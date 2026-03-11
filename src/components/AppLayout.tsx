@@ -435,7 +435,7 @@ export function AppLayout({ children, fullBleed = false }: { children: React.Rea
 
       {/* ── Main content ─────────────────────────────────────────────────────  */}
       <main
-        className={`flex-grow ${pathname === '/' ? 'pt-14' : 'pt-0'} ${navHidden || keyboardVisible ? 'pb-0' : 'pb-16'} sm:pt-0 sm:pb-0 font-sans ${fullBleed ? 'sm:pl-[72px]' : 'flex justify-center'}`}
+        className={`flex-grow ${pathname === '/' ? 'pt-[calc(3.5rem+env(safe-area-inset-top))] sm:pt-0' : 'pt-0'} ${navHidden || keyboardVisible ? 'pb-0' : 'pb-16'} sm:pt-0 sm:pb-0 font-sans ${fullBleed ? 'sm:pl-[72px]' : 'flex justify-center'}`}
         style={{
           transform: ptrPull > 0 ? `translateY(${ptrPull}px)` : 'translateY(0)',
           transition: ptrPull > 0 ? 'none' : 'transform 0.35s cubic-bezier(0.25, 0.46, 0.45, 0.94)',
