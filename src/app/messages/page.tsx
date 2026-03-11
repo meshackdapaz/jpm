@@ -855,7 +855,7 @@ function MessagesContent() {
 
                 {/* ── Chat Profile Header (compact, at the top of messages) ── */}
                 {!loadingMessages && messages.length > 0 && (
-                  <div className="flex flex-col items-center justify-center py-6 px-6 mb-2">
+                  <div className="flex flex-col items-center justify-center py-4 px-6 border-b border-zinc-100 dark:border-zinc-900">
                     <Link href={`/profile?id=${selected.id}`} className="block relative mb-2 active:scale-95 transition-transform">
                       <div className="w-16 h-16 rounded-full overflow-hidden border-2 border-zinc-100 dark:border-zinc-800">
                         <Avatar profile={selected} size={64} />
@@ -869,7 +869,7 @@ function MessagesContent() {
                   </div>
                 )}
 
-                <div className="flex flex-col gap-0.5 justify-end min-h-full">
+                <div className="flex flex-col gap-0.5 pt-2">
                   {messages.map((m: any, i: number) => {
                     if (m._type === 'call') {
                       const isMissed = m.status === 'rejected' || (m.status === 'ringing' && !m.ended_at)

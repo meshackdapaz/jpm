@@ -178,7 +178,7 @@ export default function SearchPage() {
           )}
         </div>
 
-        <div className="px-4 py-4">
+        <div className="pl-4 pr-0 py-4">
           <h2 className="text-black dark:text-zinc-500 font-bold text-[16px] mb-4">
             {isSearchMode ? 'Search results' : 'Follow suggestions'}
           </h2>
@@ -218,8 +218,8 @@ export default function SearchPage() {
                     </div>
                   </Link>
 
-                  {/* Follow button — always at the right, never clipped */}
-                  <div className="flex-shrink-0">
+                  {/* Follow button — right edge aligned with chips above */}
+                  <div className="flex-shrink-0 pr-4">
                     {!user.isFollowedLocally && currentUser?.id !== user.id && (
                       <button
                         onClick={(e) => handleFollow(e, user.id)}
