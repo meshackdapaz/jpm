@@ -515,6 +515,8 @@ function MessagesContent() {
   const openConvo = (profile: any) => {
     setSelected(profile)
     setMessages([])
+    setLoadingMessages(true)
+    setCheckingRequest(true)
     setRequestStatus(null)
     localSeenRefs.current.add(profile.id)
     setConvos(prev => prev.map(c => c.profile.id === profile.id ? { ...c, unread: 0 } : c))
@@ -564,7 +566,7 @@ function MessagesContent() {
           ${selected ? 'hidden sm:flex' : 'flex'}
         `}>
           {/* Header */}
-          <div className="sticky top-0 z-10 bg-white dark:bg-black px-4 pt-5 pb-3 border-b border-zinc-100 dark:border-zinc-900">
+          <div className="sticky top-0 z-10 bg-white dark:bg-black px-4 pb-3 border-b border-zinc-100 dark:border-zinc-900" style={{ paddingTop: 'calc(1.25rem + env(safe-area-inset-top))' }}>
             <h1 className="text-[28px] font-black tracking-tight mb-3 text-black dark:text-white">Messages</h1>
             {/* Search bar */}
             <div className="relative mb-3">
@@ -708,7 +710,7 @@ function MessagesContent() {
           {selected ? (
             <>
               {/* Chat header */}
-              <div className="flex-none flex items-center gap-3 px-3 h-[64px] border-b border-zinc-100 dark:border-zinc-900 bg-white dark:bg-black">
+              <div className="flex-none flex items-center gap-3 px-3 pb-2 min-h-[64px] border-b border-zinc-100 dark:border-zinc-900 bg-white dark:bg-black" style={{ paddingTop: 'calc(env(safe-area-inset-top) + 0.25rem)' }}>
                 <button onClick={() => setSelected(null)} className="sm:hidden w-9 h-9 flex items-center justify-center rounded-full hover:bg-zinc-100 dark:hover:bg-zinc-900 transition-colors flex-none">
                   <ChevronLeftIcon className="w-5 h-5" />
                 </button>
