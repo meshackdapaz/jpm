@@ -804,9 +804,9 @@ function MessagesContent() {
               </div>
 
               {/* Messages area */}
-              <div className="flex-1 overflow-y-auto px-3 py-4">
+              <div className="flex-1 overflow-y-auto px-3 py-2" ref={undefined}>
 
-                {/* ── Loading skeleton ── */}
+                {/* ── Loading skeleton at the TOP (messages load oldest at top) ── */}
                 {loadingMessages && (
                   <div className="flex flex-col gap-3 px-1 py-2 animate-pulse">
                     {/* Other person bubble */}
@@ -853,23 +853,18 @@ function MessagesContent() {
                   </div>
                 )}
 
-                {/* ── Chat Profile Header (Visible when messages exist or while loading) ── */}
+                {/* ── Chat Profile Header (compact, at the top of messages) ── */}
                 {!loadingMessages && messages.length > 0 && (
-                  <div className="flex flex-col items-center justify-center py-10 px-6 border-b border-zinc-50 dark:border-zinc-900/40 mb-2">
-                    <Link href={`/profile?id=${selected.id}`} className="block relative mb-4 active:scale-95 transition-transform">
-                      <div className="w-24 h-24 rounded-full overflow-hidden border-2 border-zinc-100 dark:border-zinc-800">
-                        <Avatar profile={selected} size={96} />
+                  <div className="flex flex-col items-center justify-center py-6 px-6 mb-2">
+                    <Link href={`/profile?id=${selected.id}`} className="block relative mb-2 active:scale-95 transition-transform">
+                      <div className="w-16 h-16 rounded-full overflow-hidden border-2 border-zinc-100 dark:border-zinc-800">
+                        <Avatar profile={selected} size={64} />
                       </div>
                     </Link>
                     <div className="text-center">
-                      <h2 className="text-[20px] font-black">{selected.full_name}</h2>
-                      <p className="text-[13px] text-zinc-400 mb-2">@{selected.username}</p>
-                      <p className="text-[13px] text-zinc-500 font-medium">
-                        <span className="font-bold text-zinc-700 dark:text-zinc-300">{selectedFollowers}</span> followers
-                      </p>
-                      <p className="text-[12px] text-zinc-400 mt-4 leading-relaxed">
-                        You're both on JPM
-                      </p>
+                      <h2 className="text-[16px] font-black">{selected.full_name}</h2>
+                      <p className="text-[12px] text-zinc-400">@{selected.username} · <span className="font-semibold text-zinc-600 dark:text-zinc-300">{selectedFollowers}</span> followers</p>
+                      <p className="text-[11px] text-zinc-400 mt-1">You're both on JPM</p>
                     </div>
                   </div>
                 )}

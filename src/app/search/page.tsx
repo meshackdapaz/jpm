@@ -135,54 +135,48 @@ export default function SearchPage() {
   return (
     <AppLayout>
       <div className="w-full max-w-full overflow-x-hidden">
-        <div 
-          className="sticky top-0 z-30 bg-white dark:bg-black border-b border-zinc-100 dark:border-zinc-900 pt-[env(safe-area-inset-top)] w-full"
-        >
-          <div className="px-4 pt-3 pb-3 flex items-center gap-2">
-              <button onClick={() => window.history.back()} className="p-1 -ml-1 text-black dark:text-white">
-                <ChevronLeftIcon className="w-6 h-6" strokeWidth={2.5} />
-              </button>
-              <h1 className="text-[28px] font-black tracking-tight text-black dark:text-white">Search</h1>
-            </div>
-            <div className="px-4 pb-3">
-              <div className="relative group w-full">
+        {/* Sticky header: title + search bar + history chips — all in one block */}
+        <div className="sticky top-0 z-30 bg-white dark:bg-black border-b border-zinc-100 dark:border-zinc-900 pt-[env(safe-area-inset-top)] w-full">
+          <div className="px-4 pt-3 pb-2 flex items-center gap-2">
+            <button onClick={() => window.history.back()} className="p-1 -ml-1 text-black dark:text-white">
+              <ChevronLeftIcon className="w-6 h-6" strokeWidth={2.5} />
+            </button>
+            <h1 className="text-[28px] font-black tracking-tight text-black dark:text-white">Search</h1>
+          </div>
+          <div className="px-4 pb-2">
+            <div className="relative group w-full">
+              <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
+                <MagnifyingGlassIcon className={`h-5 w-5 text-zinc-500 transition-colors ${loading && isSearchMode ? 'opacity-0' : 'opacity-100'}`} />
+              </div>
+              {loading && isSearchMode && (
                 <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
-                  <MagnifyingGlassIcon className={`h-5 w-5 text-zinc-500 transition-colors ${loading && isSearchMode ? 'opacity-0' : 'opacity-100'}`} />
+                  <div className="h-4 w-4 border-2 border-zinc-500 border-t-transparent rounded-full animate-spin" />
                 </div>
-                {loading && isSearchMode && (
-                  <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
-                    <div className="h-4 w-4 border-2 border-zinc-500 border-t-transparent rounded-full animate-spin" />
-                  </div>
-                )}
-                <input
-                  type="text"
-                  placeholder="Search"
-                  className="block w-full bg-zinc-100 dark:bg-[#1c1c1e] border-none rounded-[10px] py-1.5 pl-[38px] pr-4 text-[16px] focus:outline-none transition-all m-0 appearance-none text-black dark:text-white placeholder-zinc-500"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                />
+              )}
+              <input
+                type="text"
+                placeholder="Search"
+                className="block w-full bg-zinc-100 dark:bg-[#1c1c1e] border-none rounded-[10px] py-2 pl-[38px] pr-4 text-[16px] focus:outline-none transition-all m-0 appearance-none text-black dark:text-white placeholder-zinc-500"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+              />
+            </div>
+          </div>
+
+          {/* Search History chips — inside the sticky block to avoid overlap */}
+          {!isSearchMode && (
+            <div className="px-4 pb-3 w-full">
+              <div className="flex gap-2 overflow-x-auto no-scrollbar">
+                <div className="h-8 w-24 bg-zinc-200 dark:bg-zinc-800/60 rounded-[10px] flex-shrink-0 animate-pulse" />
+                <div className="h-8 w-28 bg-zinc-200 dark:bg-zinc-800/60 rounded-[10px] flex-shrink-0 animate-pulse" />
+                <div className="h-8 w-20 bg-zinc-200 dark:bg-zinc-800/60 rounded-[10px] flex-shrink-0 animate-pulse" />
+                <div className="h-8 w-32 bg-zinc-200 dark:bg-zinc-800/60 rounded-[10px] flex-shrink-0 animate-pulse" />
+                <div className="h-8 w-16 bg-zinc-200 dark:bg-zinc-800/60 rounded-[10px] flex-shrink-0 animate-pulse" />
+                <div className="h-8 w-24 bg-zinc-200 dark:bg-zinc-800/60 rounded-[10px] flex-shrink-0 animate-pulse" />
               </div>
             </div>
-          </div>
-
-        {/* Search History Skeleton (Visible when not actively searching) */}
-        {!isSearchMode && (
-          <div className="px-4 pb-6 w-full -mt-2">
-            <div className="flex gap-2 overflow-x-auto no-scrollbar">
-              <div className="h-8 w-24 bg-zinc-200 dark:bg-zinc-800/60 rounded-[10px] flex-shrink-0 animate-pulse" />
-              <div className="h-8 w-28 bg-zinc-200 dark:bg-zinc-800/60 rounded-[10px] flex-shrink-0 animate-pulse" />
-              <div className="h-8 w-20 bg-zinc-200 dark:bg-zinc-800/60 rounded-[10px] flex-shrink-0 animate-pulse" />
-              <div className="h-8 w-32 bg-zinc-200 dark:bg-zinc-800/60 rounded-[10px] flex-shrink-0 animate-pulse" />
-            </div>
-            <div className="flex gap-2 mt-2 overflow-x-auto no-scrollbar">
-              <div className="h-8 w-16 bg-zinc-200 dark:bg-zinc-800/60 rounded-[10px] flex-shrink-0 animate-pulse" />
-              <div className="h-8 w-24 bg-zinc-200 dark:bg-zinc-800/60 rounded-[10px] flex-shrink-0 animate-pulse" />
-              <div className="h-8 w-20 bg-zinc-200 dark:bg-zinc-800/60 rounded-[10px] flex-shrink-0 animate-pulse" />
-              <div className="h-8 w-24 bg-zinc-200 dark:bg-zinc-800/60 rounded-[10px] flex-shrink-0 animate-pulse" />
-            </div>
-          </div>
-        )}
-
+          )}
+        </div>
 
         <div className="px-4 py-4">
           <h2 className="text-black dark:text-zinc-500 font-bold text-[16px] mb-4">
@@ -196,8 +190,9 @@ export default function SearchPage() {
               !isSearchMode && <div className="p-8 text-center text-zinc-500">No users found.</div>
             ) : (
               displayUsers.map(user => (
-                <div key={user.id} className="py-4 flex items-center justify-between group">
-                  <Link href={`/profile?id=${user.id}`} className="flex items-center gap-4 overflow-hidden flex-grow px-0">
+                <div key={user.id} className="py-3 flex items-center gap-3">
+                  {/* Avatar + info — fixed width to prevent clipping */}
+                  <Link href={`/profile?id=${user.id}`} className="flex items-center gap-3 flex-1 min-w-0">
                     <div className="w-12 h-12 rounded-full overflow-hidden relative border border-zinc-100 dark:border-zinc-800 flex-shrink-0">
                       {user.avatar_url ? (
                         <img src={user.avatar_url} alt={user.username || 'user'} className="w-full h-full object-cover" />
@@ -207,35 +202,38 @@ export default function SearchPage() {
                         </div>
                       )}
                     </div>
-                    <div className="flex-grow min-w-0 pr-2">
-                      <div className="font-bold text-[16px] truncate flex items-center gap-1 text-black dark:text-white">
-                        {user.username}
-                        {user.is_verified && <VerifiedBadge className="w-4 h-4" />}
+                    <div className="min-w-0">
+                      <div className="font-bold text-[15px] truncate flex items-center gap-1 text-black dark:text-white">
+                        <span className="truncate">{user.username}</span>
+                        {user.is_verified && <VerifiedBadge className="w-4 h-4 flex-shrink-0" />}
                       </div>
-                      <div className="text-zinc-500 text-[15px] truncate mt-[-1px]">
+                      <div className="text-zinc-500 text-[13px] truncate">
                         {user.full_name || user.username}
                       </div>
-                      <div className="text-black dark:text-[#f3f5f7] text-[14px] mt-1">
-                        {user.follower_count >= 1000 
-                          ? `${(user.follower_count / 1000).toFixed(1)}K` 
+                      <div className="text-zinc-400 text-[12px] mt-0.5">
+                        {user.follower_count >= 1000
+                          ? `${(user.follower_count / 1000).toFixed(1)}K`
                           : user.follower_count} followers
                       </div>
                     </div>
                   </Link>
 
-                  {!user.isFollowedLocally && currentUser?.id !== user.id && (
-                    <button
-                      onClick={(e) => handleFollow(e, user.id)}
-                      className="bg-black dark:bg-white text-white dark:text-black hover:opacity-90 text-[15px] font-bold py-1.5 px-6 rounded-[10px] transition-all flex-shrink-0 ml-2"
-                    >
-                      Follow
-                    </button>
-                  )}
-                  {user.isFollowedLocally && (
-                    <button disabled className="bg-transparent border border-zinc-200 dark:border-zinc-800 text-zinc-500 text-sm font-bold py-1.5 px-6 rounded-xl flex-shrink-0 ml-2">
-                      Following
-                    </button>
-                  )}
+                  {/* Follow button — always at the right, never clipped */}
+                  <div className="flex-shrink-0">
+                    {!user.isFollowedLocally && currentUser?.id !== user.id && (
+                      <button
+                        onClick={(e) => handleFollow(e, user.id)}
+                        className="bg-black dark:bg-white text-white dark:text-black hover:opacity-90 text-[14px] font-bold py-1.5 px-5 rounded-[10px] transition-all whitespace-nowrap"
+                      >
+                        Follow
+                      </button>
+                    )}
+                    {user.isFollowedLocally && (
+                      <button disabled className="bg-transparent border border-zinc-200 dark:border-zinc-700 text-zinc-500 text-[14px] font-bold py-1.5 px-5 rounded-[10px] whitespace-nowrap">
+                        Following
+                      </button>
+                    )}
+                  </div>
                 </div>
               ))
             )}
