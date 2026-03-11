@@ -9,6 +9,7 @@ import { UserPlusIcon } from '@heroicons/react/24/outline'
 import { SparklesIcon } from '@heroicons/react/24/solid'
 import Image from 'next/image'
 import { RightSidebar } from './RightSidebar'
+import { InlineFeedAd } from './InlineFeedAd'
 
 // ── Skeleton ──────────────────────────────────────────────────────────────────
 
@@ -322,8 +323,14 @@ export function Feed() {
         </div>
       ) : (
         <div className="pb-20 sm:pb-0 w-full">
-          {posts.map((post) => (
-            <Post key={post.is_repost ? `repost-${post.feed_created_at}-${post.id}` : `post-${post.id}`} post={post} />
+          {posts.map((post, index) => (
+            <React.Fragment key={post.is_repost ? `repost-${post.feed_created_at}-${post.id}` : `post-${post.id}`}>
+              <Post post={post} />
+              {/* Show an ad every 10 posts, starting after the 4th post */}
+              {index > 0 && index % 10 === 4 && (
+                <InlineFeedAd adId="ca-app-pub-8166782428171770/3966636178" />
+              )}
+            </React.Fragment>
           ))}
         </div>
       )}
