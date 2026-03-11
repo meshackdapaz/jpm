@@ -291,11 +291,27 @@ function ProfileContent() {
     try {
       const croppedImageBlob = await getCroppedImg(selectedImage, croppedAreaPixels)
       if (!croppedImageBlob) return
-      const filePath = `${id}-${Math.random()}.jpeg`
-      await supabase.storage.from('avatars').upload(filePath, croppedImageBlob)
+
+      // Use a fixed path per user so the same URL is always reused (no orphan files)
+      const filePath = `${id}/avatar.jpeg`
+      const { error: uploadError } = await supabase.storage
+        .from('avatars')
+        .upload(filePath, croppedImageBlob, {
+          contentType: 'image/jpeg',
+          upsert: true,     // overwrite if already exists
+          cacheControl: '0', // tell storage not to cache
+        })
+
+      if (uploadError) {
+        console.error('[Avatar] Upload error:', uploadError)
+        return
+      }
+
       const { data: { publicUrl } } = supabase.storage.from('avatars').getPublicUrl(filePath)
-      await supabase.from('profiles').update({ avatar_url: publicUrl }).eq('id', id)
-      setProfile({ ...profile, avatar_url: publicUrl })
+      // Append a cache-buster so the browser fetches the new image
+      const avatarUrl = `${publicUrl}?t=${Date.now()}`
+      await supabase.from('profiles').update({ avatar_url: avatarUrl }).eq('id', id)
+      setProfile({ ...profile, avatar_url: avatarUrl })
       setSelectedImage(null)
     } finally {
       setUploading(false)
