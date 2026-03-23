@@ -14,8 +14,8 @@ export function GiphyPicker({ onGifSelect, onClose }: GiphyPickerProps) {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   
-  const apiKey = process.env.NEXT_PUBLIC_GIPHY_API_KEY || 'dc6zaTOxFJmzC'
-  const isDefault = !process.env.NEXT_PUBLIC_GIPHY_API_KEY || process.env.NEXT_PUBLIC_GIPHY_API_KEY === 'dc6zaTOxFJmzC'
+  const apiKey = 'qSdDjrUvi9NPjpmGgUrymB8qdcr2sLXn'
+  const isDefault = false
 
   const fetchGifs = async (query: string) => {
     setLoading(true)
