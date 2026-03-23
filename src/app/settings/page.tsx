@@ -135,16 +135,55 @@ function SettingsContent() {
     online: 'Anyone'
   })
 
+  const [totalViews, setTotalViews] = useState(0)
+  const [followerCount, setFollowerCount] = useState(0)
+  const [isEligible, setIsEligible] = useState(false)
+  const [applicationStatus, setApplicationStatus] = useState<string | null>(null)
+  const [applying, setApplying] = useState(false)
+
   useEffect(() => {
     if (user) {
-      supabase.from('profiles').select('*').eq('id', user.id).single().then(({ data }: { data: any }) => {
+      supabase.from('profiles').select('*').eq('id', user.id).single().then(async ({ data }: { data: any }) => {
         if (data) {
           setCurrentProfile(data)
-          if (data.settings) setSettings(prev => ({ ...prev, ...data.settings }))
+          if (data.settings) {
+            setSettings(prev => ({ ...prev, ...data.settings }))
+            setApplicationStatus(data.settings.creator_application_status || null)
+          }
+
+          // Fetch real metrics
+          const [{ data: postsData }, { count: followers }] = await Promise.all([
+            supabase.from('posts').select('view_count').eq('creator_id', user.id),
+            supabase.from('follows').select('*', { count: 'exact', head: true }).eq('following_id', user.id)
+          ])
+
+          const views = postsData?.reduce((acc: number, p: any) => acc + (p.view_count || 0), 0) || 0
+          const fCount = followers || 0
+          
+          setTotalViews(views)
+          setFollowerCount(fCount)
+          
+          // Eligibility: 10k followers & 10M views (using 1k/10k for testing if needed, but sticking to 10k/10M as per code)
+          const eligible = fCount >= 10000 && views >= 10000000
+          setIsEligible(eligible)
         }
       })
     }
   }, [user])
+
+  const handleApply = async () => {
+    if (!user || applying) return
+    setApplying(true)
+    
+    const newSettings = { ...settings, creator_application_status: 'pending' }
+    const { error } = await supabase.from('profiles').update({ settings: newSettings }).eq('id', user.id)
+    
+    if (!error) {
+      setApplicationStatus('pending')
+      alert('Application submitted successfully!')
+    }
+    setApplying(false)
+  }
 
   const updateSetting = async (key: string, value: any) => {
     const newSettings = { ...settings, [key]: value }
@@ -323,7 +362,7 @@ function SettingsContent() {
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="bg-zinc-50 dark:bg-zinc-900/50 p-6 rounded-[24px] border border-zinc-100 dark:border-zinc-800">
                     <p className="text-zinc-500 text-sm font-bold mb-1">Estimated Revenue</p>
-                    <h4 className="text-3xl font-black">$0.00</h4>
+                    <h4 className="text-3xl font-black">${currentProfile?.monetization_earnings?.toFixed(2) || '0.00'}</h4>
                     <div className="mt-4 flex items-center gap-2 text-zinc-400 text-xs">
                       <ChartBarSquareIcon className="w-4 h-4" />
                       Updated every 24 hours
@@ -331,32 +370,61 @@ function SettingsContent() {
                   </div>
                   <div className="bg-zinc-50 dark:bg-zinc-900/50 p-6 rounded-[24px] border border-zinc-100 dark:border-zinc-800">
                     <p className="text-zinc-500 text-sm font-bold mb-1">Status</p>
-                    <h4 className="text-xl font-bold flex items-center gap-2 text-yellow-600 dark:text-yellow-500">
-                      Not Eligible
+                    <h4 className={`text-xl font-bold flex items-center gap-2 ${
+                      applicationStatus === 'approved' ? 'text-green-600 dark:text-green-400' :
+                      applicationStatus === 'pending' ? 'text-amber-600 dark:text-amber-500' :
+                      applicationStatus === 'declined' ? 'text-red-500' :
+                      'text-yellow-600 dark:text-yellow-500'
+                    }`}>
+                      {applicationStatus === 'approved' ? 'Active Creator' :
+                       applicationStatus === 'pending' ? 'Pending Review' :
+                       applicationStatus === 'declined' ? 'Declined' :
+                       'Not Eligible'}
                     </h4>
-                    <p className="mt-2 text-xs text-zinc-400">Keep posting high-quality memes to unlock monetization!</p>
+                    <p className="mt-2 text-xs text-zinc-400">
+                      {applicationStatus === 'approved' ? 'Congratulations! You are earning from your memes.' :
+                       applicationStatus === 'pending' ? 'Our team is reviewing your application.' :
+                       'Keep posting high-quality memes to unlock monetization!'}
+                    </p>
                   </div>
                 </div>
 
                 <div className="bg-white dark:bg-zinc-900 border border-zinc-100 dark:border-zinc-800 rounded-[28px] overflow-hidden">
                   <div className="p-6 border-b border-zinc-100 dark:border-zinc-800">
-                    <h4 className="font-bold">Checklist</h4>
+                    <h4 className="font-bold">Eligibility Checklist</h4>
                   </div>
                   <div className="p-6 space-y-4">
                     {[
-                      { label: '10,000 Followers', done: (currentProfile?.follower_count || 0) >= 10000 },
-                      { label: '10 Million Views in 90 days', done: false },
+                      { label: '10,000 Followers', current: followerCount, required: 10000, done: followerCount >= 10000 },
+                      { label: '10 Million Views', current: totalViews, required: 10000000, done: totalViews >= 10000000 },
                       { label: 'Active in the last 30 days', done: true },
                       { label: 'Verified Account', done: currentProfile?.is_verified }
                     ].map((item, i) => (
                       <div key={i} className="flex items-center justify-between">
-                        <span className="text-zinc-700 dark:text-zinc-300 font-medium">{item.label}</span>
+                        <div className="flex flex-col">
+                          <span className="text-zinc-700 dark:text-zinc-300 font-medium">{item.label}</span>
+                          {item.required && (
+                            <span className="text-[11px] text-zinc-400">{item.current.toLocaleString()} / {item.required.toLocaleString()}</span>
+                          )}
+                        </div>
                         <div className={`w-6 h-6 rounded-full flex items-center justify-center ${item.done ? 'bg-green-100 dark:bg-green-900/40 text-green-600' : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-400'}`}>
                           {item.done ? '✓' : ''}
                         </div>
                       </div>
                     ))}
                   </div>
+                  
+                  {isEligible && !applicationStatus && (
+                    <div className="p-6 bg-amber-50 dark:bg-amber-950/20 border-t border-amber-100 dark:border-amber-900/40">
+                      <button 
+                        onClick={handleApply}
+                        disabled={applying}
+                        className="w-full py-4 bg-amber-500 text-black font-black rounded-2xl hover:bg-amber-400 transition-all shadow-lg shadow-amber-500/20 active:scale-95 disabled:opacity-50"
+                      >
+                        {applying ? 'Submitting...' : 'Apply for Creator Program'}
+                      </button>
+                    </div>
+                  )}
                 </div>
               </div>
             )}
