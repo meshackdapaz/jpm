@@ -3,39 +3,47 @@
 import React, { useEffect, useState, useRef, useCallback, Suspense } from 'react'
 import { AppLayout } from '@/components/AppLayout'
 import { createClient } from '@/lib/supabase/client'
-import { encryptMessage, decryptMessage, getSharedSecret } from '@/lib/crypto'
+import { useAuth } from '@/components/AuthProvider'
+import { useCall } from '@/components/CallProvider'
+import { VoiceNote } from '@/components/VoiceNote'
+import { GiphyPicker } from '@/components/GiphyPicker'
+import Image from 'next/image'
+import Link from 'next/link'
 import { useSearchParams } from 'next/navigation'
+import { encryptMessage, decryptMessage, getSharedSecret } from '@/lib/crypto'
+import { Haptics, ImpactStyle } from '@capacitor/haptics'
+import { Capacitor } from '@capacitor/core'
+
 import {
-  ChevronLeftIcon,
-  MagnifyingGlassIcon,
   PhoneIcon,
-  PhoneArrowDownLeftIcon,
-  PhoneXMarkIcon
-} from '@heroicons/react/24/solid'
-import {
-  ChatBubbleLeftRightIcon,
-  LockClosedIcon,
-  MicrophoneIcon,
   VideoCameraIcon,
+  InformationCircleIcon,
+  ChevronLeftIcon,
+  Bars3Icon,
   PaperAirplaneIcon,
   FaceSmileIcon,
-  EllipsisHorizontalIcon,
-  XMarkIcon,
+  MicrophoneIcon,
   CheckIcon,
+  ChatBubbleLeftRightIcon,
+  Square2StackIcon,
   BellSlashIcon,
   NoSymbolIcon,
   HandRaisedIcon,
   ExclamationTriangleIcon,
-  Square2StackIcon,
-  Bars3Icon,
+  PhoneXMarkIcon,
+  PhoneArrowDownLeftIcon,
+  MagnifyingGlassIcon,
+  LockClosedIcon,
+  EllipsisHorizontalIcon,
+  XMarkIcon
 } from '@heroicons/react/24/outline'
-import { useAuth } from '@/components/AuthProvider'
-import { useCall } from '@/components/CallProvider'
-import { VoiceNote } from '@/components/VoiceNote'
-import Image from 'next/image'
-import Link from 'next/link'
-import { Haptics, ImpactStyle } from '@capacitor/haptics'
-import { Capacitor } from '@capacitor/core'
+
+const GifIcon = ({ className }: { className?: string }) => (
+  <svg className={className} fill="none" stroke="currentColor" strokeWidth="1.8" viewBox="0 0 24 24">
+    <rect x="2" y="5" width="20" height="14" rx="2"/>
+    <path d="M10 9H7a1 1 0 0 0-1 1v4a1 1 0 0 0 1 1h2v-2H8m5-4h3m-3 2h2m-2 2h3"/>
+  </svg>
+)
 
 const triggerHaptic = (style = ImpactStyle.Light) => {
   if (Capacitor.isNativePlatform()) {
@@ -129,6 +137,7 @@ function MessagesContent() {
   const mediaRecorderRef = useRef<MediaRecorder | null>(null)
   const audioChunksRef = useRef<Blob[]>([])
   const [showOptions, setShowOptions] = useState(false)
+  const [showGiphy, setShowGiphy] = useState(false)
   const [selectedFollowers, setSelectedFollowers] = useState(0)
 
   const bottomRef = useRef<HTMLDivElement>(null)
@@ -939,6 +948,10 @@ function MessagesContent() {
                             )}
                             {m.content.startsWith('voice:') ? (
                               <VoiceNote url={m.content.slice(6)} mine={mine} />
+                            ) : m.content.startsWith('gif:') ? (
+                              <div className="rounded-xl overflow-hidden max-w-full">
+                                <img src={m.content.slice(4)} alt="GIF" className="w-full h-auto object-cover max-h-60" />
+                              </div>
                             ) : (
                               <div className={`px-[14px] py-[10px] text-[14.5px] leading-relaxed break-words whitespace-pre-wrap select-text ${
                                 mine
@@ -999,10 +1012,27 @@ function MessagesContent() {
                   <div className="w-5 h-5 border-2 border-zinc-300 border-t-black dark:border-t-white rounded-full animate-spin" />
                 </div>
               ) : requestStatus === 'allowed' ? (
-                // Normal message input
                 <form onSubmit={sendMessage}
-                  className="flex-none flex items-end gap-2 px-3 py-3 bg-zinc-50 dark:bg-black"
+                  className="flex-none flex items-end gap-2 px-3 py-3 bg-zinc-50 dark:bg-black relative"
                   style={{ paddingBottom: 'max(0.75rem, env(safe-area-inset-bottom))' }}>
+
+                  {showGiphy && (
+                    <div className="absolute bottom-full left-0 right-0 p-4 bg-zinc-50 dark:bg-black border-t border-zinc-200 dark:border-zinc-800 z-50">
+                      <GiphyPicker 
+                        onGifSelect={async (url) => {
+                          setShowGiphy(false)
+                          const { error } = await supabase.from('messages').insert({
+                            conversation_id: selected.conversation_id,
+                            sender_id: user.id,
+                            receiver_id: selected.id,
+                            content: `gif:${url}`,
+                          })
+                          if (error) console.error('Error sending GIF:', error)
+                        }} 
+                        onClose={() => setShowGiphy(false)} 
+                      />
+                    </div>
+                  )}
 
                   <div className="flex-1 bg-white dark:bg-zinc-900 rounded-[24px] px-2 py-1 flex items-center min-h-[44px] shadow-sm border border-zinc-200 dark:border-zinc-800" style={{ touchAction: 'pan-x pan-y' }}>
                     
@@ -1019,6 +1049,10 @@ function MessagesContent() {
                       disabled={recording}
                       className="flex-1 bg-transparent text-[15px] px-3 outline-none placeholder-zinc-400 text-zinc-900 dark:text-zinc-100 disabled:cursor-not-allowed"
                     />
+
+                    <button type="button" onClick={() => setShowGiphy(!showGiphy)} className={`p-2 transition-colors ${showGiphy ? 'text-blue-600' : 'text-zinc-400 dark:text-zinc-500 hover:text-blue-600'}`}>
+                      <GifIcon className="w-6 h-6" />
+                    </button>
 
                     <button type="button" className="p-2 text-zinc-400 dark:text-zinc-500 hover:text-blue-600 transition-colors">
                       <FaceSmileIcon className="w-6 h-6" />

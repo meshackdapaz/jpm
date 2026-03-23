@@ -322,9 +322,42 @@ function ProfileContent() {
 
   if (loading) return (
     <AppLayout>
-      <div className="p-8 animate-pulse space-y-4">
-        <div className="w-24 h-24 bg-zinc-200 dark:bg-zinc-800 rounded-full"></div>
-        <div className="h-6 bg-zinc-200 dark:bg-zinc-800 w-1/4 rounded"></div>
+      <div className="px-4 pt-8 animate-pulse">
+        {/* Skeleton Header: Info Left, Avatar Right */}
+        <div className="flex items-start justify-between mb-8">
+          <div className="flex-grow space-y-4 pr-6">
+            <div className="h-8 bg-zinc-200 dark:bg-zinc-800 rounded-xl w-3/4"></div>
+            <div className="h-4 bg-zinc-200 dark:bg-zinc-800 rounded-lg w-1/4"></div>
+            <div className="space-y-2 pt-2">
+              <div className="h-3.5 bg-zinc-100 dark:bg-zinc-900 rounded-lg w-full"></div>
+              <div className="h-3.5 bg-zinc-100 dark:bg-zinc-900 rounded-lg w-5/6"></div>
+            </div>
+            <div className="h-4 bg-zinc-100 dark:bg-zinc-900 rounded-full w-1/3 mt-6"></div>
+          </div>
+          <div className="w-20 h-20 sm:w-24 sm:h-24 bg-zinc-200 dark:bg-zinc-800 rounded-full flex-none"></div>
+        </div>
+        
+        {/* Skeleton Tabs */}
+        <div className="flex border-b border-zinc-100 dark:border-zinc-900 mb-4">
+          {[1, 2, 3, 4].map(i => (
+            <div key={i} className="flex-1 py-4 flex justify-center">
+              <div className="h-3 bg-zinc-100 dark:bg-zinc-900 rounded-full w-12"></div>
+            </div>
+          ))}
+        </div>
+
+        {/* Skeleton Posts */}
+        <div className="space-y-6 pt-2">
+          {[1, 2, 3].map(i => (
+            <div key={i} className="flex gap-4">
+              <div className="w-10 h-10 rounded-full bg-zinc-100 dark:bg-zinc-900 flex-none"></div>
+              <div className="flex-grow space-y-3">
+                <div className="h-3.5 bg-zinc-100 dark:bg-zinc-900 rounded-lg w-1/3"></div>
+                <div className="h-32 bg-zinc-50 dark:bg-zinc-900/40 rounded-2xl w-full"></div>
+              </div>
+            </div>
+          ))}
+        </div>
       </div>
     </AppLayout>
   )

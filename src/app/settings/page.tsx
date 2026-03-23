@@ -6,12 +6,17 @@ import {
   LockClosedIcon, 
   UserIcon, 
   QuestionMarkCircleIcon,
-  InformationCircleIcon
+  InformationCircleIcon,
+  BanknotesIcon,
+  MegaphoneIcon,
+  PlusIcon,
+  ChartBarSquareIcon
 } from '@heroicons/react/24/solid'
 import { 
   ChevronRightIcon,
   ChevronLeftIcon,
-  SunIcon
+  SunIcon,
+  PhotoIcon
 } from '@heroicons/react/24/outline'
 
 import { useI18n } from '@/lib/i18n'
@@ -20,6 +25,7 @@ import { createClient } from '@/lib/supabase/client'
 import Image from 'next/image'
 import { useTheme } from 'next-themes'
 import { useRouter, useSearchParams } from 'next/navigation'
+import { AdminAdManager } from '@/components/AdminAdManager'
 
 // ─── Account Profile Editor ────────────────────────────────────────────────────
 function AccountEditor({ profile, userId, supabase, onSaved }: { profile: any; userId?: string; supabase: any; onSaved: (p: any) => void }) {
@@ -156,11 +162,13 @@ function SettingsContent() {
   }
 
   const leftMenu = [
-    { id: 'privacy',    label: 'Privacy',         icon: LockClosedIcon },
-    { id: 'status',     label: 'Edit Profile',     icon: UserIcon },
-    { id: 'appearance', label: 'Appearance',       icon: SunIcon },
-    { id: 'help',       label: 'Help',             icon: QuestionMarkCircleIcon },
-    { id: 'about',      label: 'About App',        icon: InformationCircleIcon },
+    { id: 'privacy',     label: 'Privacy',         icon: LockClosedIcon },
+    { id: 'status',      label: 'Edit Profile',     icon: UserIcon },
+    { id: 'monetization',label: 'Monetization',    icon: BanknotesIcon },
+    ...(currentProfile?.is_admin ? [{ id: 'ads', label: 'Ads Management', icon: MegaphoneIcon }] : []),
+    { id: 'appearance',  label: 'Appearance',       icon: SunIcon },
+    { id: 'help',        label: 'Help',             icon: QuestionMarkCircleIcon },
+    { id: 'about',       label: 'About App',        icon: InformationCircleIcon },
   ]
 
   return (
@@ -214,7 +222,12 @@ function SettingsContent() {
               <button onClick={() => handleTabChange('settings_menu_mobile_placeholder')} className="mr-3 p-1 rounded-full hover:bg-zinc-100 dark:hover:bg-zinc-800">
                 <ChevronLeftIcon className="w-6 h-6" />
               </button>
-              <h2 className="font-bold text-lg capitalize">{activeTab === 'status' ? 'Edit Profile' : activeTab}</h2>
+              <h2 className="font-bold text-lg capitalize">
+                {activeTab === 'status' ? 'Edit Profile' : 
+                 activeTab === 'monetization' ? 'Monetization' :
+                 activeTab === 'ads' ? 'Ads Management' : 
+                 activeTab}
+              </h2>
             </div>
             
             {/* PRIVACY TAB */}
@@ -297,6 +310,62 @@ function SettingsContent() {
                   </div>
                 )}
               </>
+            )}
+
+            {/* MONETIZATION TAB */}
+            {activeTab === 'monetization' && (
+              <div className="p-4 sm:p-8 animate-in fade-in duration-300 space-y-8">
+                <div>
+                  <h3 className="text-2xl font-black mb-1">Monetization</h3>
+                  <p className="text-zinc-500 text-[15px]">Track your earnings and eligibility status.</p>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="bg-zinc-50 dark:bg-zinc-900/50 p-6 rounded-[24px] border border-zinc-100 dark:border-zinc-800">
+                    <p className="text-zinc-500 text-sm font-bold mb-1">Estimated Revenue</p>
+                    <h4 className="text-3xl font-black">$0.00</h4>
+                    <div className="mt-4 flex items-center gap-2 text-zinc-400 text-xs">
+                      <ChartBarSquareIcon className="w-4 h-4" />
+                      Updated every 24 hours
+                    </div>
+                  </div>
+                  <div className="bg-zinc-50 dark:bg-zinc-900/50 p-6 rounded-[24px] border border-zinc-100 dark:border-zinc-800">
+                    <p className="text-zinc-500 text-sm font-bold mb-1">Status</p>
+                    <h4 className="text-xl font-bold flex items-center gap-2 text-yellow-600 dark:text-yellow-500">
+                      Not Eligible
+                    </h4>
+                    <p className="mt-2 text-xs text-zinc-400">Keep posting high-quality memes to unlock monetization!</p>
+                  </div>
+                </div>
+
+                <div className="bg-white dark:bg-zinc-900 border border-zinc-100 dark:border-zinc-800 rounded-[28px] overflow-hidden">
+                  <div className="p-6 border-b border-zinc-100 dark:border-zinc-800">
+                    <h4 className="font-bold">Checklist</h4>
+                  </div>
+                  <div className="p-6 space-y-4">
+                    {[
+                      { label: '10,000 Followers', done: (currentProfile?.follower_count || 0) >= 10000 },
+                      { label: '10 Million Views in 90 days', done: false },
+                      { label: 'Active in the last 30 days', done: true },
+                      { label: 'Verified Account', done: currentProfile?.is_verified }
+                    ].map((item, i) => (
+                      <div key={i} className="flex items-center justify-between">
+                        <span className="text-zinc-700 dark:text-zinc-300 font-medium">{item.label}</span>
+                        <div className={`w-6 h-6 rounded-full flex items-center justify-center ${item.done ? 'bg-green-100 dark:bg-green-900/40 text-green-600' : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-400'}`}>
+                          {item.done ? '✓' : ''}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* ADS MANAGEMENT (ADMIN ONLY) */}
+            {activeTab === 'ads' && currentProfile?.is_admin && (
+              <div className="p-4 sm:p-8 animate-in fade-in duration-300">
+                <AdminAdManager />
+              </div>
             )}
 
             {/* EDIT PROFILE TAB */}

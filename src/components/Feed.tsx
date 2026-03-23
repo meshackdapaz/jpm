@@ -10,6 +10,7 @@ import { SparklesIcon } from '@heroicons/react/24/solid'
 import Image from 'next/image'
 import { RightSidebar } from './RightSidebar'
 import { InlineFeedAd } from './InlineFeedAd'
+import { DirectAd } from './DirectAd'
 
 // ── Skeleton ──────────────────────────────────────────────────────────────────
 
@@ -117,6 +118,50 @@ function buildFeed(postsData: any[] | null, repostsData: any[] | null, myReposts
   )
 }
 
+function buildRecommendedFeed(postsData: any[] | null, myReposts: string[], myLikes: { post_id: string, reaction_type: string }[]): any[] {
+  if (!postsData) return []
+
+  const likedPostIds = myLikes.map(l => l.post_id)
+  const getReaction = (id: string) => myLikes.find(l => l.post_id === id)?.reaction_type || 'like'
+
+  const now = new Date().getTime()
+
+  const scoredFeed = postsData.map((p: any) => {
+    const likes = p.likes?.[0]?.count || 0
+    const comments = p.comments?.[0]?.count || 0
+    const reposts = p.reposts?.[0]?.count || 0
+    const isVerified = p.profiles?.is_verified || false
+    const createdAt = new Date(p.created_at).getTime()
+    const hoursOld = (now - createdAt) / (1000 * 60 * 60)
+
+    // Scoring algorithm
+    let score = (likes * 10) + (comments * 20) + (reposts * 30)
+    if (isVerified) score += 50
+    
+    // Recency boost: newer posts get a boost that decays over time
+    // Roughly +100 for brand new, decaying to 0 over 48 hours
+    const recencyBoost = Math.max(0, 100 - (hoursOld * 2))
+    score += recencyBoost
+
+    // Add a bit of randomness so the feed isn't perfectly static
+    score += Math.random() * 20
+
+    return {
+      ...p,
+      is_repost: false,
+      likes_count: likes,
+      comments_count: comments,
+      reposts_count: reposts,
+      is_reposted_by_me: myReposts.includes(p.id),
+      is_liked_by_me: likedPostIds.includes(p.id),
+      my_reaction: getReaction(p.id),
+      _score: score
+    }
+  })
+
+  return scoredFeed.sort((a, b) => (b._score || 0) - (a._score || 0))
+}
+
 // ── Select strings — only existing columns ────────────────────────────────────
 
 const POST_SEL = `id, content, image_url, image_urls, title, created_at, creator_id, view_count, hide_counts, is_archived, profiles:creator_id(id, full_name, username, avatar_url, is_verified, last_seen, settings), likes(count), comments(count), reposts(count)`
@@ -132,14 +177,21 @@ export function Feed() {
   const [refreshing, setRefreshing] = useState(false)   // PTR background refresh
   const [activeTab, setActiveTab] = useState<'for_you' | 'following'>('for_you')
   const [profileData, setProfileData] = useState<any>(null)
+  const [directAds, setDirectAds] = useState<any[]>([])
   const { user, loading: authLoading } = useAuth()
   const supabase = createClient()
   const refreshKey = useRef(0)  // increment to trigger re-fetch
 
   useEffect(() => {
-    if (!user) return
-    supabase.from('profiles').select('full_name, avatar_url, username').eq('id', user.id).single()
-      .then(({ data }: { data: any }) => setProfileData(data))
+    if (user) {
+      supabase.from('profiles').select('full_name, avatar_url, username').eq('id', user.id).single()
+        .then(({ data }: { data: any }) => setProfileData(data))
+    }
+    
+    // Fetch active Direct Ads
+    supabase.from('direct_ads').select('*').eq('active', true).then(({ data }: { data: any }) => {
+      if (data) setDirectAds(data)
+    })
   }, [user])
 
   const userRef = useRef(user)
@@ -214,7 +266,7 @@ export function Feed() {
       // ── FOR YOU TAB ───────────────────────────────────────────────────
       const currentUserId = currentUser?.id
       const [{ data: pd }, { data: md }, { data: ld }] = await Promise.all([
-        supabase.from('posts').select(POST_SEL).order('created_at', { ascending: false }).limit(30),
+        supabase.from('posts').select(POST_SEL).order('created_at', { ascending: false }).limit(60),
         currentUserId
           ? supabase.from('reposts').select('post_id').eq('user_id', currentUserId)
           : Promise.resolve({ data: [] }),
@@ -226,7 +278,7 @@ export function Feed() {
       if (!alive()) return
       const myReposts = (md || []).map((r: any) => r.post_id)
       const myLikes = ld || []
-      setPosts(buildFeed(pd, [], myReposts, myLikes))
+      setPosts(buildRecommendedFeed(pd, myReposts, myLikes))
       setInitialLoad(false)
     }
 
@@ -278,7 +330,7 @@ export function Feed() {
 
   return (
     <div className="flex flex-col w-full">
-      {/* TabBar removed - now handled by Feeds drawer */}
+      <TabBar />
 
       {/* "What's new?" User Bar (Mobile Only) */}
       <div className="sm:hidden px-4 py-4 border-b border-zinc-100 dark:border-zinc-900 flex items-center gap-3">
@@ -303,37 +355,37 @@ export function Feed() {
         </button>
       </div>
 
-      {/* Desktop tabs removed - now handled by Feeds drawer */}
-
-      {/* PTR refreshing overlay */}
-      {refreshing && (
-        <div className="flex items-center justify-center py-3">
-          <svg className="w-5 h-5 text-zinc-400 animate-spin" viewBox="0 0 24 24" fill="currentColor">
-            <path d="M12.001 2C6.475 2 2 6.476 2 12s4.475 10 10.001 10C17.522 22 22 17.524 22 12S17.522 2 12.001 2zM12 20c-4.41 0-8-3.589-8-8s3.59-8 8-8 8 3.589 8 8-3.59 8-8 8zm4.5-8c0 2.485-2.015 4.5-4.5 4.5S7.5 14.485 7.5 12s2.015-4.5 4.5-4.5 4.5 2.015 4.5 4.5zm1.5 0c0-3.313-2.687-6-6-6S6 8.687 6 12s2.687 6 6 6c1.293 0 2.49-.409 3.471-1.103l-.985-1.459A4.468 4.468 0 0112 16.5c-2.485 0-4.5-2.015-4.5-4.5S9.515 7.5 12 7.5s4.5 2.015 4.5 4.5v1.125c0 .621-.503 1.125-1.125 1.125S14.25 13.746 14.25 13.125V12c0-1.24-1.01-2.25-2.25-2.25S9.75 10.76 9.75 12s1.01 2.25 2.25 2.25c.655 0 1.24-.28 1.657-.726A2.614 2.614 0 0016.5 13.125V12z"/>
-          </svg>
-        </div>
-      )}
-
       {/* Content */}
-      {initialLoad ? (
-        <div className="flex-1 w-full"><PostSkeleton /><PostSkeleton /><PostSkeleton /></div>
-      ) : posts.length === 0 ? (
-        <div className="flex-1 flex w-full">
-          {activeTab === 'for_you' ? <EmptyForYou /> : <EmptyFollowing />}
-        </div>
-      ) : (
-        <div className="pb-20 sm:pb-0 w-full">
-          {posts.map((post, index) => (
-            <React.Fragment key={post.is_repost ? `repost-${post.feed_created_at}-${post.id}` : `post-${post.id}`}>
-              <Post post={post} />
-              {/* Show an ad every 10 posts, starting after the 4th post */}
-              {index > 0 && index % 10 === 4 && (
-                <InlineFeedAd adId="ca-app-pub-8166782428171770/3966636178" />
-              )}
-            </React.Fragment>
-          ))}
-        </div>
-      )}
+      <div className="flex-1">
+        {initialLoad ? (
+          <div className="w-full"><PostSkeleton /><PostSkeleton /><PostSkeleton /></div>
+        ) : posts.length === 0 ? (
+          <div className="flex w-full">
+            {activeTab === 'for_you' ? <EmptyForYou /> : <EmptyFollowing />}
+          </div>
+        ) : (
+          <div className="pb-20 sm:pb-0 w-full">
+            {posts.map((post, index) => {
+              const adIndex = Math.floor(index / 10)
+              const showAd = index > 0 && index % 10 === 4
+              const directAd = directAds[adIndex % directAds.length]
+
+              return (
+                <React.Fragment key={post.is_repost ? `repost-${post.feed_created_at}-${post.id}` : `post-${post.id}`}>
+                  <Post post={post} />
+                  {showAd && (
+                    directAd ? (
+                      <DirectAd ad={directAd} />
+                    ) : (
+                      <InlineFeedAd adId="ca-app-pub-8166782428171770/3966636178" />
+                    )
+                  )}
+                </React.Fragment>
+              )
+            })}
+          </div>
+        )}
+      </div>
     </div>
   )
 }

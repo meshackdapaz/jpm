@@ -25,6 +25,7 @@ export default function SearchPage() {
 
   useEffect(() => {
     async function fetchSuggestions(user: any) {
+      setLoading(true)
       let followingIds: string[] = []
       if (user) {
         const { data: followingData } = await supabase
@@ -34,24 +35,28 @@ export default function SearchPage() {
         followingIds = followingData?.map((f: any) => f.following_id) || []
       }
 
+      // Fetch more profiles to have a better pool for "engagement" filtering
       const { data: profilesData } = await supabase
         .from('profiles')
         .select('*')
-        .limit(50)
+        .order('is_verified', { ascending: false })
+        .limit(100)
 
       if (profilesData) {
         // Filter out current user and already followed
         const filtered = profilesData.filter((p: any) => p.id !== user?.id && !followingIds.includes(p.id))
         
-        // Shuffle for variety
-        const shuffled = [...filtered].sort(() => Math.random() - 0.5)
+        // Prioritize verified accounts and then shuffle slightly
+        const prioritized = filtered.sort((a: any, b: any) => {
+          if (a.is_verified && !b.is_verified) return -1
+          if (!a.is_verified && b.is_verified) return 1
+          return Math.random() - 0.5
+        })
         
-        // Prioritize verified accounts
-        const prioritized = shuffled.sort((a, b) => (b.is_verified ? 1 : 0) - (a.is_verified ? 1 : 0))
+        const topProfiles = prioritized.slice(0, 15)
+        const profileIds = topProfiles.map((p: any) => p.id)
         
-        const profileIds = prioritized.map((p: any) => p.id).slice(0, 10)
-        
-        // Fetch follower counts for these profiles
+        // Fetch follower counts for these profiles to show "engagement"
         const { data: followsData } = await supabase
           .from('follows')
           .select('following_id')
@@ -62,13 +67,15 @@ export default function SearchPage() {
           countsMap[f.following_id] = (countsMap[f.following_id] || 0) + 1
         })
 
-        const suggested = prioritized
-          .slice(0, 10)
-          .map(p => ({
-            ...p,
-            follower_count: countsMap[p.id] || 0
-          }))
-        setSuggestedUsers(suggested)
+        const suggested = topProfiles.map((p: any) => ({
+          ...p,
+          follower_count: countsMap[p.id] || 0
+        }))
+
+        // Final sort by follower count for "high engagement" feel
+        suggested.sort((a: any, b: any) => b.follower_count - a.follower_count)
+        
+        setSuggestedUsers(suggested.slice(0, 10))
       }
       setLoading(false)
     }
@@ -134,7 +141,7 @@ export default function SearchPage() {
 
   return (
     <AppLayout>
-      <div className="w-full max-w-full overflow-x-hidden">
+      <div className="w-full max-w-full overflow-x-hidden flex flex-col min-h-[80vh]">
         {/* Sticky header: title + search bar + history chips — all in one block */}
         <div className="sticky top-0 z-30 bg-white dark:bg-black border-b border-zinc-100 dark:border-zinc-900 pt-[env(safe-area-inset-top)] w-full">
           <div className="px-4 pt-3 pb-2 flex items-center gap-2">
@@ -178,16 +185,44 @@ export default function SearchPage() {
           )}
         </div>
 
-        <div className="pl-4 pr-0 py-4">
+        <div className="px-4 py-4">
           <h2 className="text-black dark:text-zinc-500 font-bold text-[16px] mb-4">
             {isSearchMode ? 'Search results' : 'Follow suggestions'}
           </h2>
 
-          <div className="space-y-1">
-            {loading && !isSearchMode ? (
-              <div className="p-8 text-center text-zinc-500">Loading suggestions...</div>
+          <div className="space-y-1 min-h-[400px] flex flex-col">
+            {loading ? (
+              <div className="flex-1 flex flex-col items-center justify-center p-8 text-center space-y-4">
+                <div className="w-12 h-12 border-4 border-zinc-200 dark:border-zinc-800 border-t-black dark:border-t-white rounded-full animate-spin" />
+                <p className="text-zinc-500 font-medium animate-pulse">Loading {isSearchMode ? 'results' : 'suggestions'}...</p>
+                
+                {/* Skeleton UI */}
+                {!isSearchMode && (
+                  <div className="w-full space-y-4 mt-8 opacity-50">
+                    {[1, 2, 3].map(i => (
+                      <div key={i} className="flex items-center gap-3 py-2">
+                        <div className="w-12 h-12 rounded-full bg-zinc-100 dark:bg-zinc-900 animate-pulse" />
+                        <div className="flex-1 space-y-2">
+                          <div className="h-4 w-32 bg-zinc-100 dark:bg-zinc-900 rounded animate-pulse" />
+                          <div className="h-3 w-48 bg-zinc-100 dark:bg-zinc-900 rounded animate-pulse" />
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
             ) : displayUsers.length === 0 ? (
-              !isSearchMode && <div className="p-8 text-center text-zinc-500">No users found.</div>
+              <div className="flex-1 flex flex-col items-center justify-center p-12 text-center mt-4">
+                <div className="w-20 h-20 bg-zinc-100 dark:bg-zinc-900/40 rounded-3xl flex items-center justify-center mb-6 shadow-xl shadow-black/5">
+                  <MagnifyingGlassIcon className="w-10 h-10 text-zinc-300 dark:text-zinc-600" />
+                </div>
+                <h3 className="text-[17px] font-bold text-black dark:text-white mb-1">
+                  {isSearchMode ? 'User no found' : 'No suggestions'}
+                </h3>
+                <p className="text-zinc-500 text-sm max-w-[200px]">
+                  {isSearchMode ? "We couldn't find anyone matching your search." : "Try checking back later for more recommendations."}
+                </p>
+              </div>
             ) : (
               displayUsers.map(user => (
                 <div key={user.id} className="py-3 flex items-center gap-3">

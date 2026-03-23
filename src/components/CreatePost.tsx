@@ -5,12 +5,15 @@ import { createClient } from '@/lib/supabase/client'
 import { useI18n } from '@/lib/i18n'
 import Image from 'next/image'
 import { useAuth } from './AuthProvider'
+import { GiphyPicker } from './GiphyPicker'
 
 export function CreatePost({ inModal = false, onSuccess }: { inModal?: boolean, onSuccess?: () => void }) {
   const [content, setContent] = useState('')
   const [images, setImages] = useState<File[]>([])
+  const [remoteUrls, setRemoteUrls] = useState<string[]>([])
   const [previewUrls, setPreviewUrls] = useState<string[]>([])
   const [loading, setLoading] = useState(false)
+  const [showGiphy, setShowGiphy] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
   const { t } = useI18n()
@@ -70,9 +73,9 @@ export function CreatePost({ inModal = false, onSuccess }: { inModal?: boolean, 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || [])
     if (files.length > 0) {
-      const newImages = [...images, ...files].slice(0, 4)
+      const newImages = [...images, ...files].slice(0, 4 - remoteUrls.length)
       setImages(newImages)
-      setPreviewUrls(newImages.map((file: File) => URL.createObjectURL(file)))
+      setPreviewUrls([...remoteUrls, ...newImages.map((file: File) => URL.createObjectURL(file))])
       setShowEditor(false)
       const img = new (window as any).Image()
       img.src = URL.createObjectURL(newImages[0])
@@ -80,12 +83,26 @@ export function CreatePost({ inModal = false, onSuccess }: { inModal?: boolean, 
     }
   }
 
+  const handleGifSelect = (url: string) => {
+    if (remoteUrls.length + images.length >= 4) return
+    const newRemote = [...remoteUrls, url]
+    setRemoteUrls(newRemote)
+    setPreviewUrls([...newRemote, ...images.map((file: File) => URL.createObjectURL(file))])
+    setShowGiphy(false)
+  }
+
   const removeImage = (index: number) => {
-    const newImages = images.filter((_, i) => i !== index)
-    const newUrls = previewUrls.filter((_, i) => i !== index)
-    setImages(newImages)
-    setPreviewUrls(newUrls)
-    if (newImages.length === 0) setShowEditor(false)
+    if (index < remoteUrls.length) {
+      const newRemote = remoteUrls.filter((_, i) => i !== index)
+      setRemoteUrls(newRemote)
+      setPreviewUrls([...newRemote, ...images.map(f => URL.createObjectURL(f))])
+    } else {
+      const imgIndex = index - remoteUrls.length
+      const newImages = images.filter((_, i) => i !== imgIndex)
+      setImages(newImages)
+      setPreviewUrls([...remoteUrls, ...newImages.map(f => URL.createObjectURL(f))])
+    }
+    if (images.length === 0 && remoteUrls.length === 0) setShowEditor(false)
   }
 
   const renderMeme = () => {
@@ -140,10 +157,10 @@ export function CreatePost({ inModal = false, onSuccess }: { inModal?: boolean, 
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!content && images.length === 0) return
+    if (!content && images.length === 0 && remoteUrls.length === 0) return
     if (!user) { alert('Please log in to post'); return }
     setLoading(true)
-    let image_urls: string[] = []
+    let image_urls: string[] = [...remoteUrls]
     if (images.length > 0) {
       const uploadPromises = images.map(async (img: File, index: number) => {
         let finalBlob: Blob | null = null
@@ -297,7 +314,12 @@ export function CreatePost({ inModal = false, onSuccess }: { inModal?: boolean, 
               <button type="button" onClick={(e) => { e.preventDefault(); fileInputRef.current?.click() }} className="text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 transition-colors" aria-label="Add photo">
                 <svg className="w-[22px] h-[22px]" fill="none" stroke="currentColor" strokeWidth="1.8" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="8.5" cy="8.5" r="1.5" fill="currentColor" stroke="none"/><path d="m21 15-5-5L5 21"/></svg>
               </button>
-              <button type="button" className="text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 transition-colors" aria-label="GIF">
+              <button 
+                type="button" 
+                onClick={() => setShowGiphy(!showGiphy)}
+                className={`transition-colors ${showGiphy ? 'text-blue-600' : 'text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200'}`} 
+                aria-label="GIF"
+              >
                 <svg className="w-[22px] h-[22px]" fill="none" stroke="currentColor" strokeWidth="1.8" viewBox="0 0 24 24"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M10 9H7a1 1 0 0 0-1 1v4a1 1 0 0 0 1 1h2v-2H8m5-4h3m-3 2h2m-2 2h3"/></svg>
               </button>
               <button type="button" className="text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 transition-colors" aria-label="List">
@@ -345,6 +367,12 @@ export function CreatePost({ inModal = false, onSuccess }: { inModal?: boolean, 
             </button>
           </div>
         </div>
+
+        {showGiphy && (
+          <div className="p-4 border-t border-zinc-100 dark:border-zinc-800 animate-in slide-in-from-bottom-2 duration-200">
+            <GiphyPicker onGifSelect={handleGifSelect} onClose={() => setShowGiphy(false)} />
+          </div>
+        )}
 
       </form>
     </div>
