@@ -392,7 +392,7 @@ export function Post({ post }: { post: any }) {
         )}
       </AnimatePresence>
 
-      {/* Repost ribbon */}
+      {/* Repost status */}
       {post.is_repost && (
         <div className="px-12 pt-3 pb-1 text-sm text-zinc-500 font-bold flex items-center gap-2">
           <ArrowPathRoundedSquareIcon className="w-4 h-4" />
@@ -405,7 +405,7 @@ export function Post({ post }: { post: any }) {
       ────────────────────────────────────── */}
       <div
         onClick={() => setShowComments(!showComments)}
-        className="px-4 py-4 flex flex-col gap-2 transition-colors cursor-pointer group/post"
+        className="px-4 py-3 flex flex-col gap-2 transition-colors cursor-pointer group/post"
       >
         {/* Row 1: Avatar + author info + caption */}
         <div className="flex gap-3">
@@ -465,7 +465,7 @@ export function Post({ post }: { post: any }) {
                 </button>
               )}
             </div>
-            <p className="text-[15px] leading-relaxed text-zinc-900 dark:text-zinc-100 whitespace-pre-wrap break-words">
+            <p className="text-[16px] leading-relaxed text-zinc-900 dark:text-zinc-100 whitespace-pre-wrap break-words mt-0.5">
               {post.content}
             </p>
           </div>

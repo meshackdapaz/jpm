@@ -39,7 +39,7 @@ export function Sidebar({ user }: { user: any }) {
       <div className="mb-8 w-full flex justify-center pt-2">
         <Link href="/" className="inline-block">
           <div className="font-black text-5xl tracking-tighter text-black dark:text-white transition-transform hover:scale-105">
-            JPM
+            Echo
           </div>
         </Link>
       </div>

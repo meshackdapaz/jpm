@@ -399,7 +399,7 @@ export function AppLayout({ children, fullBleed = false }: { children: React.Rea
       {/* ── Desktop Left Nav ────────────────────────────────────────────────── */}
       <nav className="fixed top-0 left-0 bottom-0 w-[72px] z-50 hidden sm:flex flex-col items-center justify-between py-6 bg-white dark:bg-black border-r border-zinc-100 dark:border-zinc-900">
         <Link href="/" className="flex-shrink-0 mb-8 pt-2">
-          <div className="font-black text-2xl tracking-tighter">Jpm</div>
+          <div className="font-black text-2xl tracking-tighter">Echo</div>
         </Link>
 
         <div className="flex flex-col items-center gap-2 flex-grow justify-center">
@@ -568,7 +568,7 @@ export function AppLayout({ children, fullBleed = false }: { children: React.Rea
                     <button 
                       className="w-full flex items-center justify-between p-6 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors group"
                     >
-                      <span className="text-[20px] font-bold">Ghost posts</span>
+                      <span className="text-[20px] font-bold">Ghost threads</span>
                       <div className="w-8 h-8 rounded-full bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center border border-zinc-200 dark:border-zinc-700">
                         <svg className="w-5 h-5 text-zinc-600 dark:text-zinc-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
                           <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z" />
@@ -647,7 +647,7 @@ export function AppLayout({ children, fullBleed = false }: { children: React.Rea
               <button onClick={() => setIsPostModalOpen(false)} className="text-zinc-500 font-semibold text-[15px]">
                 Cancel
               </button>
-              <h2 className="font-bold text-[16px]">New jpm</h2>
+              <h2 className="font-bold text-[16px]">New post</h2>
               <div className="w-14" />
             </div>
             <CreatePost inModal={true} onSuccess={() => setIsPostModalOpen(false)} />

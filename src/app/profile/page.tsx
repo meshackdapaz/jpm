@@ -734,7 +734,7 @@ function ProfileContent() {
             return (
               <>
                 {filteredPosts.map((post: any) => <Post key={`${post.id}-${post.is_repost}`} post={post} />)}
-                {filteredPosts.length === 0 && <div className="p-8 text-center text-zinc-400 text-sm">No {activeTab === 'posts' ? 'jpm' : activeTab} yet.</div>}
+                {filteredPosts.length === 0 && <div className="p-8 text-center text-zinc-400 text-sm">No {activeTab === 'posts' ? 'thread' : activeTab} yet.</div>}
               </>
             )
           })()}

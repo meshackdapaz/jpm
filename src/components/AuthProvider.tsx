@@ -66,7 +66,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
               setUpdateInfo({
                 show: true,
                 url: Capacitor.getPlatform() === 'android' 
-                  ? `market://details?id=com.jpm.app` 
+                  ? `market://details?id=com.echo.app` 
                   : `https://apps.apple.com/app/idYOUR_APP_ID`,
                 isCritical: false,
                 latestVersion: availableVersion

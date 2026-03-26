@@ -36,7 +36,7 @@ export function CreatePost({ inModal = false, onSuccess }: { inModal?: boolean, 
       supabase.from('profiles').select('*').eq('id', user.id).single().then(({ data }: { data: any }) => {
         setCurrentProfile(data)
       })
-      const savedDraft = localStorage.getItem('jpm_post_draft')
+      const savedDraft = localStorage.getItem('echo_post_draft')
       if (savedDraft) {
         try {
           const draft = JSON.parse(savedDraft)
@@ -57,7 +57,7 @@ export function CreatePost({ inModal = false, onSuccess }: { inModal?: boolean, 
 
   useEffect(() => {
     if (user && (content || topText || bottomText)) {
-      localStorage.setItem('jpm_post_draft', JSON.stringify({
+      localStorage.setItem('echo_post_draft', JSON.stringify({
         content, topText, bottomText, textColor, textMode, isBold, isItalic, isUnderline
       }))
     }
@@ -212,7 +212,7 @@ export function CreatePost({ inModal = false, onSuccess }: { inModal?: boolean, 
       setContent('')
       setImages([])
       setPreviewUrls([])
-      localStorage.removeItem('jpm_post_draft')
+      localStorage.removeItem('echo_post_draft')
       if (onSuccess) onSuccess()
       else window.location.reload()
     } else {
@@ -229,7 +229,7 @@ export function CreatePost({ inModal = false, onSuccess }: { inModal?: boolean, 
         {/* ── Main composer row ── */}
         <div className="flex gap-3 px-4 pt-4 pb-2">
 
-          {/* Left: avatar + jpm line */}
+          {/* Left: avatar + thread line */}
           <div className="flex flex-col items-center flex-none" style={{ width: 40 }}>
             <div className="w-10 h-10 rounded-full bg-zinc-200 dark:bg-zinc-800 overflow-hidden">
               {currentProfile?.avatar_url ? (
@@ -253,8 +253,8 @@ export function CreatePost({ inModal = false, onSuccess }: { inModal?: boolean, 
 
             <textarea
               ref={textareaRef}
-              className="w-full bg-transparent border-none outline-none resize-none text-[15px] placeholder-zinc-400 dark:placeholder-zinc-500 text-zinc-900 dark:text-white leading-snug min-h-[44px]"
-              placeholder="What's new?"
+              className="w-full bg-transparent border-none outline-none resize-none text-[18px] placeholder-zinc-400 dark:placeholder-zinc-500 text-zinc-900 dark:text-white leading-snug min-h-[44px]"
+              placeholder="What's happening?"
               rows={2}
               value={content}
               onChange={(e) => {
@@ -264,50 +264,18 @@ export function CreatePost({ inModal = false, onSuccess }: { inModal?: boolean, 
               }}
             />
 
-            {/* Image previews */}
-            {previewUrls.length > 0 && (
               <div className="mt-2 rounded-2xl overflow-hidden bg-zinc-100 dark:bg-zinc-800">
-                {showEditor ? (
-                  <div className="p-2 flex justify-center">
-                    <canvas ref={canvasRef} className="max-w-full h-auto rounded-lg" />
-                  </div>
-                ) : (
-                  <div className={`grid gap-1 p-1 ${previewUrls.length === 1 ? 'grid-cols-1' : 'grid-cols-2'}`}>
-                    {previewUrls.map((url: string, i: number) => (
-                      <div key={i} className="relative group">
-                        <Image src={url} alt={`Preview ${i}`} width={600} height={400} className="w-full h-52 object-cover rounded-xl" unoptimized />
-                        <button type="button" onClick={() => removeImage(i)} className="absolute top-2 right-2 bg-black/60 text-white rounded-full p-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
-                          <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M6 18L18 6M6 6l12 12" /></svg>
-                        </button>
-                      </div>
-                    ))}
-                  </div>
-                )}
-                {previewUrls.length === 1 && (
-                  <div className="px-3 pb-2 flex justify-end">
-                    <button type="button" onClick={() => setShowEditor(!showEditor)} className="text-xs text-zinc-500 font-semibold">
-                      {showEditor ? 'Done editing' : 'Customize meme'}
-                    </button>
-                  </div>
-                )}
-                {showEditor && (
-                  <div className="px-4 pb-4 space-y-3 border-t border-zinc-200 dark:border-zinc-700 pt-3">
-                    <div className="grid grid-cols-2 gap-2">
-                      <input type="text" placeholder="TOP TEXT" className="bg-zinc-100 dark:bg-zinc-700 rounded-lg p-2 text-sm font-bold outline-none" value={topText} onChange={(e) => setTopText(e.target.value)} />
-                      <input type="text" placeholder="BOTTOM TEXT" className="bg-zinc-100 dark:bg-zinc-700 rounded-lg p-2 text-sm font-bold outline-none" value={bottomText} onChange={(e) => setBottomText(e.target.value)} />
+                <div className={`grid gap-1 p-1 ${previewUrls.length === 1 ? 'grid-cols-1' : 'grid-cols-2'}`}>
+                  {previewUrls.map((url: string, i: number) => (
+                    <div key={i} className="relative group">
+                      <Image src={url} alt={`Preview ${i}`} width={600} height={400} className="w-full h-52 object-cover rounded-xl" unoptimized />
+                      <button type="button" onClick={() => removeImage(i)} className="absolute top-2 right-2 bg-black/60 text-white rounded-full p-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M6 18L18 6M6 6l12 12" /></svg>
+                      </button>
                     </div>
-                    <div className="flex items-center gap-3 flex-wrap">
-                      {['#ffffff', '#ffeb3b', '#4caf50', '#2196f3', '#f44336'].map(color => (
-                        <button key={color} type="button" onClick={() => setTextColor(color)} className={`w-5 h-5 rounded-full border-2 ${textColor === color ? 'border-blue-500' : 'border-zinc-300'}`} style={{ backgroundColor: color }} />
-                      ))}
-                      {(['normal', 'stroke', 'bg'] as const).map(mode => (
-                        <button key={mode} type="button" onClick={() => setTextMode(mode)} className={`px-2 py-1 text-xs rounded font-bold ${textMode === mode ? 'bg-zinc-900 text-white dark:bg-white dark:text-black' : 'text-zinc-500'}`}>{mode}</button>
-                      ))}
-                    </div>
-                  </div>
-                )}
+                  ))}
+                </div>
               </div>
-            )}
 
             {/* Media attachment icons */}
             <div className="flex items-center gap-5 mt-3">
@@ -335,14 +303,14 @@ export function CreatePost({ inModal = false, onSuccess }: { inModal?: boolean, 
           </div>
         </div>
 
-        {/* ── "Add to jpm" row ── */}
+        {/* ── "Add to thread" row ── */}
         <div className="flex gap-3 px-4 py-2 items-center">
           <div className="flex-none flex justify-center" style={{ width: 40 }}>
             <div className="w-6 h-6 rounded-full bg-zinc-200 dark:bg-zinc-700 overflow-hidden opacity-50">
               {currentProfile?.avatar_url && <Image src={currentProfile.avatar_url} alt="" width={24} height={24} className="w-full h-full object-cover" unoptimized />}
             </div>
           </div>
-          <span className="text-[14px] text-zinc-400">Add to jpm</span>
+          <span className="text-[14px] text-zinc-400">Add to thread</span>
         </div>
 
         <input type="file" hidden ref={fileInputRef} accept="image/*" multiple onChange={handleImageChange} />

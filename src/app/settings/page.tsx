@@ -278,7 +278,7 @@ function SettingsContent() {
                       <div className="flex flex-col gap-1 pr-6">
                         <span className="font-bold text-[16px]">Private profile</span>
                         <p className="text-zinc-500 leading-relaxed text-[15px]">
-                          When your account is private, only followers can see and interact with your jpm.
+                          When your account is private, only followers can see and interact with your threads.
                         </p>
                       </div>
                       <label className="relative inline-flex items-center cursor-pointer flex-shrink-0 mt-1">
