@@ -10,7 +10,8 @@ import {
   BanknotesIcon,
   MegaphoneIcon,
   PlusIcon,
-  ChartBarSquareIcon
+  ChartBarSquareIcon,
+  ExclamationTriangleIcon
 } from '@heroicons/react/24/solid'
 import { 
   ChevronRightIcon,
@@ -25,6 +26,7 @@ import { createClient } from '@/lib/supabase/client'
 import Image from 'next/image'
 import { useTheme } from 'next-themes'
 import { useRouter, useSearchParams } from 'next/navigation'
+import Link from 'next/link'
 import { AdminAdManager } from '@/components/AdminAdManager'
 
 // ─── Account Profile Editor ────────────────────────────────────────────────────
@@ -132,7 +134,8 @@ function SettingsContent() {
     isPrivate: false,
     mentions: 'Everyone',
     tags: 'Everyone',
-    online: 'Anyone'
+    online: 'Anyone',
+    dataSaver: false
   })
 
   const [totalViews, setTotalViews] = useState(0)
@@ -186,11 +189,18 @@ function SettingsContent() {
   }
 
   const updateSetting = async (key: string, value: any) => {
-    const newSettings = { ...settings, [key]: value }
-    setSettings(newSettings)
-    if (user) {
-      await supabase.from('profiles').update({ settings: newSettings }).eq('id', user.id)
+    if (key === 'dataSaver' && typeof window !== 'undefined') {
+      localStorage.setItem('echo_data_saver', value.toString())
     }
+    setSettings(prev => {
+      const newSettings = { ...prev, [key]: value }
+      if (user) {
+        supabase.from('profiles').update({ settings: newSettings }).eq('id', user.id).then(({ error }: { error: any }) => {
+          if (error) console.error('Error updating setting:', error)
+        })
+      }
+      return newSettings
+    })
   }
 
   const { theme, setTheme } = useTheme()
@@ -203,6 +213,7 @@ function SettingsContent() {
   const leftMenu = [
     { id: 'privacy',     label: 'Privacy',         icon: LockClosedIcon },
     { id: 'status',      label: 'Edit Profile',     icon: UserIcon },
+    { id: 'account',     label: 'Account',          icon: InformationCircleIcon },
     { id: 'monetization',label: 'Monetization',    icon: BanknotesIcon },
     ...(currentProfile?.is_admin ? [{ id: 'ads', label: 'Ads Management', icon: MegaphoneIcon }] : []),
     { id: 'appearance',  label: 'Appearance',       icon: SunIcon },
@@ -211,9 +222,9 @@ function SettingsContent() {
   ]
 
   return (
-    <AppLayout>
+    <AppLayout wide={activeTab === 'monetization'} hideSidebar={true}>
       <div className="flex justify-center w-full min-h-screen pt-4 sm:pt-8">
-        <div className="flex w-full max-w-4xl overflow-hidden min-h-[600px]">
+        <div className={`flex w-full ${activeTab === 'monetization' ? 'max-w-6xl' : 'max-w-4xl'} overflow-hidden min-h-[600px]`}>
           
           {/* Left Menu / Mobile Top Bar */}
           <div className={`w-full sm:w-1/3 sm:min-w-[220px] sm:max-w-[280px] border-r border-zinc-200 dark:border-zinc-800 p-4 ${activeTab !== 'settings_menu_mobile_placeholder' ? 'hidden sm:block' : 'block sm:hidden'}`}>
@@ -297,6 +308,17 @@ function SettingsContent() {
                         <span className="font-medium text-[16px]">Online status</span>
                         <ChevronRightIcon className="w-5 h-5 text-zinc-400" />
                       </button>
+                      <div className="h-px bg-zinc-100 dark:bg-zinc-800/50 mx-2" />
+                      <div className="w-full flex items-center justify-between py-4 px-2">
+                        <div className="flex flex-col gap-0.5">
+                          <span className="font-medium text-[16px]">Data Saver</span>
+                          <p className="text-[12px] text-zinc-500">Reduce data usage by loading smaller images</p>
+                        </div>
+                        <label className="relative inline-flex items-center cursor-pointer flex-shrink-0">
+                          <input type="checkbox" checked={settings.dataSaver} onChange={(e) => updateSetting('dataSaver', e.target.checked)} className="sr-only peer" />
+                          <div className="w-11 h-6 bg-zinc-200 peer-focus:outline-none rounded-full peer dark:bg-zinc-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-zinc-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-zinc-600 peer-checked:bg-black dark:peer-checked:bg-white"></div>
+                        </label>
+                      </div>
                     </div>
                   </div>
                 )}
@@ -441,6 +463,58 @@ function SettingsContent() {
               <AccountEditor profile={currentProfile} userId={user?.id} supabase={supabase} onSaved={(p: any) => setCurrentProfile(p)} />
             )}
 
+            {/* ACCOUNT TAB / DELETE ACCOUNT */}
+            {activeTab === 'account' && (
+              <div className="p-4 sm:p-8 animate-in fade-in duration-200">
+                <h3 className="font-bold text-[18px] mb-1">Account Settings</h3>
+                <p className="text-zinc-500 text-[15px] mb-8 leading-relaxed">Manage your account information and privacy.</p>
+                
+                <div className="space-y-6">
+                  <div className="p-6 bg-zinc-50 dark:bg-zinc-900 rounded-2xl border border-zinc-100 dark:border-zinc-800">
+                    <h4 className="font-bold mb-2">Account Information</h4>
+                    <div className="space-y-4 text-[15px]">
+                      <div className="flex justify-between">
+                        <span className="text-zinc-500">Email</span>
+                        <span className="font-medium">{user?.email}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-zinc-500">Joined</span>
+                        <span className="font-medium">{currentProfile?.date_joined || 'N/A'}</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="p-6 bg-red-50 dark:bg-red-950/20 rounded-2xl border border-red-100 dark:border-red-900/40">
+                    <h4 className="font-bold text-red-600 dark:text-red-400 mb-2 flex items-center gap-2">
+                       <ExclamationTriangleIcon className="w-5 h-5" />
+                       Danger Zone
+                    </h4>
+                    <p className="text-zinc-600 dark:text-zinc-400 text-[14px] mb-6 leading-relaxed">
+                      Deleting your account is permanent. All your posts, likes, followers, and earnings will be erased forever. This action cannot be undone.
+                    </p>
+                    <button 
+                      onClick={async () => {
+                        if (confirm('ARE YOU ABSOLUTELY SURE? \n\nThis will delete your account forever. This is non-reversible.')) {
+                          if (confirm('FINAL WARNING: Do you really want to delete EVERYTHING?')) {
+                             const { error } = await supabase.rpc('delete_user_permanently')
+                             if (error) {
+                               alert('Error deleting account: ' + error.message)
+                             } else {
+                               await supabase.auth.signOut()
+                               window.location.href = '/'
+                             }
+                          }
+                        }
+                      }}
+                      className="px-6 py-3 bg-red-600 text-white font-bold rounded-xl hover:bg-red-700 transition-colors shadow-lg shadow-red-600/10 active:scale-95 text-[15px]"
+                    >
+                      Delete Account Forever
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+
             {/* APPEARANCE TAB */}
             {activeTab === 'appearance' && (
               <div className="p-4 sm:p-8 animate-in fade-in duration-200">
@@ -498,6 +572,12 @@ function SettingsContent() {
                       <p className="font-bold text-zinc-900 dark:text-white">Help & Support System</p>
                       <a href="mailto:meshackurassa2@gmail.com" className="text-blue-500 hover:underline">meshackurassa2@gmail.com</a>
                     </div>
+                  </div>
+                  <div className="h-px bg-zinc-200 dark:bg-zinc-800 my-4" />
+                  <div className="flex flex-col gap-3 font-medium text-[15px] sm:flex-row sm:justify-center">
+                    <Link href="/terms" className="text-zinc-500 hover:text-black dark:hover:text-white hover:underline underline-offset-4">Terms of Service</Link>
+                    <span className="hidden sm:inline text-zinc-300">|</span>
+                    <Link href="/privacy" className="text-zinc-500 hover:text-black dark:hover:text-white hover:underline underline-offset-4">Privacy Policy</Link>
                   </div>
                 </div>
               </div>

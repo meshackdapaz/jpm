@@ -164,10 +164,10 @@ function buildRecommendedFeed(postsData: any[] | null, myReposts: string[], myLi
 
 // ── Select strings — only existing columns ────────────────────────────────────
 
-const POST_SEL = `id, content, image_url, image_urls, title, created_at, creator_id, view_count, hide_counts, is_archived, profiles:creator_id(id, full_name, username, avatar_url, is_verified, last_seen, settings), likes(count), comments(count), reposts(count)`
+const POST_SEL = `id, content, image_url, image_urls, title, created_at, creator_id, view_count, hide_counts, is_archived, settings, quoted_post_id, quoted_post:quoted_post_id(id, content, profiles:creator_id(id, username, full_name, avatar_url)), profiles:creator_id(id, full_name, username, avatar_url, is_verified, last_seen, settings), likes(count), comments(count), reposts(count)`
 
 // Use simple join (no FK alias) to avoid PostgREST join resolution errors
-const REPOST_SEL = `created_at, user_id, profiles:user_id(id, full_name, username, avatar_url, is_verified), post:posts(id, content, image_url, image_urls, title, created_at, creator_id, view_count, hide_counts, is_archived, profiles:creator_id(id, full_name, username, avatar_url, is_verified, last_seen, settings), likes(count), comments(count), reposts(count))`
+const REPOST_SEL = `created_at, user_id, profiles:user_id(id, full_name, username, avatar_url, is_verified), post:posts(id, content, image_url, image_urls, title, created_at, creator_id, view_count, hide_counts, is_archived, settings, quoted_post_id, quoted_post:quoted_post_id(id, content, profiles:creator_id(id, username, full_name, avatar_url)), profiles:creator_id(id, full_name, username, avatar_url, is_verified, last_seen, settings), likes(count), comments(count), reposts(count))`
 
 // ── Main Feed ─────────────────────────────────────────────────────────────────
 
@@ -189,7 +189,7 @@ export function Feed() {
     }
     
     // Fetch active Direct Ads
-    supabase.from('direct_ads').select('*').eq('active', true).then(({ data }: { data: any }) => {
+    supabase.from('direct_ads').select('*').eq('is_active', true).then(({ data }: { data: any }) => {
       if (data) setDirectAds(data)
     })
   }, [user])
@@ -368,7 +368,7 @@ export function Feed() {
             {posts.map((post, index) => {
               const adIndex = Math.floor(index / 10)
               const showAd = index > 0 && index % 10 === 4
-              const directAd = directAds[adIndex % directAds.length]
+              const directAd = directAds.length > 0 ? directAds[adIndex % directAds.length] : null
 
               return (
                 <React.Fragment key={post.is_repost ? `repost-${post.feed_created_at}-${post.id}` : `post-${post.id}`}>

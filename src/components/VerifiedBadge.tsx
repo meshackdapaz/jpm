@@ -3,7 +3,7 @@ import React from 'react'
 export function VerifiedBadge({ className = "w-4 h-4" }: { className?: string }) {
   return (
     <svg 
-      className={`${className} text-red-500 fill-current inline-block ml-1`} 
+      className={`${className} text-sky-500 fill-current inline-block ml-1 flex-none`} 
       viewBox="0 0 24 24" 
       aria-label="Verified Account"
     >

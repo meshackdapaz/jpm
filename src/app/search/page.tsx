@@ -17,11 +17,33 @@ const triggerHaptic = (style = ImpactStyle.Light) => {
 }
 export default function SearchPage() {
   const [suggestedUsers, setSuggestedUsers] = useState<any[]>([])
+  const [popularAccounts, setPopularAccounts] = useState<any[]>([])
+  const [searchHistory, setSearchHistory] = useState<string[]>([])
   const [searchQuery, setSearchQuery] = useState('')
   const [searchResults, setSearchResults] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const { user: currentUser } = useAuth()
   const supabase = createClient()
+
+  // Load history on mount
+  useEffect(() => {
+    const saved = localStorage.getItem('search_history')
+    if (saved) {
+      try {
+        setSearchHistory(JSON.parse(saved))
+      } catch (e) {
+        setSearchHistory([])
+      }
+    }
+  }, [])
+
+  const saveToHistory = (query: string) => {
+    if (!query.trim() || query.length < 2) return
+    const q = query.trim()
+    const updated = [q, ...searchHistory.filter(h => h !== q)].slice(0, 8)
+    setSearchHistory(updated)
+    localStorage.setItem('search_history', JSON.stringify(updated))
+  }
 
   useEffect(() => {
     async function fetchSuggestions(user: any) {
@@ -80,6 +102,16 @@ export default function SearchPage() {
       setLoading(false)
     }
     fetchSuggestions(currentUser)
+
+    const fetchPopular = async () => {
+      const { data } = await supabase
+        .from('profiles')
+        .select('id, username, full_name, is_verified')
+        .eq('is_verified', true)
+        .limit(6)
+      if (data) setPopularAccounts(data)
+    }
+    fetchPopular()
   }, [currentUser])
 
 
@@ -99,6 +131,7 @@ export default function SearchPage() {
         .limit(15)
 
       if (data) {
+        saveToHistory(searchQuery)
         const profileIds = data.map((u: any) => u.id)
         const { data: followsData } = await supabase
           .from('follows')
@@ -170,16 +203,44 @@ export default function SearchPage() {
             </div>
           </div>
 
-          {/* Search History chips — inside the sticky block to avoid overlap */}
+          {/* Search History / Popular Accounts — inside the sticky block */}
           {!isSearchMode && (
             <div className="px-4 pb-3 w-full">
               <div className="flex gap-2 overflow-x-auto no-scrollbar">
-                <div className="h-8 w-24 bg-zinc-200 dark:bg-zinc-800/60 rounded-[10px] flex-shrink-0 animate-pulse" />
-                <div className="h-8 w-28 bg-zinc-200 dark:bg-zinc-800/60 rounded-[10px] flex-shrink-0 animate-pulse" />
-                <div className="h-8 w-20 bg-zinc-200 dark:bg-zinc-800/60 rounded-[10px] flex-shrink-0 animate-pulse" />
-                <div className="h-8 w-32 bg-zinc-200 dark:bg-zinc-800/60 rounded-[10px] flex-shrink-0 animate-pulse" />
-                <div className="h-8 w-16 bg-zinc-200 dark:bg-zinc-800/60 rounded-[10px] flex-shrink-0 animate-pulse" />
-                <div className="h-8 w-24 bg-zinc-200 dark:bg-zinc-800/60 rounded-[10px] flex-shrink-0 animate-pulse" />
+                {/* Real Search History */}
+                {searchHistory.map((h, i) => (
+                  <button
+                    key={`hist-${i}`}
+                    onClick={() => {
+                      triggerHaptic(ImpactStyle.Light)
+                      setSearchQuery(h)
+                    }}
+                    className="h-8 px-4 bg-zinc-100 dark:bg-zinc-800/60 rounded-[10px] flex-shrink-0 flex items-center justify-center text-[13px] font-bold text-zinc-900 dark:text-zinc-100 hover:bg-zinc-200 dark:hover:bg-zinc-700 transition-colors"
+                  >
+                    {h}
+                  </button>
+                ))}
+
+                {/* Popular Accounts */}
+                {popularAccounts.map((acc) => (
+                  <button
+                    key={acc.id}
+                    onClick={() => {
+                      triggerHaptic(ImpactStyle.Light)
+                      window.location.href = `/profile?id=${acc.id}`
+                    }}
+                    className="h-8 px-4 bg-zinc-100 dark:bg-zinc-800/60 rounded-[10px] flex-shrink-0 flex items-center justify-center text-[13px] font-bold text-zinc-900 dark:text-zinc-100 hover:bg-zinc-200 dark:hover:bg-zinc-700 transition-colors border border-zinc-200/50 dark:border-zinc-700/50"
+                  >
+                    @{acc.username}
+                  </button>
+                ))}
+
+                {searchHistory.length === 0 && popularAccounts.length === 0 && (
+                  <>
+                    <div className="h-8 w-24 bg-zinc-100 dark:bg-zinc-800/60 rounded-[10px] flex-shrink-0 animate-pulse" />
+                    <div className="h-8 w-28 bg-zinc-100 dark:bg-zinc-800/60 rounded-[10px] flex-shrink-0 animate-pulse" />
+                  </>
+                )}
               </div>
             </div>
           )}

@@ -46,11 +46,12 @@ import { Haptics, ImpactStyle } from '@capacitor/haptics'
 // ── Pull-to-refresh threshold (px) ─────────────────────────────────────────
 const PTR_THRESHOLD = 72
 
-export function AppLayout({ children, fullBleed = false }: { children: React.ReactNode; fullBleed?: boolean }) {
+export function AppLayout({ children, fullBleed = false, wide = false, hideSidebar = false, isPublic = false }: { children: React.ReactNode; fullBleed?: boolean; wide?: boolean; hideSidebar?: boolean; isPublic?: boolean }) {
   const { user: currentUser, loading: authLoading } = useAuth()
   const pathname = usePathname()
   const router = useRouter()
   const [isPostModalOpen, setIsPostModalOpen] = useState(false)
+  const [quotedPost, setQuotedPost] = useState<any>(null)
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
   const [unreadCount, setUnreadCount] = useState(0)
   const supabase = createClient()
@@ -292,14 +293,18 @@ export function AppLayout({ children, fullBleed = false }: { children: React.Rea
 
   // ── Protection logic ──
   useEffect(() => {
-    if (!authLoading && !currentUser) {
+    if (!isPublic && !authLoading && !currentUser) {
       router.push('/login')
     }
-  }, [authLoading, currentUser, router])
+  }, [authLoading, currentUser, router, isPublic])
 
   // Listen for custom event to open post modal from Feed
   useEffect(() => {
-    const handler = () => setIsPostModalOpen(true)
+    const handler = (e: any) => {
+      if (e.detail) setQuotedPost(e.detail)
+      else setQuotedPost(null)
+      setIsPostModalOpen(true)
+    }
     window.addEventListener('open-post-modal', handler)
     return () => window.removeEventListener('open-post-modal', handler)
   }, [])
@@ -452,11 +457,11 @@ export function AppLayout({ children, fullBleed = false }: { children: React.Rea
         {fullBleed ? (
           children
         ) : (
-          <div className="flex w-full max-w-4xl gap-0 lg:gap-8 lg:px-4">
-            <div className="flex-1 min-w-0 max-w-xl w-full min-h-screen bg-white dark:bg-black sm:ml-[72px]">
+          <div className={`flex w-full ${(wide || hideSidebar) ? 'max-w-6xl' : 'max-w-4xl'} gap-0 lg:gap-8 lg:px-4`}>
+            <div className={`flex-1 min-w-0 ${(wide || hideSidebar) ? 'max-w-4xl' : 'max-w-xl'} w-full min-h-screen bg-white dark:bg-black sm:ml-[72px]`}>
               {children}
             </div>
-            {!isNative && <RightSidebar />}
+            {!isNative && !hideSidebar && <RightSidebar />}
           </div>
         )}
       </main>
@@ -636,11 +641,11 @@ export function AppLayout({ children, fullBleed = false }: { children: React.Rea
       {/* ── Create Post Modal ─────────────────────────────────────────────────  */}
       {isPostModalOpen && (
         <div
-          className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center sm:p-4 bg-black/60 backdrop-blur-sm"
+          className="fixed inset-0 z-[100] bg-white dark:bg-zinc-950 flex flex-col"
           onClick={() => setIsPostModalOpen(false)}
         >
           <div
-            className="bg-white dark:bg-zinc-950 w-full sm:max-w-xl rounded-t-3xl sm:rounded-2xl overflow-hidden animate-slide-up sm:animate-none"
+            className="w-full h-full bg-white dark:bg-zinc-950 overflow-hidden animate-slide-up flex flex-col"
             onClick={e => e.stopPropagation()}
           >
             <div className="flex justify-between items-center px-5 py-4 border-b border-zinc-100 dark:border-zinc-800/80">
@@ -650,7 +655,14 @@ export function AppLayout({ children, fullBleed = false }: { children: React.Rea
               <h2 className="font-bold text-[16px]">New post</h2>
               <div className="w-14" />
             </div>
-            <CreatePost inModal={true} onSuccess={() => setIsPostModalOpen(false)} />
+            <CreatePost 
+              inModal 
+              quotedPost={quotedPost}
+              onSuccess={() => {
+                setIsPostModalOpen(false)
+                setQuotedPost(null)
+              }} 
+            />
           </div>
         </div>
       )}

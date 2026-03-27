@@ -57,6 +57,7 @@ function getAction(type: string) {
     case 'follow':  return 'followed you'
     case 'mention': return 'mentioned you'
     case 'message': return 'sent you a message'
+    case 'quote':   return 'quoted your post'
     default:        return 'interacted with you'
   }
 }
@@ -75,34 +76,43 @@ export default function NotificationsPage() {
   const [followStates, setFollowStates] = useState<Record<string, boolean>>({})
   const supabase = createClient()
 
-  const fetchNotifications = useCallback(async () => {
-    if (!user) return
-    setLoading(true)
-    const { data } = await supabase
-      .from('notifications')
-      .select(`*, actor:profiles!notifications_actor_id_profiles_fkey(id, full_name, username, avatar_url)`)
-      .eq('user_id', user.id)
-      .order('created_at', { ascending: false })
-      .limit(80)
-    if (data) setNotifications(data)
-    setLoading(false)
-  }, [user])
-
-  // Check follow-back state for each actor
   const checkFollowStates = useCallback(async (notifs: any[]) => {
-    if (!user) return
-    const actorIds = [...new Set(notifs.filter(n => n.type === 'follow').map(n => n.actor_id))]
-    if (!actorIds.length) return
+    if (!user) return {}
+    const actorIds = [...new Set(notifs.map(n => n.actor_id))]
+    if (!actorIds.length) return {}
+    
     const { data } = await supabase
       .from('follows')
       .select('following_id')
       .eq('follower_id', user.id)
       .in('following_id', actorIds)
+      
     const followedIds = new Set((data || []).map((f: any) => f.following_id))
     const states: Record<string, boolean> = {}
-    actorIds.forEach(id => { states[id] = followedIds.has(id) })
-    setFollowStates(states)
+    actorIds.forEach(id => { 
+      states[id] = followedIds.has(id) 
+    })
+    return states
   }, [user])
+
+  const fetchNotifications = useCallback(async () => {
+    if (!user) return
+    setLoading(true)
+    
+    const { data: notifs } = await supabase
+      .from('notifications')
+      .select(`*, actor:profiles!notifications_actor_id_profiles_fkey(id, full_name, username, avatar_url)`)
+      .eq('user_id', user.id)
+      .order('created_at', { ascending: false })
+      .limit(80)
+      
+    if (notifs) {
+      const states = await checkFollowStates(notifs)
+      setFollowStates(states)
+      setNotifications(notifs)
+    }
+    setLoading(false)
+  }, [user, checkFollowStates])
 
   const toggleFollow = async (actorId: string) => {
     if (!user) return
@@ -135,13 +145,13 @@ export default function NotificationsPage() {
   }, [user, authLoading])
 
   useEffect(() => {
-    if (notifications.length) checkFollowStates(notifications)
+    // We no longer trigger checkFollowStates here because it's integrated into fetchNotifications
   }, [notifications])
 
   // Apply filter
   const visible = (() => {
     if (filter === 'Follows') return notifications.filter(n => n.type === 'follow')
-    if (filter === 'Conversations') return notifications.filter(n => n.type === 'message' || n.type === 'comment')
+    if (filter === 'Conversations') return notifications.filter(n => n.type === 'message' || n.type === 'comment' || n.type === 'quote')
     return notifications
   })()
 

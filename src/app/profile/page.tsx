@@ -69,103 +69,50 @@ function ProfileContent() {
     async function fetchProfile() {
       if (!id) return
       
-      const { data: profileData } = await supabase
-        .from('profiles')
-        .select('*, settings, last_seen')
-        .eq('id', id)
-        .single()
+      // Phase 1: Metadata (Profile, Counts, Relationship) - Parallel
+      const [profileRes, followersRes, followingRes, followCheckRes] = await Promise.all([
+        supabase.from('profiles').select('*, settings, last_seen').eq('id', id).single(),
+        supabase.from('follows').select('*', { count: 'exact', head: true }).eq('following_id', id),
+        supabase.from('follows').select('*', { count: 'exact', head: true }).eq('follower_id', id),
+        currentUser && currentUser.id !== id 
+          ? supabase.from('follows').select('*').eq('follower_id', currentUser.id).eq('following_id', id).maybeSingle()
+          : Promise.resolve({ data: null })
+      ])
       
-      if (profileData) {
-        setProfile(profileData)
+      if (profileRes.data) {
+        const pd = profileRes.data
+        setProfile(pd)
         setEditData({
-          full_name: profileData.full_name || '',
-          bio: profileData.bio || '',
-          interests: profileData.settings?.interests || '',
-          links: profileData.settings?.links || '',
-          podcast: profileData.settings?.podcast || '',
+          full_name: pd.full_name || '',
+          bio: pd.bio || '',
+          interests: pd.settings?.interests || '',
+          links: pd.settings?.links || '',
+          podcast: pd.settings?.podcast || '',
           settings: {
-            isPrivate: !!profileData.settings?.isPrivate,
-            showOnlineStatus: profileData.settings?.showOnlineStatus !== false,
-            mentions: profileData.settings?.mentions || 'Everyone',
-            tags: profileData.settings?.tags || 'Everyone'
+            isPrivate: !!pd.settings?.isPrivate,
+            showOnlineStatus: pd.settings?.showOnlineStatus !== false,
+            mentions: pd.settings?.mentions || 'Everyone',
+            tags: pd.settings?.tags || 'Everyone'
           }
         })
       }
+      setFollowers(followersRes.count || 0)
+      setFollowing(followingRes.count || 0)
+      setIsFollowing(!!followCheckRes.data)
 
-      // Fetch follow counts
-      const { count: followersCount } = await supabase
-        .from('follows')
-        .select('*', { count: 'exact', head: true })
-        .eq('following_id', id)
+      // Phase 2: Feed Data - Parallel
+      const postSel = '*, quoted_post:quoted_post_id(id, content, profiles:creator_id(id, username, full_name, avatar_url)), profiles:creator_id(id, full_name, username, avatar_url, is_verified, last_seen, settings), likes(count), comments(count), reposts(count)'
       
-      const { count: followingCount } = await supabase
-        .from('follows')
-        .select('*', { count: 'exact', head: true })
-        .eq('follower_id', id)
-      
-      setFollowers(followersCount || 0)
-      setFollowing(followingCount || 0)
-
-      // Check if current user follows this profile
-      if (currentUser && currentUser.id !== id) {
-        const { data: followData } = await supabase
-          .from('follows')
-          .select('*')
-          .eq('follower_id', currentUser.id)
-          .eq('following_id', id)
-          .maybeSingle()
-        
-        setIsFollowing(!!followData)
-      }
-
-      const { data: postData } = await supabase
-        .from('posts')
-        .select(`
-          *,
-          profiles:creator_id(id, full_name, username, avatar_url, is_verified, last_seen, settings),
-          likes(count),
-          comments(count),
-          reposts(count)
-        `)
-        .eq('creator_id', id)
-        .order('created_at', { ascending: false })
-
-      const { data: repostsData } = await supabase
-        .from('reposts')
-        .select(`
-          created_at,
-          user_id,
-          profiles:user_id(id, full_name, username, avatar_url, is_verified, last_seen, settings),
-          post:posts(
-            *,
-            profiles:creator_id(id, full_name, username, avatar_url, is_verified, last_seen, settings),
-            likes(count),
-            comments(count),
-            reposts(count)
-          )
-        `)
-        .eq('user_id', id)
-        .order('created_at', { ascending: false })
-
-      const { data: likesRawData } = await supabase
-        .from('likes')
-        .select(`
-          created_at,
-          post:posts(
-            *,
-            profiles:creator_id(id, full_name, username, avatar_url, is_verified, last_seen, settings),
-            likes(count),
-            comments(count),
-            reposts(count)
-          )
-        `)
-        .eq('user_id', id)
-        .order('created_at', { ascending: false })
+      const [postsRes, repostsRes, likesRes] = await Promise.all([
+        supabase.from('posts').select(postSel).eq('creator_id', id).order('is_pinned', { ascending: false }).order('created_at', { ascending: false }),
+        supabase.from('reposts').select(`created_at, user_id, profiles:user_id(id, full_name, username, avatar_url, is_verified, last_seen, settings), post:posts(${postSel})`).eq('user_id', id).order('created_at', { ascending: false }),
+        supabase.from('likes').select(`created_at, post:posts(${postSel})`).eq('user_id', id).order('created_at', { ascending: false })
+      ])
 
       let combinedFeed: any[] = []
 
-      if (postData) {
-        combinedFeed = [...combinedFeed, ...postData.map((p: any) => ({
+      if (postsRes.data) {
+        combinedFeed = [...combinedFeed, ...postsRes.data.map((p: any) => ({
           ...p,
           is_repost: false,
           likes_count: p.likes?.[0]?.count || 0,
@@ -174,14 +121,12 @@ function ProfileContent() {
         }))]
       }
 
-      if (repostsData && repostsData.length > 0) {
-        const formattedReposts = repostsData
+      if (repostsRes.data) {
+        const formattedReposts = repostsRes.data
           .map((r: any) => {
             const originalPost = Array.isArray(r.post) ? r.post[0] : r.post
             if (!originalPost) return null
-
             const reposterProfile = Array.isArray(r.profiles) ? r.profiles[0] : r.profiles
-
             return {
               ...originalPost,
               feed_created_at: r.created_at,
@@ -194,12 +139,11 @@ function ProfileContent() {
             }
           })
           .filter(Boolean)
-
         combinedFeed = [...combinedFeed, ...formattedReposts]
       }
 
-      if (likesRawData && likesRawData.length > 0) {
-        const formattedLikes = likesRawData
+      if (likesRes.data) {
+        const formattedLikes = likesRes.data
           .map((l: any) => {
             const originalPost = Array.isArray(l.post) ? l.post[0] : l.post
             if (!originalPost) return null
@@ -213,11 +157,9 @@ function ProfileContent() {
             }
           })
           .filter(Boolean)
-
         combinedFeed = [...combinedFeed, ...formattedLikes]
       }
 
-      // Sort by combined feed_created_at or created_at
       combinedFeed.sort((a: any, b: any) => {
         const dateA = new Date(a.feed_created_at || a.created_at).getTime()
         const dateB = new Date(b.feed_created_at || b.created_at).getTime()
@@ -702,7 +644,7 @@ function ProfileContent() {
                   : 'text-zinc-400 dark:text-zinc-500 hover:text-zinc-600 dark:hover:text-zinc-300'
               }`}
             >
-              {tab === 'posts' ? 'JPM' : tab.charAt(0).toUpperCase() + tab.slice(1)}
+              {tab === 'posts' ? 'Threads' : tab.charAt(0).toUpperCase() + tab.slice(1)}
               {activeTab === tab && (
                 <span className="absolute bottom-0 left-1/2 -translate-x-1/2 w-10 h-[2px] bg-black dark:bg-white rounded-full" />
               )}

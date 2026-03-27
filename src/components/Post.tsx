@@ -9,14 +9,18 @@ import {
   EyeSlashIcon,
   ArchiveBoxIcon,
   TrashIcon,
+  PhotoIcon,
+  LockClosedIcon,
 } from '@heroicons/react/24/outline'
 import { useI18n } from '@/lib/i18n'
 import Image from 'next/image'
 import Link from 'next/link'
+import { usePathname, useRouter } from 'next/navigation'
 import { VerifiedBadge } from './VerifiedBadge'
 import { motion, AnimatePresence } from 'framer-motion'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
+import { createPortal } from 'react-dom'
 import { createClient } from '@/lib/supabase/client'
 import { useAuth } from './AuthProvider'
 import { Haptics, ImpactStyle } from '@capacitor/haptics'
@@ -41,25 +45,51 @@ function formatRelativeTime(dateString: string) {
 }
 
 export function Post({ post }: { post: any }) {
+  const [isDeleting, setIsDeleting] = useState(false)
+  const [isDeletedLocally, setIsDeletedLocally] = useState(false)
+  const [showOptions, setShowOptions] = useState(false)
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
+  const [mounted, setMounted] = useState(false)
+
+  useEffect(() => {
+    setMounted(true)
+  }, [])
   const { t } = useI18n()
+  const router = useRouter()
+  const pathname = usePathname()
+  const supabase = createClient()
+  const { user: currentUser } = useAuth()
+  
   const [likes, setLikes] = useState(post.likes_count || 0)
   const [isLiked, setIsLiked] = useState(post.is_liked_by_me || false)
   const [comments, setComments] = useState(post.comments_count || 0)
   const [reposts, setReposts] = useState(post.reposts_count || 0)
   const [isReposted, setIsReposted] = useState(post.is_reposted_by_me || false)
-  const [views, setViews] = useState(post.view_count || 0)
+  const [views, setViews] = useState(post.view_count || post.views_count || 0)
   const [showAnalytics, setShowAnalytics] = useState(false)
   const [showReactions, setShowReactions] = useState(false)
   const [activeReaction, setActiveReaction] = useState<string | null>(post.my_reaction || null)
-  const [isDeleting, setIsDeleting] = useState(false)
-  const [isDeletedLocally, setIsDeletedLocally] = useState(false)
-  const [showOptions, setShowOptions] = useState(false)
   const [hideCounts, setHideCounts] = useState(post.hide_counts || false)
   const [isArchived, setIsArchived] = useState(post.is_archived || false)
-  const supabase = createClient()
+  const viewIncremented = useRef(false)
+
+  // View increment logic moved to useFeedTelemetry
+  
+  const [dataSaver, setDataSaver] = useState(() => {
+    if (typeof window !== 'undefined') {
+      return localStorage.getItem('echo_data_saver') === 'true'
+    }
+    return false
+  })
+  const [imageLoaded, setImageLoaded] = useState(false)
+  const [poll, setPoll] = useState<any>(null)
+  const [votedOptionId, setVotedOptionId] = useState<string | null>(null)
+  const [pollOptions, setPollOptions] = useState<any[]>([])
+  const [totalVotes, setTotalVotes] = useState(0)
+  const [canReply, setCanReply] = useState(true)
+  const [replyRestrictionReason, setReplyRestrictionReason] = useState('')
   
   const profile = Array.isArray(post.profiles) ? post.profiles[0] : (post.profiles || { full_name: 'Anonymous', avatar_url: null, username: 'anon' })
-  const { user: currentUser } = useAuth()
 
   const [imageIndex, setImageIndex] = useState(0)
   const images = post.image_urls && post.image_urls.length > 0 
@@ -77,6 +107,89 @@ export function Post({ post }: { post: any }) {
     triggerHaptic(ImpactStyle.Light)
     setImageIndex((prev) => (prev - 1 + images.length) % images.length)
   }
+
+  useEffect(() => {
+    async function fetchPoll() {
+      const { data: pollData } = await supabase.from('polls').select('*').eq('post_id', post.id).maybeSingle()
+      if (pollData) {
+        setPoll(pollData)
+        const { data: options } = await supabase
+          .from('poll_options')
+          .select('*, poll_votes(count)')
+          .eq('poll_id', pollData.id)
+          .order('display_order', { ascending: true })
+        
+        if (options) {
+          setPollOptions(options)
+          const total = options.reduce((acc: number, opt: any) => acc + (opt.poll_votes?.[0]?.count || 0), 0)
+          setTotalVotes(total)
+        }
+
+        if (currentUser) {
+          const { data: myVote } = await supabase
+            .from('poll_votes')
+            .select('option_id')
+            .eq('poll_id', pollData.id)
+            .eq('user_id', currentUser.id)
+            .maybeSingle()
+          if (myVote) setVotedOptionId(myVote.option_id)
+        }
+      }
+    }
+    fetchPoll()
+
+    // Realtime subscription for votes
+    const channel = supabase
+      .channel(`poll:${post.id}`)
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'poll_votes' }, () => fetchPoll())
+      .subscribe()
+
+    return () => { supabase.removeChannel(channel) }
+  }, [post.id, currentUser])
+
+  useEffect(() => {
+    async function checkReplyPrivacy() {
+      const privacy = post.settings?.replyPrivacy || 'Everyone'
+      if (privacy === 'Everyone') return setCanReply(true)
+      
+      if (!currentUser) {
+        setCanReply(false)
+        setReplyRestrictionReason('Please login to reply')
+        return
+      }
+
+      if (currentUser.id === post.creator_id) return setCanReply(true)
+
+      if (privacy === 'Mentioned') {
+        const { data: myProfile } = await supabase.from('profiles').select('username').eq('id', currentUser.id).maybeSingle()
+        const myUsername = myProfile?.username
+        const isMentioned = myUsername && post.content?.includes(`@${myUsername}`)
+        setCanReply(!!isMentioned)
+        if (!isMentioned) setReplyRestrictionReason('Only mentioned profiles can reply')
+        return
+      }
+
+      if (privacy === 'Followers') {
+        // "People the author follows"
+        const { data: isFollowing, error } = await supabase
+          .from('follows')
+          .select('id')
+          .eq('follower_id', post.creator_id)
+          .eq('following_id', currentUser.id)
+          .maybeSingle()
+        
+        if (error) {
+           console.error('Error checking follows:', error)
+           setCanReply(false)
+           return
+        }
+
+        setCanReply(!!isFollowing)
+        if (!isFollowing) setReplyRestrictionReason('Only profiles the author follows can reply')
+      }
+    }
+    checkReplyPrivacy()
+  }, [post.settings, currentUser, post.creator_id])
 
   useEffect(() => {
     async function checkUserInteractions() {
@@ -104,20 +217,25 @@ export function Post({ post }: { post: any }) {
               .maybeSingle()
             
             setIsReposted(!!myRepost)
+
+            // Check Data Saver
+            const { data: myProfile } = await supabase
+              .from('profiles')
+              .select('settings')
+              .eq('id', currentUser.id)
+              .maybeSingle()
+            
+            const isDataSaver = !!myProfile?.settings?.dataSaver
+            setDataSaver(isDataSaver)
+            if (typeof window !== 'undefined') {
+              localStorage.setItem('echo_data_saver', isDataSaver.toString())
+            }
           } catch (error) {
             console.error('Error checking interactions:', error)
           }
         }
 
-        // View Increment Logic (Logged in users only, once per device)
-        const viewKey = `viewed_${post.id}`
-        if (!localStorage.getItem(viewKey)) {
-          try {
-            await supabase.rpc('increment_view_count', { post_id: post.id })
-            localStorage.setItem(viewKey, '1')
-            setViews((prev: number) => prev + 1)
-          } catch (e) {}
-        }
+        // View Increment Logic moved to useFeedTelemetry
       }
     }
 
@@ -130,7 +248,7 @@ export function Post({ post }: { post: any }) {
 
     if (isLiked && activeReaction === type) {
       await supabase.from('likes').delete().eq('post_id', post.id).eq('user_id', currentUser.id)
-      setLikes((prev: number) => prev - 1)
+      setLikes((prev: number) => Math.max(0, prev - 1))
       setIsLiked(false)
       setActiveReaction(null)
     } else {
@@ -183,35 +301,17 @@ export function Post({ post }: { post: any }) {
       if (isReposted) {
         setReposts((prev: number) => Math.max(0, prev - 1))
         setIsReposted(false)
-        
-        const { error } = await supabase
-          .from('reposts')
-          .delete()
-          .eq('post_id', post.id)
-          .eq('user_id', currentUser.id)
-        
-        if (error) throw error
+        await supabase.from('reposts').delete().eq('post_id', post.id).eq('user_id', currentUser.id)
       } else {
         setReposts((prev: number) => prev + 1)
         setIsReposted(true)
-
-        const { error } = await supabase
-          .from('reposts')
-          .insert({ post_id: post.id, user_id: currentUser.id })
-        
-        if (error) {
-          if (error.code === '23505') {
-            setIsReposted(true)
-            return
-          }
-          throw error
-        }
+        const { error } = await supabase.from('reposts').insert({ post_id: post.id, user_id: currentUser.id })
+        if (error && error.code !== '23505') throw error
       }
     } catch (error: any) {
       console.error('Repost error:', error)
       setReposts(post.reposts_count || 0)
       setIsReposted(post.is_reposted_by_me || false)
-      alert('Could not update repost. Please try again.')
     }
   }
 
@@ -229,21 +329,17 @@ export function Post({ post }: { post: any }) {
     await supabase.from('posts').update({ is_archived: newVal }).eq('id', post.id)
   }
 
-  const handleDelete = async () => {
-    setShowOptions(false)
+  const handleDelete = async (e?: React.MouseEvent) => {
+    if (e) e.stopPropagation()
+    setShowDeleteConfirm(false)
+    
     setIsDeleting(true)
+    triggerHaptic(ImpactStyle.Heavy)
+    setShowOptions(false)
 
     try {
       const { error } = await supabase.from('posts').delete().eq('id', post.id)
-      
-      if (error) {
-        console.error('Database deletion failed:', error)
-        alert('Failed to delete post: ' + error.message)
-        setIsDeleting(false)
-        return
-      }
-
-      setIsDeletedLocally(true)
+      if (error) throw error
 
       if (images.length > 0) {
         try {
@@ -252,13 +348,15 @@ export function Post({ post }: { post: any }) {
             return parts[parts.length - 1].split('?')[0]
           })
           await supabase.storage.from('memes').remove(fileNames)
-        } catch (urlErr) {
-          console.error('Storage deletion error:', urlErr)
+        } catch (storageErr) {
+          console.error('Storage cleanup failed:', storageErr)
         }
       }
-    } catch (err: any) {
-      console.error('Exception:', err.message)
-      alert('Failed to delete post.')
+      
+      triggerHaptic(ImpactStyle.Medium)
+      setIsDeletedLocally(true)
+    } catch (error: any) {
+      alert('Error deleting post: ' + error.message)
       setIsDeleting(false)
     }
   }
@@ -334,63 +432,6 @@ export function Post({ post }: { post: any }) {
 
   return (
     <div className={`border-b border-zinc-200 dark:border-zinc-800 relative ${isArchived ? 'opacity-50 grayscale-[0.5]' : ''}`}>
-      {/* Options Bottom Sheet */}
-      <AnimatePresence>
-        {showOptions && (
-          <>
-            <motion.div 
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              onClick={() => setShowOptions(false)}
-              className="fixed inset-0 bg-black/40 z-[150] backdrop-blur-[2px]"
-            />
-            <motion.div 
-              initial={{ y: '100%' }}
-              animate={{ y: 0 }}
-              exit={{ y: '100%' }}
-              transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-              className="fixed bottom-0 left-0 right-0 z-[160] bg-white dark:bg-[#181818] rounded-t-[32px] p-4 flex flex-col items-center shadow-2xl safe-area-bottom"
-              onClick={(e) => e.stopPropagation()}
-            >
-              {/* Handle bar */}
-              <div className="w-10 h-1 bg-zinc-200 dark:bg-zinc-800 rounded-full mb-6 mt-1" />
-              
-              <div className="w-full max-w-sm flex flex-col gap-2">
-                {/* Main options container */}
-                <div className="bg-zinc-50 dark:bg-zinc-900/50 rounded-2xl overflow-hidden text-zinc-900 dark:text-zinc-100">
-                  <button 
-                    onClick={toggleArchive}
-                    className="w-full px-5 py-4 flex items-center justify-between hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
-                  >
-                    <span className="font-bold text-[16px]">{isArchived ? 'Unarchive' : 'Archive'}</span>
-                    <ArchiveBoxIcon className="w-6 h-6" />
-                  </button>
-                </div>
-
-                {/* Delete container */}
-                <div className="bg-zinc-50 dark:bg-zinc-900/50 rounded-2xl overflow-hidden mt-1">
-                  <button 
-                    onClick={handleDelete}
-                    className="w-full px-5 py-4 flex items-center justify-between hover:bg-red-50 dark:hover:bg-red-900/20 text-red-500 transition-colors"
-                  >
-                    <span className="font-black text-[16px]">Delete</span>
-                    <TrashIcon className="w-6 h-6" />
-                  </button>
-                </div>
-
-                {/* Cancel button */}
-                <button 
-                  onClick={() => setShowOptions(false)}
-                  className="w-full py-4 mt-2 font-bold text-zinc-500"
-                >
-                  Cancel
-                </button>
-              </div>
-            </motion.div>
-          </>
-        )}
-      </AnimatePresence>
 
       {/* Repost status */}
       {post.is_repost && (
@@ -455,19 +496,148 @@ export function Post({ post }: { post: any }) {
                 <span className="text-zinc-400 text-sm flex-none" title={new Date(post.created_at).toLocaleString()}>{formatRelativeTime(post.created_at)}</span>
               </div>
 
-              {/* Three dots - Red Spot */}
+              {/* Three dots - Options Menu */}
               {currentUser?.id === post.creator_id && (
-                <button 
-                  onClick={(e) => { e.stopPropagation(); setShowOptions(true) }}
-                  className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-zinc-100 dark:hover:bg-zinc-900 transition-colors flex-none -mr-2"
-                >
-                  <EllipsisHorizontalIcon className="w-5 h-5 text-zinc-400" />
-                </button>
+                <div className="relative">
+                  <button 
+                    onClick={(e) => { e.stopPropagation(); setShowOptions(!showOptions) }}
+                    className={`w-8 h-8 flex items-center justify-center rounded-full transition-colors flex-none -mr-2 ${showOptions ? 'bg-zinc-100 dark:bg-zinc-900 text-zinc-900 dark:text-white' : 'hover:bg-zinc-100 dark:hover:bg-zinc-900 text-zinc-400'}`}
+                  >
+                    <EllipsisHorizontalIcon className="w-5 h-5" />
+                  </button>
+
+                  <AnimatePresence>
+                    {showOptions && (
+                      <>
+                        <div className="fixed inset-0 z-40" onClick={() => setShowOptions(false)} />
+                        <motion.div 
+                          initial={{ opacity: 0, scale: 0.95, y: -10 }}
+                          animate={{ opacity: 1, scale: 1, y: 0 }}
+                          exit={{ opacity: 0, scale: 0.95, y: -10 }}
+                          className="absolute right-0 mt-2 w-48 bg-white dark:bg-zinc-900 rounded-2xl shadow-2xl border border-zinc-100 dark:border-zinc-800 py-2 z-50 overflow-hidden"
+                        >
+                          <button
+                            onClick={(e) => { e.stopPropagation(); setShowOptions(false); setShowDeleteConfirm(true); }}
+                            disabled={isDeleting}
+                            className="w-full px-4 py-3 flex items-center gap-3 text-red-500 hover:bg-red-50 dark:hover:bg-red-950/30 transition-colors text-sm font-bold disabled:opacity-50"
+                          >
+                            <TrashIcon className="w-4 h-4" />
+                            {isDeleting ? 'Deleting...' : 'Delete Post'}
+                          </button>
+                        </motion.div>
+                      </>
+                    )}
+                  </AnimatePresence>
+                </div>
               )}
             </div>
-            <p className="text-[16px] leading-relaxed text-zinc-900 dark:text-zinc-100 whitespace-pre-wrap break-words mt-0.5">
-              {post.content}
-            </p>
+            <div className={`relative ${ (post.settings?.isQuote || post.settings?.is_quote) ? 'mt-4 mb-4' : 'mt-0.5' }`}>
+              {(post.settings?.isQuote || post.settings?.is_quote) ? (
+                <div className="relative group/quote mt-4 mb-4">
+                  {/* Subtle background glow */}
+                  <div className="absolute inset-0 bg-gradient-to-br from-sky-500/10 to-transparent dark:from-sky-500/5 dark:to-transparent rounded-[32px] blur-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
+                  
+                  <div className="relative bg-white/40 dark:bg-zinc-900/40 backdrop-blur-xl border border-white/20 dark:border-white/5 rounded-[32px] p-8 sm:p-10 shadow-2xl shadow-black/5 flex flex-col items-center text-center transition-transform duration-500 group-hover:scale-[1.01]">
+                    <div className="mb-6 opacity-20 text-sky-500">
+                      <svg className="w-8 h-8" fill="currentColor" viewBox="0 0 24 24"><path d="M14.017 21L14.017 18C14.017 16.8954 14.9124 16 16.0171 16H19.0171C20.1216 16 21.0171 15.1046 21.0171 14V11C21.0171 9.89543 20.1216 9 19.0171 9H16.0171C14.9124 9 14.017 8.10457 14.017 7V4H21.0171C22.1216 4 23.0171 4.89543 23.0171 6V14C23.0171 17.866 19.8831 21 16.0171 21H14.017ZM1 21L1 18C1 16.8954 1.89543 16 3 16H6C7.10457 16 8 15.1046 8 14V11C8 9.89543 7.10457 9 6 9H3C1.89543 9 1 8.10457 1 7V4H8C9.10457 4 10 4.89543 10 6V14C10 17.866 6.86599 21 3 21H1Z" /></svg>
+                    </div>
+                    
+                    <p className="text-[20px] sm:text-[24px] font-semibold tracking-tight leading-snug text-zinc-900 dark:text-zinc-100 whitespace-pre-wrap break-words">
+                      {post.content}
+                    </p>
+                    
+                    <div className="mt-8 flex items-center gap-3">
+                      <div className="w-1 h-1 rounded-full bg-zinc-300 dark:bg-zinc-700" />
+                      <span className="text-[10px] font-black uppercase tracking-[0.3em] text-zinc-400 dark:text-zinc-500">Reflective Statement</span>
+                      <div className="w-1 h-1 rounded-full bg-zinc-300 dark:bg-zinc-700" />
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <p className="text-[16px] leading-relaxed text-zinc-900 dark:text-zinc-100 whitespace-pre-wrap break-words">
+                  {post.content}
+                </p>
+              )}
+            </div>
+
+            {/* Quoted Post Preview */}
+            {post.quoted_post && (
+              <div 
+                className="mt-3 mb-1 rounded-3xl border border-zinc-100 dark:border-zinc-800 p-4 bg-zinc-50/50 dark:bg-zinc-900/50 hover:bg-zinc-100/50 dark:hover:bg-zinc-800/50 transition-colors cursor-pointer"
+                onClick={(e) => {
+                  e.stopPropagation()
+                  router.push(`/post?id=${post.quoted_post.id}`)
+                }}
+              >
+                <div className="flex items-center gap-2 mb-2">
+                  <div className="w-5 h-5 rounded-full bg-zinc-200 dark:bg-zinc-800 overflow-hidden">
+                    {post.quoted_post.profiles?.avatar_url && (
+                      <Image src={post.quoted_post.profiles.avatar_url} alt="" width={20} height={20} className="w-full h-full object-cover" unoptimized />
+                    )}
+                  </div>
+                  <span className="font-bold text-xs tracking-tight">{post.quoted_post.profiles?.full_name}</span>
+                  <span className="text-zinc-500 text-[10px]">@{post.quoted_post.profiles?.username}</span>
+                </div>
+                <p className="text-[13px] text-zinc-600 dark:text-zinc-400 line-clamp-3">
+                  {post.quoted_post.content}
+                </p>
+              </div>
+            )}
+
+            {/* ── Poll Display ── */}
+            {poll && (
+              <div className="mt-4 mb-2 space-y-2" onClick={(e) => e.stopPropagation()}>
+                {pollOptions.map((opt) => {
+                  const votes = opt.poll_votes?.[0]?.count || 0
+                  const percent = totalVotes > 0 ? Math.round((votes / totalVotes) * 100) : 0
+                  const isVoted = votedOptionId === opt.id
+                  const isExpired = new Date(poll.ends_at) < new Date()
+
+                  return (
+                    <button
+                      key={opt.id}
+                      disabled={!!votedOptionId || isExpired}
+                      onClick={async () => {
+                        if (!currentUser) return alert('Login to vote')
+                        setVotedOptionId(opt.id)
+                        setTotalVotes(prev => prev + 1)
+                        await supabase.from('poll_votes').insert({
+                          poll_id: poll.id,
+                          option_id: opt.id,
+                          user_id: currentUser.id
+                        })
+                      }}
+                      className="relative w-full h-11 rounded-xl border border-zinc-200 dark:border-zinc-700 overflow-hidden group/poll transition-all active:scale-[0.98]"
+                    >
+                      {/* Progress Bar */}
+                      {(votedOptionId || isExpired) && (
+                        <motion.div 
+                          initial={{ width: 0 }}
+                          animate={{ width: `${percent}%` }}
+                          className={`absolute inset-0 ${isVoted ? 'bg-sky-500/20 dark:bg-sky-500/30' : 'bg-zinc-100 dark:bg-zinc-800'}`}
+                        />
+                      )}
+                      
+                      <div className="absolute inset-0 px-4 flex items-center justify-between text-[15px]">
+                        <span className={`font-bold ${isVoted ? 'text-sky-600 dark:text-sky-400' : 'text-zinc-700 dark:text-zinc-200'}`}>
+                          {opt.option_text}
+                          {isVoted && <span className="ml-2">✓</span>}
+                        </span>
+                        {(votedOptionId || isExpired) && (
+                          <span className="font-black text-zinc-500">{percent}%</span>
+                        )}
+                      </div>
+                    </button>
+                  )
+                })}
+                <div className="flex items-center gap-2 text-[13px] text-zinc-400 mt-2 font-medium">
+                  <span>{totalVotes} votes</span>
+                  <span>·</span>
+                  <span>{new Date(poll.ends_at) < new Date() ? 'Final results' : 'Active poll'}</span>
+                </div>
+              </div>
+            )}
+
           </div>
         </div>
 
@@ -478,15 +648,34 @@ export function Post({ post }: { post: any }) {
             onClick={(e) => e.stopPropagation()}
           >
             {/* Image — flex+justify-center ensures perfect horizontal center */}
-            <div className="flex items-center justify-center w-full bg-zinc-100 dark:bg-zinc-900 rounded-2xl overflow-hidden">
-              <Image
-                src={images[imageIndex]}
-                alt={post.title || `Post image ${imageIndex + 1}`}
-                width={1200}
-                height={1200}
-                className="w-full h-auto max-h-[560px] object-contain"
-                unoptimized
-              />
+            <div className="flex items-center justify-center w-full min-h-[100px] bg-zinc-900 dark:bg-zinc-950 rounded-2xl overflow-hidden relative transition-all duration-500">
+              {/* Blurred background for a premium "no-space" fill */}
+              {imageLoaded && (
+                <div 
+                  className="absolute inset-0 z-0 bg-cover bg-center blur-3xl scale-150 opacity-100 select-none pointer-events-none transition-opacity duration-1000"
+                  style={{ backgroundImage: `url(${images[imageIndex]})` }}
+                />
+              )}
+
+              {dataSaver && !imageLoaded ? (
+                <button 
+                  onClick={(e) => { e.stopPropagation(); setImageLoaded(true) }}
+                  className="w-full h-48 flex flex-col items-center justify-center gap-2 hover:bg-zinc-200 dark:hover:bg-zinc-800 transition-colors relative z-10"
+                >
+                  <PhotoIcon className="w-8 h-8 text-zinc-400" />
+                  <span className="text-xs font-bold text-zinc-500">Data saver is on. Click to load image.</span>
+                </button>
+              ) : (
+                <Image
+                  src={images[imageIndex]}
+                  alt={post.title || `Post image ${imageIndex + 1}`}
+                  width={1200}
+                  height={1200}
+                  className="w-full h-auto object-contain relative z-10 drop-shadow-2xl transition-all duration-500"
+                  unoptimized
+                  onLoad={() => setImageLoaded(true)}
+                />
+              )}
             </div>
 
             {/* Carousel controls (multi-image only) */}
@@ -550,6 +739,21 @@ export function Post({ post }: { post: any }) {
               <span className="text-sm">{reposts || ''}</span>
             </button>
 
+            {/* Quote */}
+            <button
+              onClick={(e) => { 
+                e.stopPropagation(); 
+                triggerHaptic(ImpactStyle.Medium);
+                window.dispatchEvent(new CustomEvent('open-post-modal', { detail: post }))
+              }}
+              className="flex items-center gap-1 group hover:text-sky-500 transition-colors"
+              title="Quote this post"
+            >
+              <div className="p-2 rounded-full group-hover:bg-sky-50 dark:group-hover:bg-sky-950/30">
+                <svg className="w-[18px] h-[18px]" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M3 21c3 0 7-1 7-8V5c0-1.25-.756-2.017-2-2H4c-1.25 0-2 .75-2 1.972V11c0 1.25.75 2 2 2 1 0 1 0 1 1v1c0 1-1 2-2 2s-1 .008-1 1.031V20c0 1 0 1 1 1zm12 0c3 0 7-1 7-8V5c0-1.25-.757-2.017-2-2h-4c-1.25 0-2 .75-2 1.972V11c0 1.25.75 2 2 2 1 0 1 0 1 1v1c0 1-1 2-2 2s-1 .008-1 1.031V20c0 1 0 1 1 1z"/></svg>
+              </div>
+            </button>
+
             {/* Like / Reaction */}
             <div className="relative" onMouseEnter={() => setShowReactions(true)} onMouseLeave={() => setShowReactions(false)}>
               <div
@@ -608,37 +812,44 @@ export function Post({ post }: { post: any }) {
       {/* Comments section */}
       {showComments && (
         <div className="bg-zinc-50 dark:bg-black border-t border-zinc-100 dark:border-zinc-800 px-2 sm:px-6 py-4 animate-in fade-in slide-in-from-top-2" onClick={(e) => e.stopPropagation()}>
-          <form onSubmit={handleCommentSubmit} className="flex gap-3 mb-6 relative z-20">
-            <Link href={`/profile?id=${profile.id}`} className="flex-none pt-1">
-              <div className="w-10 h-10 bg-zinc-200 dark:bg-zinc-800 rounded-full overflow-hidden shadow-sm">
-                {currentUser?.user_metadata?.avatar_url ? (
-                  <Image src={currentUser.user_metadata.avatar_url} alt="User" width={40} height={40} className="w-full h-full object-cover" unoptimized />
-                ) : (
-                  <div className="w-full h-full flex items-center justify-center text-zinc-500 font-bold">
-                    {currentUser?.user_metadata?.full_name?.[0] || 'U'}
-                  </div>
-                )}
+          {canReply ? (
+            <form onSubmit={handleCommentSubmit} className="flex gap-3 mb-6 relative z-20">
+              <Link href={`/profile?id=${profile.id}`} className="flex-none pt-1">
+                <div className="w-10 h-10 bg-zinc-200 dark:bg-zinc-800 rounded-full overflow-hidden shadow-sm">
+                  {currentUser?.user_metadata?.avatar_url ? (
+                    <Image src={currentUser.user_metadata.avatar_url} alt="User" width={40} height={40} className="w-full h-full object-cover" unoptimized />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center text-zinc-500 font-bold">
+                      {currentUser?.user_metadata?.full_name?.[0] || 'U'}
+                    </div>
+                  )}
+                </div>
+              </Link>
+              <div className="flex-grow flex flex-col gap-2">
+                <textarea
+                  value={newComment}
+                  onChange={(e) => setNewComment(e.target.value)}
+                  placeholder="Post your reply..."
+                  className="w-full bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl px-4 py-3 focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm resize-none placeholder-zinc-500 shadow-sm transition-shadow"
+                  rows={2}
+                />
+                <div className="flex justify-end">
+                  <button
+                    type="submit"
+                    disabled={isSubmittingComment || !newComment.trim()}
+                    className="bg-black dark:bg-white text-white dark:text-black px-5 py-1.5 rounded-full font-bold transition-all text-sm disabled:opacity-40 hover:opacity-80 active:scale-95"
+                  >
+                    {isSubmittingComment ? '...' : 'Reply'}
+                  </button>
+                </div>
               </div>
-            </Link>
-            <div className="flex-grow flex flex-col gap-2">
-              <textarea
-                value={newComment}
-                onChange={(e) => setNewComment(e.target.value)}
-                placeholder="Post your reply..."
-                className="w-full bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl px-4 py-3 focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm resize-none placeholder-zinc-500 shadow-sm transition-shadow"
-                rows={2}
-              />
-              <div className="flex justify-end">
-                <button
-                  type="submit"
-                  disabled={isSubmittingComment || !newComment.trim()}
-                  className="bg-black dark:bg-white text-white dark:text-black px-5 py-1.5 rounded-full font-bold transition-all text-sm disabled:opacity-40 hover:opacity-80 active:scale-95"
-                >
-                  {isSubmittingComment ? '...' : 'Reply'}
-                </button>
-              </div>
+            </form>
+          ) : (
+            <div className="flex items-center justify-center gap-2 mb-6 px-4 py-4 bg-zinc-100/50 dark:bg-zinc-900/50 rounded-2xl border border-dashed border-zinc-200 dark:border-zinc-800 text-zinc-500 text-[13px] font-bold uppercase tracking-wider">
+              <LockClosedIcon className="w-4 h-4" />
+              {replyRestrictionReason}
             </div>
-          </form>
+          )}
           <div className="space-y-1">
             {commentList.map((comment: any) => (
               <CommentItem
@@ -653,6 +864,52 @@ export function Post({ post }: { post: any }) {
             ))}
           </div>
         </div>
+      )}
+
+
+      {mounted && createPortal(
+        <AnimatePresence>
+          {showDeleteConfirm && (
+            <div className="fixed inset-0 z-[100000] flex items-center justify-center p-4 overflow-hidden">
+              <motion.div 
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                onClick={() => setShowDeleteConfirm(false)}
+                className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+              />
+              <motion.div 
+                initial={{ scale: 0.9, opacity: 0, y: 20 }}
+                animate={{ scale: 1, opacity: 1, y: 0 }}
+                exit={{ scale: 0.9, opacity: 0, y: 20 }}
+                className="relative z-10 w-full max-w-[324px] bg-white dark:bg-zinc-900 rounded-[36px] p-8 shadow-[0_32px_64px_-16px_rgba(0,0,0,0.3)] border border-zinc-100 dark:border-zinc-800 text-center overflow-hidden"
+              >
+                <div className="w-16 h-16 bg-red-100 dark:bg-red-900/30 rounded-full flex items-center justify-center mx-auto mb-6 text-red-500">
+                  <TrashIcon className="w-8 h-8" />
+                </div>
+                <h3 className="text-xl font-black mb-2 text-zinc-900 dark:text-white leading-tight">Delete Post?</h3>
+                <p className="text-zinc-500 dark:text-zinc-400 text-sm leading-relaxed mb-8 px-2">
+                  This action is permanent and cannot be undone. Are you sure?
+                </p>
+                <div className="flex flex-col gap-3">
+                  <button 
+                    onClick={() => { triggerHaptic(ImpactStyle.Heavy); handleDelete(); }}
+                    className="w-full py-4 bg-red-500 hover:bg-red-600 active:scale-[0.97] text-white rounded-2xl font-black text-sm transition-all shadow-lg shadow-red-500/20"
+                  >
+                    Yes, Delete Permanently
+                  </button>
+                  <button 
+                    onClick={() => setShowDeleteConfirm(false)}
+                    className="w-full py-4 bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 active:scale-[0.97] text-zinc-900 dark:text-white rounded-2xl font-bold text-sm transition-all"
+                  >
+                    No, Keep Post
+                  </button>
+                </div>
+              </motion.div>
+            </div>
+          )}
+        </AnimatePresence>,
+        document.body
       )}
     </div>
   )
@@ -734,8 +991,9 @@ function CommentItem({
 
       <div className="flex-grow pb-1 min-w-0">
         <div className="flex items-center gap-1.5 flex-wrap">
-          <Link href={`/profile?id=${comment.profiles?.id}`} className="font-bold text-sm hover:underline truncate">
+          <Link href={`/profile?id=${comment.profiles?.id}`} className="font-bold text-sm hover:underline truncate flex items-center gap-1">
             {comment.profiles?.full_name}
+            {comment.profiles?.is_verified && <VerifiedBadge className="w-3.5 h-3.5 flex-none" />}
           </Link>
           <span className="text-zinc-500 text-xs truncate">@{comment.profiles?.username}</span>
           <span className="text-zinc-500 text-xs">·</span>

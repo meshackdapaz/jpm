@@ -51,11 +51,11 @@ export default function TrendingPage() {
       
       {loading ? (
         <div className="p-8 text-center text-zinc-500 italic">
-          Finding the hottest memes...
+          Finding what's happening...
         </div>
       ) : posts.length === 0 ? (
         <div className="p-8 text-center text-zinc-500 italic">
-          No trending memes yet today.
+          No trending threads yet today.
         </div>
       ) : (
         <div className="divide-y divide-zinc-200 dark:divide-zinc-800">

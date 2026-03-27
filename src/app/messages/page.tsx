@@ -146,6 +146,15 @@ function MessagesContent() {
   // Auto-scroll
   useEffect(() => { bottomRef.current?.scrollIntoView({ behavior: 'smooth' }) }, [messages])
 
+  // Emoji state
+  const [showEmojiPicker, setShowEmojiPicker] = useState(false)
+  const emojis = ['❤️', '😂', '🙌', '🔥', '👏', '😢', '😍', '✨', '🙏', '👍', '🤔', '😊', '💀', '💯', '✅', '❌', '👀', '🚀', '🎉', '👋', '😎', '💡', '⚠️', '⭐']
+
+  const addEmoji = (emoji: string) => {
+    setInput(prev => prev + emoji)
+    triggerHaptic(ImpactStyle.Light)
+  }
+
   // ── Fetch conversation list ───────────────────────────────────────────────
 
   const fetchConvos = useCallback(async () => {
@@ -589,11 +598,7 @@ function MessagesContent() {
 
   // ── Auth guards ───────────────────────────────────────────────────────────
 
-  if (authLoading) return (
-    <AppLayout fullBleed><div className="flex items-center justify-center h-[60vh]">
-      <div className="w-6 h-6 border-2 border-zinc-200 border-t-black dark:border-t-white rounded-full animate-spin" />
-    </div></AppLayout>
-  )
+  if (authLoading) return <MessagesSkeleton />
   if (!user) return (
     <AppLayout fullBleed><div className="flex flex-col items-center justify-center h-[60vh] gap-4 text-center px-8">
       <ChatBubbleLeftRightIcon className="w-16 h-16 text-zinc-300 dark:text-zinc-700" />
@@ -1008,8 +1013,8 @@ function MessagesContent() {
 
               {/* ── Input bar / Request bar ── */}
               {checkingRequest ? (
-                <div className="flex-none flex items-center justify-center h-[64px] border-t border-zinc-100 dark:border-zinc-900">
-                  <div className="w-5 h-5 border-2 border-zinc-300 border-t-black dark:border-t-white rounded-full animate-spin" />
+                <div className="flex-none flex items-center justify-center px-4 h-[64px] border-t border-zinc-100 dark:border-zinc-900 animate-pulse">
+                  <div className="h-10 bg-zinc-100 dark:bg-zinc-800 rounded-3xl w-full" />
                 </div>
               ) : requestStatus === 'allowed' ? (
                 <form onSubmit={sendMessage}
@@ -1036,6 +1041,20 @@ function MessagesContent() {
 
                   <div className="flex-1 bg-white dark:bg-zinc-900 rounded-[24px] px-2 py-1 flex items-center min-h-[44px] shadow-sm border border-zinc-200 dark:border-zinc-800" style={{ touchAction: 'pan-x pan-y' }}>
                     
+                    {/* Emoji Picker Popover */}
+                    {showEmojiPicker && (
+                      <div className="absolute bottom-full left-3 mb-2 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl shadow-2xl p-3 z-50 w-64 animate-in slide-in-from-bottom-2">
+                        <div className="grid grid-cols-6 gap-2">
+                          {emojis.map(e => (
+                            <button key={e} type="button" onClick={() => addEmoji(e)} className="text-xl hover:bg-zinc-100 dark:hover:bg-zinc-800 p-1 rounded-lg transition-colors">
+                              {e}
+                            </button>
+                          ))}
+                        </div>
+                        <div className="absolute -bottom-2 left-4 w-4 h-4 bg-white dark:bg-zinc-900 border-r border-b border-zinc-200 dark:border-zinc-800 rotate-45" />
+                      </div>
+                    )}
+                    
                     <input
                       ref={inputRef}
                       type="text"
@@ -1054,7 +1073,11 @@ function MessagesContent() {
                       <GifIcon className="w-6 h-6" />
                     </button>
 
-                    <button type="button" className="p-2 text-zinc-400 dark:text-zinc-500 hover:text-blue-600 transition-colors">
+                    <button 
+                      type="button" 
+                      onClick={() => { setShowEmojiPicker(!showEmojiPicker); setShowGiphy(false); triggerHaptic() }}
+                      className={`p-2 transition-colors ${showEmojiPicker ? 'text-blue-600' : 'text-zinc-400 dark:text-zinc-500 hover:text-blue-600'}`}
+                    >
                       <FaceSmileIcon className="w-6 h-6" />
                     </button>
 
@@ -1227,15 +1250,51 @@ function MessagesContent() {
   )
 }
 
+function MessagesSkeleton() {
+  return (
+    <AppLayout fullBleed>
+      <div className="flex h-[calc(100dvh-var(--nav-height,3.5rem))] md:h-screen overflow-hidden bg-white dark:bg-black">
+        {/* Sidebar Skeleton */}
+        <div className="w-full sm:w-[320px] sm:min-w-[320px] border-r border-zinc-100 dark:border-zinc-900 flex flex-col p-4 gap-6 animate-pulse">
+          <div className="h-10 bg-zinc-100 dark:bg-zinc-900 rounded-xl w-3/4 mb-2" />
+          <div className="h-12 bg-zinc-50 dark:bg-zinc-900/50 rounded-full w-full" />
+          <div className="space-y-6 mt-4">
+            {[1, 2, 3, 4, 5, 6].map(i => (
+              <div key={i} className="flex items-center gap-3">
+                <div className="w-12 h-12 rounded-full bg-zinc-100 dark:bg-zinc-900" />
+                <div className="flex-1 space-y-2">
+                  <div className="h-3.5 bg-zinc-100 dark:bg-zinc-900 rounded w-1/2" />
+                  <div className="h-3 bg-zinc-50 dark:bg-zinc-900/40 rounded w-full" />
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+        {/* Chat Area Skeleton */}
+        <div className="hidden sm:flex flex-1 flex-col bg-zinc-50 dark:bg-black/50 p-6 gap-6 animate-pulse">
+           <div className="flex items-center gap-3 border-b border-zinc-100 dark:border-zinc-900 pb-4">
+              <div className="w-10 h-10 rounded-full bg-zinc-200 dark:bg-zinc-800" />
+              <div className="space-y-2">
+                 <div className="h-4 bg-zinc-200 dark:bg-zinc-800 rounded w-32" />
+                 <div className="h-3 bg-zinc-100 dark:bg-zinc-800/60 rounded w-20" />
+              </div>
+           </div>
+           <div className="flex-1 space-y-8 mt-10">
+              <div className="flex items-end gap-3"><div className="w-8 h-8 rounded-full bg-zinc-200 dark:bg-zinc-800" /><div className="h-10 w-48 bg-zinc-200 dark:bg-zinc-800 rounded-3xl" /></div>
+              <div className="flex flex-row-reverse items-end gap-3"><div className="h-10 w-36 bg-zinc-300 dark:bg-zinc-800 rounded-3xl" /></div>
+              <div className="flex items-end gap-3"><div className="w-8 h-8 rounded-full bg-zinc-200 dark:bg-zinc-800" /><div className="h-14 w-64 bg-zinc-200 dark:bg-zinc-800 rounded-3xl" /></div>
+              <div className="flex flex-row-reverse items-end gap-3"><div className="h-8 w-24 bg-zinc-300 dark:bg-zinc-800 rounded-3xl" /></div>
+           </div>
+           <div className="h-14 bg-white dark:bg-zinc-900 rounded-3xl w-full border border-zinc-100 dark:border-zinc-800" />
+        </div>
+      </div>
+    </AppLayout>
+  )
+}
+
 export default function MessagesPage() {
   return (
-    <Suspense fallback={
-      <AppLayout>
-        <div className="flex items-center justify-center h-[60vh]">
-          <div className="w-6 h-6 border-2 border-zinc-200 border-t-black dark:border-t-white rounded-full animate-spin" />
-        </div>
-      </AppLayout>
-    }>
+    <Suspense fallback={<MessagesSkeleton />}>
       <MessagesContent />
     </Suspense>
   )
