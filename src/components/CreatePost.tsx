@@ -17,7 +17,8 @@ import {
   XMarkIcon,
   CalendarIcon,
   PhotoIcon,
-  GifIcon
+  GifIcon,
+  VideoCameraIcon
 } from '@heroicons/react/24/outline'
 
 const triggerHaptic = (style = ImpactStyle.Light) => {
@@ -39,9 +40,12 @@ export function CreatePost({
   const [images, setImages] = useState<File[]>([])
   const [remoteUrls, setRemoteUrls] = useState<string[]>([])
   const [previewUrls, setPreviewUrls] = useState<string[]>([])
+  const [video, setVideo] = useState<File | null>(null)
+  const [videoPreviewUrl, setVideoPreviewUrl] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
   const [showGiphy, setShowGiphy] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
+  const videoInputRef = useRef<HTMLInputElement>(null)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
   const { t } = useI18n()
   const supabase = createClient()
@@ -86,9 +90,21 @@ export function CreatePost({
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || [])
     if (files.length > 0) {
+      if (video) { setVideo(null); setVideoPreviewUrl(null) }
       const newImages = [...images, ...files].slice(0, 4 - remoteUrls.length)
       setImages(newImages)
       setPreviewUrls([...remoteUrls, ...newImages.map((file: File) => URL.createObjectURL(file))])
+    }
+  }
+
+  const handleVideoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (file) {
+      setVideo(file)
+      setImages([])
+      setRemoteUrls([])
+      setPreviewUrls([])
+      setVideoPreviewUrl(URL.createObjectURL(file))
     }
   }
 
@@ -98,6 +114,11 @@ export function CreatePost({
     setRemoteUrls(newRemote)
     setPreviewUrls([...newRemote, ...images.map((file: File) => URL.createObjectURL(file))])
     setShowGiphy(false)
+  }
+
+  const removeVideo = () => {
+    setVideo(null)
+    setVideoPreviewUrl(null)
   }
 
   const removeImage = (index: number) => {
@@ -120,8 +141,15 @@ export function CreatePost({
     
     setLoading(true)
     let image_urls: string[] = [...remoteUrls]
+    let video_url: string | null = null
 
     try {
+      if (video) {
+        const fileName = `${Math.random()}.mp4`
+        const { error } = await supabase.storage.from('videos').upload(fileName, video)
+        if (error) throw error
+        video_url = supabase.storage.from('videos').getPublicUrl(fileName).data.publicUrl
+      }
       if (images.length > 0) {
         const uploadPromises = images.map(async (img: File, index: number) => {
           const fileName = `${Math.random()}.jpg`
@@ -137,11 +165,13 @@ export function CreatePost({
         content: content.trim(),
         image_url: image_urls[0] || null,
         image_urls: image_urls,
+        video_url: video_url,
         creator_id: user.id,
         quoted_post_id: quotedPost?.id || null,
         settings: {
           is_quote: isQuote || !!quotedPost,
-          reply_privacy: replyPrivacy
+          reply_privacy: replyPrivacy,
+          has_video: !!video_url
         }
       }]).select('id').single()
 
@@ -251,6 +281,24 @@ export function CreatePost({
               </div>
             )}
 
+            {/* Video Preview */}
+            {videoPreviewUrl && (
+              <div className="relative mt-4 rounded-2xl overflow-hidden bg-black aspect-video group">
+                <video 
+                  src={videoPreviewUrl} 
+                  className="w-full h-full object-cover"
+                  controls
+                />
+                <button
+                  onClick={removeVideo}
+                  className="absolute top-2 right-2 p-1.5 bg-black/50 hover:bg-black/70 text-white rounded-full transition-colors opacity-0 group-hover:opacity-100"
+                >
+                  <XMarkIcon className="w-5 h-5" />
+                </button>
+              </div>
+            )}
+
+            {/* Image Previews */}
             {previewUrls.length > 0 && (
               <div className={`mt-3 grid gap-2 ${previewUrls.length > 1 ? 'grid-cols-2' : 'grid-cols-1'}`}>
                 {previewUrls.map((url, i) => (
@@ -280,11 +328,13 @@ export function CreatePost({
       </div>
 
       <input type="file" hidden ref={fileInputRef} accept="image/*" multiple onChange={handleImageChange} />
+      <input type="file" hidden ref={videoInputRef} accept="video/*" onChange={handleVideoChange} />
 
         {/* Footer Actions */}
         <div className="flex items-center justify-between px-4 py-3 border-t border-zinc-100 dark:border-zinc-800 mt-2 bg-white/80 dark:bg-black/80 backdrop-blur-xl">
           <div className="flex items-center gap-1">
             <button type="button" onClick={() => fileInputRef.current?.click()} className="p-2 text-black dark:text-white hover:bg-zinc-100 dark:hover:bg-white/5 rounded-full transition-colors"><PhotoIcon className="w-5 h-5" /></button>
+            <button type="button" onClick={() => videoInputRef.current?.click()} className="p-2 text-black dark:text-white hover:bg-zinc-100 dark:hover:bg-white/5 rounded-full transition-colors"><VideoCameraIcon className="w-5 h-5" /></button>
             <button type="button" onClick={() => setShowGiphy(true)} className="p-2 text-black dark:text-white hover:bg-zinc-100 dark:hover:bg-white/5 rounded-full transition-colors"><GifIcon className="w-5 h-5" /></button>
             <button type="button" onClick={() => setIsQuote(!isQuote)} className={`p-2 transition-colors rounded-full ${isQuote ? 'text-black dark:text-white bg-zinc-100 dark:bg-white/10' : 'text-zinc-400 hover:bg-zinc-50 dark:hover:bg-white/5'}`} title="Toggle Quote Mode"><ChatBubbleBottomCenterTextIcon className="w-5 h-5" /></button>
             

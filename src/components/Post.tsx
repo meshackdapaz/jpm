@@ -641,8 +641,36 @@ export function Post({ post }: { post: any }) {
           </div>
         </div>
 
-        {/* Row 2: Full-width image — outside the avatar row so it spans 100% and centers */}
-        {images.length > 0 && (
+        {/* Row 2: Full-width Media — outside the avatar row so it spans 100% and centers */}
+        {post.video_url ? (
+          <div
+            className="w-full relative rounded-2xl overflow-hidden group/video mb-3"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-center w-full min-h-[200px] bg-zinc-900 dark:bg-zinc-950 rounded-2xl overflow-hidden relative shadow-2xl">
+              {/* Blurred background for a premium "no-space" fill */}
+              {(post.image_url || images[0]) && (
+                <div 
+                  className="absolute inset-0 z-0 bg-cover bg-center blur-3xl scale-150 opacity-100 select-none pointer-events-none transition-opacity duration-1000"
+                  style={{ backgroundImage: `url(${post.image_url || images[0]})` }} 
+                />
+              )}
+              {/* We'll use a hack to get a blurred frame: an invisible video on top of a blurred one is expensive, 
+                  so we'll just use a subtle gradient/color for now or try to use the pulse animation until loaded */}
+              
+              <video
+                src={post.video_url}
+                className="w-full h-auto max-h-[70vh] object-contain relative z-10 drop-shadow-2xl"
+                controls
+                autoPlay
+                loop
+                muted
+                playsInline
+                poster={post.image_url || undefined}
+              />
+            </div>
+          </div>
+        ) : images.length > 0 && (
           <div
             className="w-full relative rounded-2xl overflow-hidden group/carousel"
             onClick={(e) => e.stopPropagation()}
