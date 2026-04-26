@@ -186,7 +186,7 @@ export function CreatePost({
       if (onSuccess) {
         onSuccess()
       } else {
-        window.location.reload()
+        window.dispatchEvent(new CustomEvent('post-created'))
       }
     } catch (err: any) {
       alert('Post failed: ' + err.message)

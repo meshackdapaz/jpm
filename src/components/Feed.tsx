@@ -235,12 +235,14 @@ export function Feed() {
       setRefreshing(false)
     }
     window.addEventListener('ptr-refresh', handler)
+    window.addEventListener('post-created', handler)
     const feedHandler = (e: any) => {
       if (e.detail?.tab) switchTab(e.detail.tab)
     }
     window.addEventListener('feed-change', feedHandler)
     return () => {
       window.removeEventListener('ptr-refresh', handler)
+      window.removeEventListener('post-created', handler)
       window.removeEventListener('feed-change', feedHandler)
     }
   }, [activeTab])
