@@ -408,6 +408,11 @@ function SettingsContent() {
                        applicationStatus === 'pending' ? 'Our team is reviewing your application.' :
                        'Keep posting high-quality memes to unlock monetization!'}
                     </p>
+                    {applicationStatus === 'approved' && (
+                      <Link href="/monetization" className="mt-4 inline-flex items-center gap-2 text-violet-500 font-bold text-sm hover:underline">
+                        View Detailed Earnings <ChevronRightIcon className="w-4 h-4" />
+                      </Link>
+                    )}
                   </div>
                 </div>
 

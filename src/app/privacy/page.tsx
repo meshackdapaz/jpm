@@ -4,14 +4,19 @@ import React from 'react'
 import { AppLayout } from '@/components/AppLayout'
 import Link from 'next/link'
 import { ChevronLeftIcon } from '@heroicons/react/24/outline'
+import { useAuth } from '@/components/AuthProvider'
 
 export default function PrivacyPolicy() {
+  const { user } = useAuth()
+  const backHref = user ? '/' : '/signup'
+  const backText = user ? 'Back' : 'Back to Signup'
+
   return (
     <AppLayout hideSidebar={true} isPublic={true}>
       <div className="max-w-3xl mx-auto py-12 px-6">
-        <Link href="/signup" className="flex items-center gap-2 text-zinc-500 hover:text-black dark:hover:text-white transition-colors mb-8 group w-fit">
+        <Link href={backHref} className="flex items-center gap-2 text-zinc-500 hover:text-black dark:hover:text-white transition-colors mb-8 group w-fit">
           <ChevronLeftIcon className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
-          <span className="font-bold text-sm">Back to Signup</span>
+          <span className="font-bold text-sm">{backText}</span>
         </Link>
 
         <header className="mb-12">
@@ -23,7 +28,7 @@ export default function PrivacyPolicy() {
           <section>
             <h2 className="text-xl font-bold text-black dark:text-white mb-4">1. Introduction</h2>
             <p>
-              Welcome to JPM ("we," "our," or "us"). We are committed to protecting your personal information and your right to privacy. This Privacy Policy explains how we collect, use, and share information when you use our platform.
+              Welcome to the platform ("we," "our," or "us"). We are committed to protecting your personal information and your right to privacy. This Privacy Policy explains how we collect, use, and share information when you use our platform.
             </p>
           </section>
 
@@ -62,7 +67,7 @@ export default function PrivacyPolicy() {
           <section>
             <h2 className="text-xl font-bold text-black dark:text-white mb-4">5. Age Requirement</h2>
             <p>
-              JPM is restricted to users who are 18 years of age or older. We do not knowingly collect personal information from children under 18. If we become aware that a minor has provided us with personal information, we will take steps to delete such information and terminate the account.
+              The platform is restricted to users who are 18 years of age or older. We do not knowingly collect personal information from children under 18. If we become aware that a minor has provided us with personal information, we will take steps to delete such information and terminate the account.
             </p>
           </section>
 
@@ -83,7 +88,7 @@ export default function PrivacyPolicy() {
         </div>
 
         <footer className="mt-20 pt-8 border-t border-zinc-100 dark:border-zinc-800 text-center text-zinc-500 text-sm">
-          &copy; 2026 JPM. All rights reserved.
+          &copy; 2026. All rights reserved.
         </footer>
       </div>
     </AppLayout>

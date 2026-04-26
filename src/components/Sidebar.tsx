@@ -36,13 +36,7 @@ export function Sidebar({ user }: { user: any }) {
 
   return (
     <div className="flex flex-col h-screen fixed w-64 border-r border-zinc-200 dark:border-zinc-800 p-4">
-      <div className="mb-8 w-full flex justify-center pt-2">
-        <Link href="/" className="inline-block">
-          <div className="font-black text-5xl tracking-tighter text-black dark:text-white transition-transform hover:scale-105">
-            Echo
-          </div>
-        </Link>
-      </div>
+
 
       <nav className="space-y-2 flex-grow">
         {navItems.map((item) => (

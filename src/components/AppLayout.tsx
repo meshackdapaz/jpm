@@ -130,14 +130,7 @@ export function AppLayout({ children, fullBleed = false, wide = false, hideSideb
         vibration: true,
       }).catch(e => console.error('Failed to create messages channel:', e))
 
-      PushNotifications.createChannel({
-        id: 'calls',
-        name: 'Calls',
-        description: 'Incoming voice and video calls',
-        importance: 5, // max
-        visibility: 1, 
-        vibration: true,
-      }).catch(e => console.error('Failed to create calls channel:', e))
+
 
       // Use FirebaseMessaging for correct FCM tokens on iOS & Android
       FirebaseMessaging.requestPermissions().then(result => {
@@ -337,140 +330,99 @@ export function AppLayout({ children, fullBleed = false, wide = false, hideSideb
     { name: 'Profile',       href: currentUser ? `/profile?id=${currentUser.id}` : '/login', iconOutline: UserOutline, iconSolid: UserSolid },
   ]
 
-  if (isNative && authLoading) {
-    return (
-      <div className="flex min-h-screen min-h-[100dvh] items-center justify-center bg-black">
-        <svg className="w-16 h-16 text-white" viewBox="0 0 24 24" fill="currentColor">
-          <path d="M12.001 2C6.475 2 2 6.476 2 12s4.475 10 10.001 10C17.522 22 22 17.524 22 12S17.522 2 12.001 2zM12 20c-4.41 0-8-3.589-8-8s3.59-8 8-8 8 3.589 8 8-3.59 8-8 8zm4.5-8c0 2.485-2.015 4.5-4.5 4.5S7.5 14.485 7.5 12s2.015-4.5 4.5-4.5 4.5 2.015 4.5 4.5zm1.5 0c0-3.313-2.687-6-6-6S6 8.687 6 12s2.687 6 6 6c1.293 0 2.49-.409 3.471-1.103l-.985-1.459A4.468 4.468 0 0112 16.5c-2.485 0-4.5-2.015-4.5-4.5S9.515 7.5 12 7.5s4.5 2.015 4.5 4.5v1.125c0 .621-.503 1.125-1.125 1.125S14.25 13.746 14.25 13.125V12c0-1.24-1.01-2.25-2.25-2.25S9.75 10.76 9.75 12s1.01 2.25 2.25 2.25c.655 0 1.24-.28 1.657-.726A2.614 2.614 0 0016.5 13.125V12z"/>
-        </svg>
-      </div>
-    )
-  }
+
+  const publicRoutes = ['/login', '/signup', '/terms', '/privacy', '/forgot-password', '/reset-password']
+  const isPublicRoute = publicRoutes.includes(pathname)
+  const showNav = !isPublicRoute && currentUser
+
+  if (authLoading) return <div className="min-h-screen bg-white dark:bg-black" />
 
   return (
     <div
       className="flex w-full overflow-x-hidden min-h-screen min-h-[100dvh] bg-white dark:bg-black text-[#101010] dark:text-[#f3f5f7]"
       style={{
-        '--nav-height': navHidden || keyboardVisible ? '0px' : '56px'
+        '--nav-height': (navHidden || keyboardVisible || !showNav) ? '0px' : '56px'
       } as React.CSSProperties}
       onTouchStart={onTouchStart}
       onTouchMove={onTouchMove}
       onTouchEnd={onTouchEnd}
     >
-      {/* ── In-App Toast Notifications ───────────────────────────────────────── */}
-      <ToastNotification />
+      {showNav && pathname === '/' && <MobileTopNav onMenuClick={() => setIsMobileMenuOpen(true)} />}
 
-      {/* ── Mobile Top Header (Home page only) ─────────────────────────────── */}
-      {pathname === '/' && (
-      <header className="sm:hidden fixed top-0 left-0 right-0 z-40 bg-white dark:bg-black flex items-center px-4 pt-[env(safe-area-inset-top)] h-[calc(3.5rem+env(safe-area-inset-top))]">
-        {/* Left Column (fixed width) */}
-        <div className="w-10 flex items-center">
-          {pathname === '/' && (
-            <button
-              onClick={() => setIsMobileMenuOpen(true)}
-              className="flex items-center justify-start text-zinc-900 dark:text-zinc-100"
-              aria-label="Menu"
-            >
-              <Bars3Icon className="w-6 h-6" />
-            </button>
-          )}
-        </div>
+      {showNav && (
+        <nav className="fixed top-0 left-0 bottom-0 w-[72px] z-50 hidden sm:flex flex-col items-center justify-between py-6 bg-white dark:bg-black border-r border-zinc-100 dark:border-zinc-900">
+          <div className="flex-shrink-0 mb-8 pt-2">
+            <svg className="w-10 h-10 text-black dark:text-white" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+              <path d="M12.001 2C6.475 2 2 6.476 2 12s4.475 10 10.001 10C17.522 22 22 17.524 22 12S17.522 2 12.001 2zM12 20c-4.41 0-8-3.589-8-8s3.59-8 8-8 8 3.589 8 8-3.59 8-8 8zm4.5-8c0 2.485-2.015 4.5-4.5 4.5S7.5 14.485 7.5 12s2.015-4.5 4.5-4.5 4.5 2.015 4.5 4.5zm1.5 0c0-3.313-2.687-6-6-6S6 8.687 6 12s2.687 6 6 6c1.293 0 2.49-.409 3.471-1.103l-.985-1.459A4.468 4.468 0 0112 16.5c-2.485 0-4.5-2.015-4.5-4.5S9.515 7.5 12 7.5s4.5 2.015 4.5 4.5v1.125c0 .621-.503 1.125-1.125 1.125S14.25 13.746 14.25 13.125V12c0-1.24-1.01-2.25-2.25-2.25S9.75 10.76 9.75 12s1.01 2.25 2.25 2.25c.655 0 1.24-.28 1.657-.726A2.614 2.614 0 0016.5 13.125V12z"/>
+            </svg>
+          </div>
 
-        {/* Center Column (flexible, logo centered) */}
-        <div className="flex-1 flex justify-center items-center overflow-visible">
-          <Link
-            href="/"
-            aria-label="Home"
-          >
-            <motion.div animate={logoControls}>
-              <svg className="w-8 h-8 text-black dark:text-white" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
-                <path d="M12.001 2C6.475 2 2 6.476 2 12s4.475 10 10.001 10C17.522 22 22 17.524 22 12S17.522 2 12.001 2zM12 20c-4.41 0-8-3.589-8-8s3.59-8 8-8 8 3.589 8 8-3.59 8-8 8zm4.5-8c0 2.485-2.015 4.5-4.5 4.5S7.5 14.485 7.5 12s2.015-4.5 4.5-4.5 4.5 2.015 4.5 4.5zm1.5 0c0-3.313-2.687-6-6-6S6 8.687 6 12s2.687 6 6 6c1.293 0 2.49-.409 3.471-1.103l-.985-1.459A4.468 4.468 0 0112 16.5c-2.485 0-4.5-2.015-4.5-4.5S9.515 7.5 12 7.5s4.5 2.015 4.5 4.5v1.125c0 .621-.503 1.125-1.125 1.125S14.25 13.746 14.25 13.125V12c0-1.24-1.01-2.25-2.25-2.25S9.75 10.76 9.75 12s1.01 2.25 2.25 2.25c.655 0 1.24-.28 1.657-.726A2.614 2.614 0 0016.5 13.125V12z"/>
-              </svg>
-            </motion.div>
-          </Link>
-        </div>
+          <div className="flex flex-col items-center gap-2 flex-grow justify-center">
+            {desktopTabs.map((tab) => {
+              const isActive = tab.href
+                ? pathname === tab.href || (pathname.startsWith('/profile') && tab.name === 'Profile')
+                : isPostModalOpen
+              const Icon = isActive ? tab.iconSolid : tab.iconOutline
+              const btnClass = `relative w-12 h-12 flex items-center justify-center rounded-2xl transition-all ${
+                isActive
+                  ? 'text-black dark:text-white bg-zinc-100 dark:bg-zinc-900'
+                  : 'text-zinc-400 hover:bg-zinc-50 dark:hover:bg-zinc-900/50'
+              }`
+              if (tab.action) {
+                return <button key={tab.name} onClick={tab.action} className={btnClass}><Icon className="w-6 h-6" /></button>
+              }
+              return (
+                <Link key={tab.name} href={tab.href as string} className={btnClass}>
+                  <Icon className="w-6 h-6" />
+                  {tab.badge && tab.badge > 0 && (
+                    <span className="absolute top-1.5 right-1.5 bg-red-500 text-white text-[9px] font-black w-4 h-4 flex items-center justify-center rounded-full border-2 border-white dark:border-black">
+                      {tab.badge > 9 ? '9+' : tab.badge}
+                    </span>
+                  )}
+                </Link>
+              )
+            })}
+          </div>
 
-        {/* Right Column (fixed width) */}
-        <div className="w-10 flex items-center justify-end">
-          {pathname === '/' && (
-            <Link href="/search" className="flex items-center justify-end text-zinc-900 dark:text-zinc-100" aria-label="Search">
-              <SearchOutline className="w-6 h-6" />
-            </Link>
-          )}
-        </div>
-      </header>
+          <div className="mt-8 flex flex-col gap-2">
+            {mounted && (
+              <button
+                onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+                className="w-12 h-12 flex items-center justify-center text-zinc-400"
+              >
+                {theme === 'dark' ? <SunIcon className="w-6 h-6" /> : <MoonIcon className="w-6 h-6" />}
+              </button>
+            )}
+          </div>
+        </nav>
       )}
-
-      {/* ── Desktop Left Nav ────────────────────────────────────────────────── */}
-      <nav className="fixed top-0 left-0 bottom-0 w-[72px] z-50 hidden sm:flex flex-col items-center justify-between py-6 bg-white dark:bg-black border-r border-zinc-100 dark:border-zinc-900">
-        <Link href="/" className="flex-shrink-0 mb-8 pt-2">
-          <div className="font-black text-2xl tracking-tighter">Echo</div>
-        </Link>
-
-        <div className="flex flex-col items-center gap-2 flex-grow justify-center">
-          {desktopTabs.map((tab) => {
-            const isActive = tab.href
-              ? pathname === tab.href || (pathname.startsWith('/profile') && tab.name === 'Profile')
-              : isPostModalOpen
-            const Icon = isActive ? tab.iconSolid : tab.iconOutline
-            const btnClass = `relative w-12 h-12 flex items-center justify-center rounded-2xl transition-all ${
-              isActive
-                ? 'text-black dark:text-white bg-zinc-100 dark:bg-zinc-900'
-                : 'text-zinc-400 hover:bg-zinc-50 dark:hover:bg-zinc-900/50'
-            }`
-            if (tab.action) {
-              return <button key={tab.name} onClick={tab.action} className={btnClass}><Icon className="w-6 h-6" /></button>
-            }
-            return (
-              <Link key={tab.name} href={tab.href as string} className={btnClass}>
-                <Icon className="w-6 h-6" />
-                {tab.badge && tab.badge > 0 && (
-                  <span className="absolute top-1.5 right-1.5 bg-red-500 text-white text-[9px] font-black w-4 h-4 flex items-center justify-center rounded-full border-2 border-white dark:border-black">
-                    {tab.badge > 9 ? '9+' : tab.badge}
-                  </span>
-                )}
-              </Link>
-            )
-          })}
-        </div>
-
-        <div className="mt-8 flex flex-col gap-2">
-          {mounted && (
-            <button
-              onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
-              className="w-12 h-12 flex items-center justify-center text-zinc-400"
-            >
-              {theme === 'dark' ? <SunIcon className="w-6 h-6" /> : <MoonIcon className="w-6 h-6" />}
-            </button>
-          )}
-        </div>
-      </nav>
 
       {/* ── Main content ─────────────────────────────────────────────────────  */}
       <main
-        className={`flex-grow ${pathname === '/' ? 'pt-[calc(4rem+env(safe-area-inset-top))] sm:pt-0' : 'pt-0'} pb-[calc(4.5rem+env(safe-area-inset-bottom))] sm:pb-0 font-sans ${fullBleed ? 'sm:pl-[72px]' : 'flex justify-center'}`}
+        className={`flex-grow ${showNav && pathname === '/' ? 'pt-[calc(3.5rem+env(safe-area-inset-top))]' : 'pt-[env(safe-area-inset-top)]'} ${showNav ? 'pb-[calc(4.5rem+env(safe-area-inset-bottom))]' : 'pb-0'} font-sans ${showNav && fullBleed ? 'sm:pl-[72px]' : 'flex justify-center'}`}
         style={{
           transform: ptrPull > 0 ? `translateY(${ptrPull}px)` : 'translateY(0)',
-          transition: ptrPull > 0 ? 'none' : 'transform 0.35s cubic-bezier(0.25, 0.46, 0.45, 0.94)',
+          transition: ptrPull > 0 ? 'none' : 'transform 0.45s cubic-bezier(0.2, 0.8, 0.2, 1)',
         }}
       >
         {fullBleed ? (
           children
         ) : (
-          <div className={`flex w-full ${(wide || hideSidebar) ? 'max-w-6xl' : 'max-w-4xl'} gap-0 lg:gap-8 lg:px-4`}>
-            <div className={`flex-1 min-w-0 ${(wide || hideSidebar) ? 'max-w-4xl' : 'max-w-xl'} w-full min-h-screen bg-white dark:bg-black sm:ml-[72px]`}>
+          <div className={`flex w-full ${(wide || hideSidebar || !showNav) ? 'max-w-6xl' : 'max-w-4xl'} gap-0 lg:gap-8 lg:px-4 justify-center`}>
+            <div className={`flex-1 min-w-0 ${(wide || hideSidebar || !showNav) ? 'max-w-4xl' : 'max-w-xl'} w-full min-h-screen bg-white dark:bg-black ${showNav ? 'sm:ml-[72px]' : 'sm:ml-0'}`}>
               {children}
             </div>
-            {!isNative && !hideSidebar && <RightSidebar />}
+            {!isNative && !hideSidebar && showNav && <RightSidebar />}
           </div>
         )}
       </main>
 
       {/* ── Mobile Bottom Nav — auto-hides on scroll-down ────────────────────  */}
-      <nav
-        className={`sm:hidden fixed bottom-0 left-0 right-0 z-40 bg-white dark:bg-black transition-transform duration-300 ease-in-out ${
-          navHidden || keyboardVisible ? 'translate-y-full' : 'translate-y-0'
-        }`}
+      {showNav && (
+        <nav
+          className={`sm:hidden fixed bottom-0 left-0 right-0 z-40 bg-white dark:bg-black transition-transform duration-300 ease-in-out ${
+            navHidden || keyboardVisible ? 'translate-y-full' : 'translate-y-0'
+          }`}
         style={{
           paddingBottom: 'env(safe-area-inset-bottom)',
           paddingLeft:   'env(safe-area-inset-left)',
@@ -525,6 +477,7 @@ export function AppLayout({ children, fullBleed = false, wide = false, hideSideb
           })}
         </div>
       </nav>
+      )}
 
       {/* ── Mobile Side Drawer (Feeds on Home, Menu elsewhere) ────────────────── */}
       {isMobileMenuOpen && (
@@ -569,18 +522,6 @@ export function AppLayout({ children, fullBleed = false, wide = false, hideSideb
                     >
                       <span className="text-[20px] font-bold">Following</span>
                       <RightIcon className="w-5 h-5 text-zinc-300 group-hover:text-zinc-500 transition-colors" />
-                    </button>
-                    <button 
-                      className="w-full flex items-center justify-between p-6 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors group"
-                    >
-                      <span className="text-[20px] font-bold">Ghost threads</span>
-                      <div className="w-8 h-8 rounded-full bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center border border-zinc-200 dark:border-zinc-700">
-                        <svg className="w-5 h-5 text-zinc-600 dark:text-zinc-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-                          <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z" />
-                          <circle cx="9" cy="9" r="1.5" /><circle cx="15" cy="9" r="1.5" />
-                          <path d="M8 13c0 .5.5 1 1 1s1-.5 1-1m4 0c0 .5.5 1 1 1s1-.5 1-1" />
-                        </svg>
-                      </div>
                     </button>
                   </div>
                 </div>
@@ -666,6 +607,25 @@ export function AppLayout({ children, fullBleed = false, wide = false, hideSideb
           </div>
         </div>
       )}
+    </div>
+  )
+}
+function MobileTopNav({ onMenuClick }: { onMenuClick: () => void }) {
+  return (
+    <div className="fixed top-0 left-0 right-0 z-40 h-[calc(3.5rem+env(safe-area-inset-top))] bg-white/80 dark:bg-black/80 backdrop-blur-md border-b border-zinc-100 dark:border-zinc-900 px-4 flex items-center justify-between pointer-events-auto pt-[env(safe-area-inset-top)] sm:hidden">
+      <button onClick={onMenuClick} className="p-2 text-[#101010] dark:text-[#f3f5f7] active:opacity-60 transition-opacity">
+        <Bars3Icon className="w-6 h-6" />
+      </button>
+      
+      <div className="flex items-center">
+        <svg className="w-8 h-8 text-black dark:text-white" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+          <path d="M12.001 2C6.475 2 2 6.476 2 12s4.475 10 10.001 10C17.522 22 22 17.524 22 12S17.522 2 12.001 2zM12 20c-4.41 0-8-3.589-8-8s3.59-8 8-8 8 3.589 8 8-3.59 8-8 8zm4.5-8c0 2.485-2.015 4.5-4.5 4.5S7.5 14.485 7.5 12s2.015-4.5 4.5-4.5 4.5 2.015 4.5 4.5zm1.5 0c0-3.313-2.687-6-6-6S6 8.687 6 12s2.687 6 6 6c1.293 0 2.49-.409 3.471-1.103l-.985-1.459A4.468 4.468 0 0112 16.5c-2.485 0-4.5-2.015-4.5-4.5S9.515 7.5 12 7.5s4.5 2.015 4.5 4.5v1.125c0 .621-.503 1.125-1.125 1.125S14.25 13.746 14.25 13.125V12c0-1.24-1.01-2.25-2.25-2.25S9.75 10.76 9.75 12s1.01 2.25 2.25 2.25c.655 0 1.24-.28 1.657-.726A2.614 2.614 0 0016.5 13.125V12z"/>
+        </svg>
+      </div>
+
+      <Link href="/search" className="p-2 text-[#101010] dark:text-[#f3f5f7] active:opacity-60 transition-opacity">
+        <SearchOutline className="w-6 h-6" />
+      </Link>
     </div>
   )
 }

@@ -4,14 +4,19 @@ import React from 'react'
 import { AppLayout } from '@/components/AppLayout'
 import Link from 'next/link'
 import { ChevronLeftIcon } from '@heroicons/react/24/outline'
+import { useAuth } from '@/components/AuthProvider'
 
 export default function TermsOfService() {
+  const { user } = useAuth()
+  const backHref = user ? '/' : '/signup'
+  const backText = user ? 'Back' : 'Back to Signup'
+
   return (
     <AppLayout hideSidebar={true} isPublic={true}>
       <div className="max-w-3xl mx-auto py-12 px-6">
-        <Link href="/signup" className="flex items-center gap-2 text-zinc-500 hover:text-black dark:hover:text-white transition-colors mb-8 group w-fit">
+        <Link href={backHref} className="flex items-center gap-2 text-zinc-500 hover:text-black dark:hover:text-white transition-colors mb-8 group w-fit">
           <ChevronLeftIcon className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
-          <span className="font-bold text-sm">Back to Signup</span>
+          <span className="font-bold text-sm">{backText}</span>
         </Link>
 
         <header className="mb-12">
@@ -23,14 +28,14 @@ export default function TermsOfService() {
           <section>
             <h2 className="text-xl font-bold text-black dark:text-white mb-4">1. Acceptance of Terms</h2>
             <p>
-              By accessing or using JPM, you agree to be bound by these Terms of Service. If you do not agree to these terms, you may not use the platform.
+              By accessing or using the platform, you agree to be bound by these Terms of Service. If you do not agree to these terms, you may not use the platform.
             </p>
           </section>
 
           <section>
             <h2 className="text-xl font-bold text-black dark:text-white mb-4">2. Eligibility</h2>
             <p>
-              You must be at least 18 years old to create an account and use JPM. By using the platform, you represent and warrant that you are of legal age and have the capacity to enter into these terms.
+              You must be at least 18 years old to create an account and use the platform. By using the platform, you represent and warrant that you are of legal age and have the capacity to enter into these terms.
             </p>
           </section>
 
@@ -49,7 +54,7 @@ export default function TermsOfService() {
           <section>
             <h2 className="text-xl font-bold text-black dark:text-white mb-4">4. Content Ownership</h2>
             <p>
-              You retain ownership of the content you post on JPM. However, by posting content, you grant us a worldwide, non-exclusive, royalty-free license to use, display, and distribute that content to facilitate the platform's services.
+              You retain ownership of the content you post on the platform. However, by posting content, you grant us a worldwide, non-exclusive, royalty-free license to use, display, and distribute that content to facilitate the platform's services.
             </p>
           </section>
 
@@ -63,7 +68,7 @@ export default function TermsOfService() {
           <section>
             <h2 className="text-xl font-bold text-black dark:text-white mb-4">6. Limitation of Liability</h2>
             <p>
-              JPM is provided "as is" without any warranties. We shall not be liable for any indirect, incidental, or consequential damages resulting from your use of the platform.
+              The platform is provided "as is" without any warranties. We shall not be liable for any indirect, incidental, or consequential damages resulting from your use of the platform.
             </p>
           </section>
 
@@ -76,7 +81,7 @@ export default function TermsOfService() {
         </div>
 
         <footer className="mt-20 pt-8 border-t border-zinc-100 dark:border-zinc-800 text-center text-zinc-500 text-sm">
-          &copy; 2026 JPM. All rights reserved.
+          &copy; 2026. All rights reserved.
         </footer>
       </div>
     </AppLayout>

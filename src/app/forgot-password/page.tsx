@@ -4,6 +4,7 @@ import React, { useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import Link from 'next/link'
 import { ChevronLeftIcon } from '@heroicons/react/24/outline'
+import { APP_NAME } from '@/lib/constants'
 
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState('')
@@ -41,7 +42,7 @@ export default function ForgotPasswordPage() {
           <div className="absolute inset-[15%] border-[1.5px] border-black/10 dark:border-white/10 rounded-full" />
         </div>
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-[40vh] font-black text-black dark:text-white opacity-[0.02] select-none pointer-events-none uppercase tracking-tighter">
-          JPM
+          {APP_NAME}
         </div>
       </div>
 

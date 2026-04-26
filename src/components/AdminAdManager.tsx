@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import Image from 'next/image'
-import { PhotoIcon, XMarkIcon, PlusIcon, ChartBarIcon, TrashIcon } from '@heroicons/react/24/outline'
+import { PhotoIcon, XMarkIcon, PlusIcon, ChartBarIcon, TrashIcon, VideoCameraIcon } from '@heroicons/react/24/outline'
 
 export function AdminAdManager() {
   const [ads, setAds] = useState<any[]>([])
@@ -15,6 +15,7 @@ export function AdminAdManager() {
   const [title, setTitle] = useState('')
   const [description, setDescription] = useState('')
   const [imageFile, setImageFile] = useState<File | null>(null)
+  const [videoFile, setVideoFile] = useState<File | null>(null)
   const [targetUrl, setTargetUrl] = useState('')
   const [submitting, setSubmitting] = useState(false)
   
@@ -86,11 +87,20 @@ export function AdminAdManager() {
 
       const { data: { publicUrl } } = supabase.storage.from('ads').getPublicUrl(fileName)
 
+      let videoUrl = null
+      if (videoFile) {
+        const videoName = `${Math.random()}.mp4`
+        const { error: videoError } = await supabase.storage.from('ads').upload(videoName, videoFile)
+        if (videoError) throw videoError
+        videoUrl = supabase.storage.from('ads').getPublicUrl(videoName).data.publicUrl
+      }
+
       // 2. Create ad record
       const { error: insertError } = await supabase.from('direct_ads').insert([{
         title,
         description,
         image_url: publicUrl,
+        video_url: videoUrl,
         target_url: targetUrl
       }])
 
@@ -100,6 +110,7 @@ export function AdminAdManager() {
       setTitle('')
       setDescription('')
       setImageFile(null)
+      setVideoFile(null)
       setTargetUrl('')
       setIsAdding(false)
       fetchAds()
@@ -181,7 +192,7 @@ export function AdminAdManager() {
               </div>
 
               <div className="flex flex-col gap-1">
-                <label className="text-xs font-bold text-zinc-500 uppercase ml-1">Ad Image</label>
+                <label className="text-xs font-bold text-zinc-500 uppercase ml-1 text-violet-500">Ad Image (Poster)</label>
                 <div className="relative group">
                   <input 
                     type="file" 
@@ -193,17 +204,46 @@ export function AdminAdManager() {
                   />
                   <label 
                     htmlFor="ad-image-upload"
-                    className="flex items-center justify-center gap-3 w-full py-12 border-2 border-dashed border-zinc-300 dark:border-zinc-700 rounded-2xl cursor-pointer hover:border-violet-500 hover:bg-violet-50/50 dark:hover:bg-violet-900/10 transition-all"
+                    className="flex items-center justify-center gap-3 w-full py-8 border-2 border-dashed border-zinc-300 dark:border-zinc-700 rounded-2xl cursor-pointer hover:border-violet-500 hover:bg-violet-50/50 dark:hover:bg-violet-900/10 transition-all font-bold"
                   >
                     {imageFile ? (
-                      <div className="flex flex-col items-center gap-2">
+                      <div className="flex flex-col items-center gap-1">
                         <span className="text-sm font-medium text-violet-600 truncate max-w-[200px]">{imageFile.name}</span>
-                        <span className="text-[10px] text-zinc-400">Tap to change</span>
+                        <span className="text-[10px] text-zinc-400 font-bold">Tap to change</span>
                       </div>
                     ) : (
-                      <div className="flex flex-col items-center gap-2">
-                        <PhotoIcon className="w-8 h-8 text-zinc-300 group-hover:text-violet-500" />
-                        <span className="text-sm font-medium text-zinc-400">Upload Ad Creative (800x450 recommended)</span>
+                      <div className="flex flex-col items-center gap-1">
+                        <PhotoIcon className="w-6 h-6 text-zinc-300 group-hover:text-violet-500" />
+                        <span className="text-xs font-medium text-zinc-400">Add Ad Poster (800x450 recommended)</span>
+                      </div>
+                    )}
+                  </label>
+                </div>
+              </div>
+
+              <div className="flex flex-col gap-1">
+                <label className="text-xs font-bold text-zinc-500 uppercase ml-1">Ad Video (Optional)</label>
+                <div className="relative group">
+                  <input 
+                    type="file" 
+                    accept="video/*" 
+                    onChange={e => setVideoFile(e.target.files?.[0] || null)} 
+                    className="hidden"
+                    id="ad-video-upload"
+                  />
+                  <label 
+                    htmlFor="ad-video-upload"
+                    className="flex items-center justify-center gap-3 w-full py-8 border-2 border-dashed border-zinc-300 dark:border-zinc-700 rounded-2xl cursor-pointer hover:border-violet-500 hover:bg-violet-50/50 dark:hover:bg-violet-900/10 transition-all font-bold"
+                  >
+                    {videoFile ? (
+                      <div className="flex flex-col items-center gap-1">
+                        <span className="text-sm font-medium text-violet-600 truncate max-w-[200px]">{videoFile.name}</span>
+                        <span className="text-[10px] text-zinc-400 font-bold">Tap to change</span>
+                      </div>
+                    ) : (
+                      <div className="flex flex-col items-center gap-1">
+                        <VideoCameraIcon className="w-6 h-6 text-zinc-300 group-hover:text-violet-500" />
+                        <span className="text-xs font-medium text-zinc-400 font-bold">Add High Quality Video</span>
                       </div>
                     )}
                   </label>
@@ -251,6 +291,11 @@ export function AdminAdManager() {
                 >
                   <div className="relative w-14 h-14 rounded-xl overflow-hidden bg-zinc-100 dark:bg-zinc-900 flex-none">
                     <Image src={ad.image_url} alt="" fill className="object-cover" unoptimized />
+                    {ad.video_url && (
+                      <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
+                        <VideoCameraIcon className="w-5 h-5 text-white" />
+                      </div>
+                    )}
                   </div>
                   <div className="flex-grow flex flex-col">
                     <span className="font-bold text-zinc-900 dark:text-white">{ad.title}</span>
@@ -332,11 +377,22 @@ export function AdminAdManager() {
           <div onClick={() => setSelectedAd(null)} className="absolute inset-0 bg-black/60 backdrop-blur-md" />
           <div className="relative bg-white dark:bg-zinc-900 w-full max-w-lg rounded-[32px] overflow-hidden shadow-2xl animate-in zoom-in-95 duration-300">
             {/* Header with Ad Creative */}
-            <div className="relative w-full aspect-video bg-zinc-100 dark:bg-zinc-800">
-              <Image src={selectedAd.image_url} alt={selectedAd.title} fill className="object-cover" unoptimized />
+            <div className="relative w-full aspect-video bg-zinc-100 dark:bg-zinc-800 overflow-hidden">
+              {selectedAd.video_url ? (
+                <video 
+                  src={selectedAd.video_url} 
+                  poster={selectedAd.image_url} 
+                  className="w-full h-full object-cover" 
+                  autoPlay 
+                  muted 
+                  loop 
+                />
+              ) : (
+                <Image src={selectedAd.image_url} alt={selectedAd.title} fill className="object-cover" unoptimized />
+              )}
               <button 
                 onClick={() => setSelectedAd(null)}
-                className="absolute top-4 right-4 p-2 bg-black/50 text-white rounded-full backdrop-blur-md hover:bg-black/70 transition-colors"
+                className="absolute top-4 right-4 p-2 bg-black/50 text-white rounded-full backdrop-blur-md hover:bg-black/70 transition-colors z-10"
               >
                 <XMarkIcon className="w-6 h-6" />
               </button>

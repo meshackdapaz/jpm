@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useRef, useEffect } from 'react'
+import React, { useState, useRef, useEffect, useCallback } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useI18n } from '@/lib/i18n'
 import Image from 'next/image'
@@ -10,21 +10,32 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { Haptics, ImpactStyle } from '@capacitor/haptics'
 import { Capacitor } from '@capacitor/core'
 import { 
-  GlobeAltIcon, 
-  UsersIcon, 
-  CheckIcon,
-  ChatBubbleBottomCenterTextIcon,
+  VideoCameraIcon,
+  ListBulletIcon,
+  ChatBubbleLeftEllipsisIcon,
+  EllipsisHorizontalIcon,
+  DocumentDuplicateIcon,
   XMarkIcon,
-  CalendarIcon,
   PhotoIcon,
   GifIcon,
-  VideoCameraIcon
+  CheckIcon,
+  ChevronRightIcon
 } from '@heroicons/react/24/outline'
 
 const triggerHaptic = (style = ImpactStyle.Light) => {
   if (Capacitor.isNativePlatform()) {
     Haptics.impact({ style }).catch(() => {})
   }
+}
+
+interface PostItem {
+  id: string
+  content: string
+  images: File[]
+  remoteUrls: string[]
+  previewUrls: string[]
+  video: File | null
+  videoPreviewUrl: string | null
 }
 
 export function CreatePost({ 
@@ -36,333 +47,383 @@ export function CreatePost({
   onSuccess?: () => void,
   quotedPost?: any
 }) {
-  const [content, setContent] = useState('')
-  const [images, setImages] = useState<File[]>([])
-  const [remoteUrls, setRemoteUrls] = useState<string[]>([])
-  const [previewUrls, setPreviewUrls] = useState<string[]>([])
-  const [video, setVideo] = useState<File | null>(null)
-  const [videoPreviewUrl, setVideoPreviewUrl] = useState<string | null>(null)
+  const [thread, setThread] = useState<PostItem[]>([{
+    id: Math.random().toString(36).substr(2, 9),
+    content: '',
+    images: [],
+    remoteUrls: [],
+    previewUrls: [],
+    video: null,
+    videoPreviewUrl: null
+  }])
+  
   const [loading, setLoading] = useState(false)
-  const [showGiphy, setShowGiphy] = useState(false)
+  const [showGiphy, setShowGiphy] = useState<{ postIndex: number } | null>(null)
+  const [showOptions, setShowOptions] = useState(false)
+  const [showDrafts, setShowDrafts] = useState(false)
+  const [drafts, setDrafts] = useState<any[]>([])
+  
+  const [replyPrivacy, setReplyPrivacy] = useState<'Anyone' | 'Followers' | 'Followed' | 'Mentioned'>('Anyone')
+  const [reviewReplies, setReviewReplies] = useState(false)
+  const [isGhost, setIsGhost] = useState(false)
+  
   const fileInputRef = useRef<HTMLInputElement>(null)
   const videoInputRef = useRef<HTMLInputElement>(null)
-  const textareaRef = useRef<HTMLTextAreaElement>(null)
+  const textareaRefs = useRef<{[key: string]: HTMLTextAreaElement | null}>({})
+  
   const { t } = useI18n()
   const supabase = createClient()
   const { user } = useAuth()
   const [currentProfile, setCurrentProfile] = useState<any>(null)
-  
-  const [poll, setPoll] = useState<{ question: string, options: string[], expires_at: string } | null>(null)
-  const [isQuote, setIsQuote] = useState(false)
-  const [replyPrivacy, setReplyPrivacy] = useState<'Everyone' | 'Followers' | 'Mentioned'>('Everyone')
-  const [showMoreMenu, setShowMoreMenu] = useState(false)
 
   useEffect(() => {
     if (user) {
-      supabase.from('profiles').select('*').eq('id', user.id).single().then(({ data }: { data: any }) => {
-        setCurrentProfile(data)
-      })
-      const savedDraft = localStorage.getItem('echo_post_draft')
-      if (savedDraft) {
-        try {
-          const draft = JSON.parse(savedDraft)
-          if (draft.content) setContent(draft.content)
-        } catch (e) { console.error('Error loading draft:', e) }
-      }
-    } else {
-      setCurrentProfile(null)
+      supabase.from('profiles').select('*').eq('id', user.id).single().then(({ data }: { data: any }) => setCurrentProfile(data))
+      const savedDrafts = localStorage.getItem('echo_drafts_v4')
+      if (savedDrafts) setDrafts(JSON.parse(savedDrafts))
     }
   }, [user])
 
-  useEffect(() => {
-    if (user && content) {
-      localStorage.setItem('echo_post_draft', JSON.stringify({ content }))
+  const saveDraft = useCallback(() => {
+    if (thread[0].content.trim()) {
+      const newDraft = { id: Date.now(), thread, date: new Date().toISOString() }
+      const updated = [newDraft, ...drafts].slice(0, 10)
+      setDrafts(updated)
+      localStorage.setItem('echo_drafts_v4', JSON.stringify(updated))
+      triggerHaptic(ImpactStyle.Medium)
     }
-  }, [content, user])
-  
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      textareaRef.current?.focus()
-    }, 200)
-    return () => clearTimeout(timer)
-  }, [inModal])
+  }, [thread, drafts])
 
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const addThreadPost = () => {
+    const newPostItem: PostItem = {
+      id: Math.random().toString(36).substr(2, 9),
+      content: '',
+      images: [],
+      remoteUrls: [],
+      previewUrls: [],
+      video: null,
+      videoPreviewUrl: null
+    }
+    setThread([...thread, newPostItem])
+    triggerHaptic()
+  }
+
+  const updatePost = (index: number, updates: Partial<PostItem>) => {
+    const newThread = [...thread]
+    newThread[index] = { ...newThread[index], ...updates }
+    setThread(newThread)
+  }
+
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>, index: number) => {
     const files = Array.from(e.target.files || [])
     if (files.length > 0) {
-      if (video) { setVideo(null); setVideoPreviewUrl(null) }
-      const newImages = [...images, ...files].slice(0, 4 - remoteUrls.length)
-      setImages(newImages)
-      setPreviewUrls([...remoteUrls, ...newImages.map((file: File) => URL.createObjectURL(file))])
+      const post = thread[index]
+      const newImages = [...post.images, ...files].slice(0, 4 - post.remoteUrls.length)
+      const newPreviews = [...post.remoteUrls, ...newImages.map(f => URL.createObjectURL(f))]
+      updatePost(index, { images: newImages, previewUrls: newPreviews, video: null, videoPreviewUrl: null })
     }
   }
 
-  const handleVideoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleVideoChange = (e: React.ChangeEvent<HTMLInputElement>, index: number) => {
     const file = e.target.files?.[0]
     if (file) {
-      setVideo(file)
-      setImages([])
-      setRemoteUrls([])
-      setPreviewUrls([])
-      setVideoPreviewUrl(URL.createObjectURL(file))
-    }
-  }
-
-  const handleGifSelect = (url: string) => {
-    if (remoteUrls.length + images.length >= 4) return
-    const newRemote = [...remoteUrls, url]
-    setRemoteUrls(newRemote)
-    setPreviewUrls([...newRemote, ...images.map((file: File) => URL.createObjectURL(file))])
-    setShowGiphy(false)
-  }
-
-  const removeVideo = () => {
-    setVideo(null)
-    setVideoPreviewUrl(null)
-  }
-
-  const removeImage = (index: number) => {
-    if (index < remoteUrls.length) {
-      const newRemote = remoteUrls.filter((_, i) => i !== index)
-      setRemoteUrls(newRemote)
-      setPreviewUrls([...newRemote, ...images.map(f => URL.createObjectURL(f))])
-    } else {
-      const imgIndex = index - remoteUrls.length
-      const newImages = images.filter((_, i) => i !== imgIndex)
-      setImages(newImages)
-      setPreviewUrls([...remoteUrls, ...newImages.map(f => URL.createObjectURL(f))])
+      updatePost(index, { video: file, videoPreviewUrl: URL.createObjectURL(file), images: [], previewUrls: [] })
     }
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!user) { alert('Please log in to post'); return }
-    if (!content.trim() && images.length === 0 && remoteUrls.length === 0) return
+    if (!user || loading) return
     
     setLoading(true)
-    let image_urls: string[] = [...remoteUrls]
-    let video_url: string | null = null
-
     try {
-      if (video) {
-        const fileName = `${Math.random()}.mp4`
-        const { error } = await supabase.storage.from('videos').upload(fileName, video)
-        if (error) throw error
-        video_url = supabase.storage.from('videos').getPublicUrl(fileName).data.publicUrl
-      }
-      if (images.length > 0) {
-        const uploadPromises = images.map(async (img: File, index: number) => {
-          const fileName = `${Math.random()}.jpg`
-          const { error } = await supabase.storage.from('memes').upload(fileName, img)
-          if (error) { console.error(`Upload error for image ${index}:`, error); return null }
-          return supabase.storage.from('memes').getPublicUrl(fileName).data.publicUrl
-        })
-        const results = await Promise.all(uploadPromises)
-        image_urls = results.filter((url): url is string => url !== null)
-      }
+      let previousPostId: string | null = null
 
-      const { data: postData, error: postError } = await supabase.from('posts').insert([{
-        content: content.trim(),
-        image_url: image_urls[0] || null,
-        image_urls: image_urls,
-        video_url: video_url,
-        creator_id: user.id,
-        quoted_post_id: quotedPost?.id || null,
-        settings: {
-          is_quote: isQuote || !!quotedPost,
-          reply_privacy: replyPrivacy,
-          has_video: !!video_url
+      for (const [idx, post] of thread.entries()) {
+        if (!post.content.trim() && post.images.length === 0 && !post.video) continue
+
+        let videoUrl = null
+        let imageUrls: string[] = [...post.remoteUrls]
+
+        if (post.video) {
+          const name = `vid_${Date.now()}.mp4`
+          await supabase.storage.from('videos').upload(name, post.video)
+          videoUrl = supabase.storage.from('videos').getPublicUrl(name).data.publicUrl
         }
-      }]).select('id').single()
 
-      if (postError) throw postError
-      const lastPostId = postData.id
-
-      // Send Quote Notification
-      if (quotedPost && quotedPost.creator_id !== user.id) {
-        await supabase.from('notifications').insert({
-          user_id: quotedPost.creator_id,
-          actor_id: user.id,
-          type: 'quote',
-          post_id: lastPostId
-        })
-      }
-
-      if (poll) {
-        const { data: pData, error: pError } = await supabase.from('polls').insert({
-          post_id: lastPostId,
-          question: poll.question || content.slice(0, 100),
-          ends_at: poll.expires_at
-        }).select().single()
-        if (!pError) {
-          await supabase.from('poll_options').insert(
-            poll.options.map((opt, idx) => ({
-              poll_id: pData.id,
-              option_text: opt,
-              display_order: idx
-            }))
-          )
+        if (post.images.length > 0) {
+          const urls = await Promise.all(post.images.map(async img => {
+            const name = `img_${Date.now()}_${Math.random()}.jpg`
+            await supabase.storage.from('memes').upload(name, img)
+            return supabase.storage.from('memes').getPublicUrl(name).data.publicUrl
+          }))
+          imageUrls.push(...urls.filter((u): u is string => u !== null))
         }
-      }
 
-      const mentionRegex = /@(\w+)/g
-      const mentions = [...content.matchAll(mentionRegex)].map((m: any) => m[1].toLowerCase())
-      if (mentions.length > 0) {
-        const { data: mentionedUsers } = await supabase.from('profiles').select('id, settings').in('username', mentions)
-        if (mentionedUsers && mentionedUsers.length > 0) {
-          const notifications = mentionedUsers
-            .filter((u: any) => u.id !== user.id)
-            .map((u: any) => ({ user_id: u.id, actor_id: user.id, type: 'mention', post_id: lastPostId }))
-          if (notifications.length > 0) await supabase.from('notifications').insert(notifications)
-        }
-      }
+        const result: any = await supabase.from('posts').insert({
+          content: post.content.trim(),
+          image_urls: imageUrls,
+          video_url: videoUrl,
+          creator_id: user.id,
+          parent_id: previousPostId,
+          quoted_post_id: idx === 0 ? quotedPost?.id : null,
+          is_ghost: isGhost,
+          expires_at: isGhost ? new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString() : null,
+          settings: {
+            reply_privacy: replyPrivacy,
+            review_replies: reviewReplies,
+            thread_index: idx,
+            is_quote: idx === 0 && !!quotedPost,
+            ghost_mode: isGhost
+          }
+        }).select('id').single()
 
-      setContent('')
-      setImages([])
-      setPreviewUrls([])
-      setRemoteUrls([])
-      setPoll(null)
-      setIsQuote(false)
+        if (result.error) throw result.error
+        previousPostId = result.data.id
+      }
+      
       localStorage.removeItem('echo_post_draft')
-      if (onSuccess) onSuccess()
-      else window.location.reload()
+      if (onSuccess) {
+        onSuccess()
+      } else {
+        window.location.reload()
+      }
     } catch (err: any) {
-      console.error('Error creating post:', err)
-      alert('Failed: ' + err.message)
+      alert('Post failed: ' + err.message)
     } finally {
       setLoading(false)
     }
   }
 
   return (
-    <div className={`flex flex-col bg-white dark:bg-black h-full ${inModal ? '' : 'border border-zinc-200 dark:border-zinc-800 rounded-3xl p-1 shadow-sm'}`}>
+    <div className={`flex flex-col bg-zinc-950 h-full ${inModal ? 'fixed inset-0 z-50' : 'border border-zinc-900 rounded-3xl overflow-hidden'}`}>
       <form onSubmit={handleSubmit} className="flex-1 flex flex-col overflow-hidden">
-        <div className="flex-1 overflow-y-auto px-4 pt-4 pb-2 scrollbar-none">
-          <div className="flex gap-4">
-          <div className="flex flex-col items-center flex-none" style={{ width: 48 }}>
-            <div className="w-12 h-12 rounded-full bg-zinc-200 dark:bg-zinc-800 overflow-hidden shadow-sm">
-              {currentProfile?.avatar_url ? (
-                <Image src={currentProfile.avatar_url} alt="Avatar" width={48} height={48} className="w-full h-full object-cover" unoptimized />
-              ) : (
-                <div className="w-full h-full flex items-center justify-center text-zinc-500 font-bold text-sm">
-                  {currentProfile?.full_name?.[0] || '?'}
-                </div>
-              )}
-            </div>
+        
+        <div className="flex items-center justify-between px-6 pt-[calc(env(safe-area-inset-top)+12px)] pb-4 border-b border-zinc-900/50">
+          <button type="button" onClick={() => onSuccess?.()} className="p-2 -ml-2 text-zinc-500 hover:text-white transition-all">
+            <XMarkIcon className="w-6 h-6" />
+          </button>
+          <h2 className="text-[17px] font-black tracking-tight text-white">Create Post</h2>
+          <div className="flex items-center gap-3">
+            <button type="button" onClick={() => setShowDrafts(true)} className="p-2 text-zinc-400 hover:text-white transition-all relative">
+              <DocumentDuplicateIcon className="w-5 h-5" />
+              {drafts.length > 0 && <div className="absolute top-1 right-1 w-2 h-2 bg-blue-500 rounded-full border-2 border-zinc-950" />}
+            </button>
+            <button type="button" onClick={() => setShowOptions(true)} className="p-2 text-zinc-400 hover:text-white transition-all"><EllipsisHorizontalIcon className="w-6 h-6" /></button>
           </div>
+        </div>
 
-          <div className="flex-1 min-w-0">
-            <div className={`relative mt-1 ${isQuote ? 'bg-zinc-100/40 dark:bg-zinc-800/40 p-6 rounded-3xl border border-zinc-200/50 mb-4' : ''}`}>
-              <textarea
-                ref={textareaRef}
-                value={content}
-                onChange={(e) => setContent(e.target.value)}
-                placeholder={quotedPost ? "Add a comment..." : t('whatIsHappening')}
-                className={`w-full bg-transparent border-none focus:ring-0 resize-none placeholder-zinc-400 dark:placeholder-zinc-500 font-medium ${isQuote ? 'text-[22px] text-center font-black leading-tight' : 'text-[18px]'}`}
-                rows={inModal ? 6 : 3}
-              />
-            </div>
-
-            {/* Quoted Post Preview */}
-            {quotedPost && (
-              <div className="mt-2 mb-4 rounded-3xl border border-zinc-100 dark:border-zinc-800 p-4 bg-zinc-50/50 dark:bg-zinc-900/50">
-                <div className="flex items-center gap-2 mb-2">
-                  <div className="w-5 h-5 rounded-full bg-zinc-200 dark:bg-zinc-800 overflow-hidden">
-                    {quotedPost.profiles?.avatar_url && (
-                      <Image src={quotedPost.profiles.avatar_url} alt="" width={20} height={20} className="w-full h-full object-cover" unoptimized />
-                    )}
-                  </div>
-                  <span className="font-bold text-xs tracking-tight">{quotedPost.profiles?.full_name}</span>
-                  <span className="text-zinc-500 text-[10px]">@{quotedPost.profiles?.username}</span>
+        <div className="flex-1 overflow-y-auto px-6 py-6 scrollbar-none">
+          {thread.map((post, idx) => (
+            <div key={post.id} className="flex gap-4 mb-4 relative last:mb-0">
+               <div className="flex flex-col items-center flex-none">
+                <div className={`w-10 h-10 rounded-full bg-zinc-900 border ${isGhost ? 'border-amber-500/50' : 'border-zinc-800'} overflow-hidden flex items-center justify-center`}>
+                  {isGhost ? (
+                    <div className="w-full h-full bg-gradient-to-br from-amber-500/20 to-zinc-900 flex items-center justify-center">
+                      <span className="text-[10px] font-black text-amber-500 tracking-tighter">GHOST</span>
+                    </div>
+                  ) : currentProfile?.avatar_url && (
+                    <Image src={currentProfile.avatar_url} alt="" width={40} height={40} className="w-full h-full object-cover" unoptimized />
+                  )}
                 </div>
-                <p className="text-[13px] text-zinc-600 dark:text-zinc-400 line-clamp-3">
-                  {quotedPost.content}
-                </p>
+                {idx < thread.length - 1 && <div className="w-[2px] flex-1 bg-zinc-900 my-2 rounded-full" />}
               </div>
-            )}
 
-            {/* Video Preview */}
-            {videoPreviewUrl && (
-              <div className="relative mt-4 rounded-2xl overflow-hidden bg-black aspect-video group">
-                <video 
-                  src={videoPreviewUrl} 
-                  className="w-full h-full object-cover"
-                  controls
+              <div className="flex-1 min-w-0 pt-0.5">
+                <div className="flex items-center gap-2 mb-1">
+                  <span className={`font-black text-sm ${isGhost ? 'text-amber-500' : 'text-zinc-100'}`}>
+                    {isGhost ? 'Anonymous Ghost' : currentProfile?.username || 'user'}
+                  </span>
+                  {idx === 0 && (
+                    <div className="flex items-center gap-1 text-zinc-500 text-[13px] font-bold">
+                       <span>›</span>
+                       <span className="text-zinc-600 hover:text-zinc-400 transition-colors cursor-pointer">Anyone</span>
+                    </div>
+                  )}
+                </div>
+
+                <textarea
+                  ref={el => { textareaRefs.current[post.id] = el }}
+                  value={post.content}
+                  onChange={(e) => updatePost(idx, { content: e.target.value })}
+                  placeholder={idx === 0 ? "What's happening?" : "Say more..."}
+                  className="w-full bg-transparent border-none focus:ring-0 resize-none placeholder-zinc-700 text-white font-medium text-[16px] p-0 min-h-[40px]"
+                  rows={1}
+                  onInput={(e: any) => {
+                    e.target.style.height = 'auto'
+                    e.target.style.height = e.target.scrollHeight + 'px'
+                  }}
                 />
-                <button
-                  onClick={removeVideo}
-                  className="absolute top-2 right-2 p-1.5 bg-black/50 hover:bg-black/70 text-white rounded-full transition-colors opacity-0 group-hover:opacity-100"
-                >
-                  <XMarkIcon className="w-5 h-5" />
-                </button>
-              </div>
-            )}
 
-            {/* Image Previews */}
-            {previewUrls.length > 0 && (
-              <div className={`mt-3 grid gap-2 ${previewUrls.length > 1 ? 'grid-cols-2' : 'grid-cols-1'}`}>
-                {previewUrls.map((url, i) => (
-                  <div key={i} className="relative aspect-video rounded-3xl overflow-hidden group/img border border-zinc-100 dark:border-zinc-800">
-                    <Image src={url} alt="" fill className="object-cover" unoptimized={url.startsWith('blob:')} />
-                    <button type="button" onClick={() => removeImage(i)} className="absolute top-2 right-2 p-1.5 bg-black/60 text-white rounded-full">
-                      <XMarkIcon className="w-4 h-4" />
+                {/* Quote Preview */}
+                {idx === 0 && quotedPost && (
+                  <div className="mt-4 p-4 rounded-3xl border border-zinc-900 bg-zinc-900/40 relative">
+                    <div className="flex items-center gap-2 mb-2">
+                       <div className="w-5 h-5 rounded-full bg-zinc-800 overflow-hidden flex-none">
+                         {quotedPost.profiles?.avatar_url && <Image src={quotedPost.profiles.avatar_url} alt="" width={20} height={20} className="w-full h-full object-cover" unoptimized />}
+                       </div>
+                       <span className="text-xs font-black text-zinc-300">@{quotedPost.profiles?.username}</span>
+                    </div>
+                    <p className="text-sm text-zinc-400 line-clamp-3 leading-relaxed">{quotedPost.content}</p>
+                    <button type="button" onClick={(e) => { e.preventDefault(); window.dispatchEvent(new CustomEvent('open-post-modal', { detail: null })) }} className="absolute top-2 right-2 p-1 bg-black/40 rounded-full hover:bg-black/60 transition-colors">
+                      <XMarkIcon className="w-4 h-4 text-white" />
                     </button>
                   </div>
-                ))}
-              </div>
-            )}
-
-            {poll && (
-              <div className="mt-4 p-4 bg-zinc-50 dark:bg-zinc-900 rounded-3xl border border-zinc-200 relative animate-in zoom-in-95">
-                <button type="button" onClick={() => setPoll(null)} className="absolute top-3 right-3 text-zinc-400"><XMarkIcon className="w-5 h-5" /></button>
-                <p className="text-[10px] font-black uppercase text-zinc-400 tracking-widest mb-3">Poll: {poll.question}</p>
-                <div className="space-y-2">
-                  {poll.options.map((opt, i) => (
-                    <div key={i} className="px-4 py-2 bg-white dark:bg-black rounded-xl border border-zinc-100 text-sm font-bold opacity-60">{opt}</div>
-                  ))}
-                </div>
-              </div>
-            )}
-          </div>
-        </div>
-      </div>
-
-      <input type="file" hidden ref={fileInputRef} accept="image/*" multiple onChange={handleImageChange} />
-      <input type="file" hidden ref={videoInputRef} accept="video/*" onChange={handleVideoChange} />
-
-        {/* Footer Actions */}
-        <div className="flex items-center justify-between px-4 py-3 border-t border-zinc-100 dark:border-zinc-800 mt-2 bg-white/80 dark:bg-black/80 backdrop-blur-xl">
-          <div className="flex items-center gap-1">
-            <button type="button" onClick={() => fileInputRef.current?.click()} className="p-2 text-black dark:text-white hover:bg-zinc-100 dark:hover:bg-white/5 rounded-full transition-colors"><PhotoIcon className="w-5 h-5" /></button>
-            <button type="button" onClick={() => videoInputRef.current?.click()} className="p-2 text-black dark:text-white hover:bg-zinc-100 dark:hover:bg-white/5 rounded-full transition-colors"><VideoCameraIcon className="w-5 h-5" /></button>
-            <button type="button" onClick={() => setShowGiphy(true)} className="p-2 text-black dark:text-white hover:bg-zinc-100 dark:hover:bg-white/5 rounded-full transition-colors"><GifIcon className="w-5 h-5" /></button>
-            <button type="button" onClick={() => setIsQuote(!isQuote)} className={`p-2 transition-colors rounded-full ${isQuote ? 'text-black dark:text-white bg-zinc-100 dark:bg-white/10' : 'text-zinc-400 hover:bg-zinc-50 dark:hover:bg-white/5'}`} title="Toggle Quote Mode"><ChatBubbleBottomCenterTextIcon className="w-5 h-5" /></button>
-            
-            <div className="relative">
-              <button type="button" onClick={() => setShowMoreMenu(!showMoreMenu)} className={`p-2 rounded-full transition-colors ${replyPrivacy !== 'Everyone' ? 'text-black dark:text-white bg-zinc-100 dark:bg-white/10' : 'text-zinc-400 hover:bg-zinc-50 dark:hover:bg-white/5'}`}><svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><circle cx="5" cy="12" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="19" cy="12" r="1.5"/></svg></button>
-              <AnimatePresence>
-                {showMoreMenu && (
-                  <>
-                    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-40" onClick={() => setShowMoreMenu(false)} />
-                    <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 10 }} className="absolute bottom-full left-0 mb-4 w-64 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-3xl shadow-xl z-50 p-2 overflow-hidden">
-                      <div className="px-4 py-3 mb-2 bg-zinc-50 dark:bg-white/5 rounded-2xl"><p className="text-[10px] font-black text-zinc-400 uppercase tracking-widest">Who can reply?</p></div>
-                      {(['Everyone', 'Followers', 'Mentioned'] as const).map((opt) => (
-                        <button key={opt} type="button" onClick={() => { setReplyPrivacy(opt); setShowMoreMenu(false); triggerHaptic() }} className={`w-full flex items-center justify-between px-4 py-3 rounded-2xl text-sm font-bold ${replyPrivacy === opt ? 'bg-sky-500/10 text-sky-500' : 'hover:bg-zinc-50 dark:hover:bg-white/5 text-zinc-600 dark:text-zinc-300'}`}>
-                          {opt === 'Everyone' ? 'Everyone' : opt === 'Followers' ? 'Followers' : 'Mentioned Only'}
-                          {replyPrivacy === opt && <CheckIcon className="w-4 h-4" />}
-                        </button>
-                      ))}
-                    </motion.div>
-                  </>
                 )}
-              </AnimatePresence>
-            </div>
-          </div>
 
-          <button type="submit" disabled={loading || (!content.trim() && images.length === 0)} className="bg-black dark:bg-white text-white dark:text-black px-7 py-2 rounded-full font-black text-[14px] transition-all disabled:opacity-30 active:scale-95">{loading ? '...' : t('post')}</button>
+                <div className="flex items-center gap-5 mt-3">
+                  <button type="button" onClick={() => fileInputRef.current?.click()} className="text-zinc-600 hover:text-white transition-all"><PhotoIcon className="w-[21px] h-[21px]" /></button>
+                  <button type="button" onClick={() => videoInputRef.current?.click()} className="text-zinc-600 hover:text-white transition-all"><VideoCameraIcon className="w-[21px] h-[21px]" /></button>
+                  <button type="button" onClick={() => setShowGiphy({ postIndex: idx })} className="text-zinc-600 hover:text-white transition-all"><GifIcon className="w-[21px] h-[21px]" /></button>
+                  <button type="button" onClick={addThreadPost} className="text-zinc-600 hover:text-white transition-all"><ListBulletIcon className="w-[21px] h-[21px]" /></button>
+                  <button type="button" onClick={() => setShowOptions(true)} className="text-zinc-600 hover:text-white transition-all"><EllipsisHorizontalIcon className="w-[21px] h-[21px]" /></button>
+                </div>
+
+                {(post.previewUrls.length > 0 || post.videoPreviewUrl) && (
+                  <div className="mt-4 space-y-3 max-w-[85%]">
+                    {post.previewUrls.map((url, i) => (
+                      <div key={i} className="relative aspect-video rounded-[24px] overflow-hidden border border-zinc-900">
+                        <Image src={url} alt="" fill className="object-cover" unoptimized={url.startsWith('blob:')} />
+                        <button type="button" onClick={() => updatePost(idx, { previewUrls: post.previewUrls.filter((_, j) => j !== i) })} className="absolute top-2 right-2 p-1.5 bg-black/60 rounded-full"><XMarkIcon className="w-4 h-4" /></button>
+                      </div>
+                    ))}
+                    {post.videoPreviewUrl && (
+                       <div className="relative aspect-video rounded-[24px] overflow-hidden border border-zinc-900 bg-black">
+                          <video src={post.videoPreviewUrl} className="w-full h-full object-cover" controls />
+                          <button type="button" onClick={() => updatePost(idx, { video: null, videoPreviewUrl: null })} className="absolute top-2 right-2 p-1.5 bg-black/60 rounded-full"><XMarkIcon className="w-4 h-4" /></button>
+                       </div>
+                    )}
+                  </div>
+                )}
+              </div>
+            </div>
+          ))}
+
+          <button 
+            type="button" 
+            onClick={addThreadPost}
+            className="mt-6 flex items-center gap-3 group px-1"
+          >
+             <div className="w-10 h-10 rounded-full border border-dashed border-zinc-800 flex items-center justify-center opacity-40 group-hover:opacity-100 transition-all">
+                <span className="text-zinc-500 text-lg">+</span>
+             </div>
+             <span className="text-[14px] font-black text-zinc-600 group-hover:text-zinc-400 transition-colors">Add to thread</span>
+          </button>
+        </div>
+
+        <input type="file" hidden ref={fileInputRef} accept="image/*" multiple onChange={(e) => handleImageChange(e, thread.length - 1)} />
+        <input type="file" hidden ref={videoInputRef} accept="video/*" onChange={(e) => handleVideoChange(e, thread.length - 1)} />
+
+        <div className="px-6 py-6 border-t border-zinc-900/30 bg-zinc-950/80 backdrop-blur-xl">
+          <div className="flex items-center justify-between mb-2">
+            <button 
+              type="button" 
+              onClick={() => setShowOptions(true)}
+              className="px-4 py-2 rounded-[18px] bg-zinc-900 border border-zinc-800 text-zinc-400 font-bold text-[13px] hover:bg-zinc-800 hover:text-white transition-all active:scale-95"
+            >
+              Options
+            </button>
+
+            <button 
+              type="submit" 
+              disabled={loading || (!thread[0].content.trim() && thread[0].images.length === 0 && !thread[0].video)} 
+              className="bg-white text-black px-8 py-3 rounded-[20px] font-black text-[15px] transition-all disabled:opacity-20 active:scale-95 shadow-xl shadow-white/5"
+            >
+              {loading ? '...' : 'Post'}
+            </button>
+          </div>
+          <p className="text-[11px] text-zinc-600 font-bold ml-1">Drafts auto-save to local history</p>
         </div>
       </form>
-      <AnimatePresence>{showGiphy && <GiphyPicker onGifSelect={handleGifSelect} onClose={() => setShowGiphy(false)} />}</AnimatePresence>
+
+      <AnimatePresence>
+        {showOptions && (
+          <>
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 bg-black/80 z-[60]" onClick={() => setShowOptions(false)} />
+            <motion.div initial={{ y: '100%' }} animate={{ y: 0 }} exit={{ y: '100%' }} transition={{ type: 'spring', damping: 25 }} className="fixed bottom-0 left-0 right-0 bg-zinc-950 border-t border-zinc-900 rounded-t-[40px] z-[70] px-8 pt-4 pb-[calc(env(safe-area-inset-bottom)+32px)]">
+              <div className="w-12 h-1.5 bg-zinc-800 rounded-full mx-auto mb-8" />
+              <h3 className="text-xl font-black text-white text-center mb-10">Post Settings</h3>
+              
+              <div className="space-y-6">
+                <div>
+                  <p className="text-[10px] font-black text-zinc-500 uppercase tracking-[2px] mb-4 ml-1">Who can reply?</p>
+                  {(['Anyone', 'Followers', 'Followed', 'Mentioned'] as const).map(opt => (
+                    <button key={opt} onClick={() => { setReplyPrivacy(opt); triggerHaptic() }} className="w-full flex items-center justify-between py-5 border-b border-zinc-900/50 group">
+                      <span className={`font-bold transition-colors ${replyPrivacy === opt ? 'text-white' : 'text-zinc-500 group-hover:text-zinc-300'}`}>{opt}</span>
+                      <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all ${replyPrivacy === opt ? 'border-white bg-white' : 'border-zinc-800'}`}>
+                        {replyPrivacy === opt && <div className="w-2.5 h-2.5 rounded-full bg-black" />}
+                      </div>
+                    </button>
+                  ))}
+                </div>
+
+                 <div className="flex items-center justify-between py-6">
+                  <div>
+                    <p className="font-bold text-white">Ghost Post</p>
+                    <p className="text-xs text-zinc-500 font-medium">Anonymous, disappears in 24h</p>
+                  </div>
+                  <div onClick={() => { setIsGhost(!isGhost); triggerHaptic() }} className={`w-12 h-7 rounded-full p-1 transition-all cursor-pointer ${isGhost ? 'bg-amber-500' : 'bg-zinc-800'}`}>
+                    <div className={`w-5 h-5 rounded-full bg-white transition-all shadow-md ${isGhost ? 'translate-x-5' : ''}`} />
+                  </div>
+                </div>
+
+                <div className="flex items-center justify-between py-6">
+                  <div>
+                    <p className="font-bold text-white">Review replies</p>
+                    <p className="text-xs text-zinc-500 font-medium">Verify replies before they go public</p>
+                  </div>
+                  <div onClick={() => { setReviewReplies(!reviewReplies); triggerHaptic() }} className={`w-12 h-7 rounded-full p-1 transition-all cursor-pointer ${reviewReplies ? 'bg-blue-600' : 'bg-zinc-800'}`}>
+                    <div className={`w-5 h-5 rounded-full bg-white transition-all shadow-md ${reviewReplies ? 'translate-x-5' : ''}`} />
+                  </div>
+                </div>
+              </div>
+
+              <button onClick={() => setShowOptions(false)} className="w-full bg-zinc-900 text-white font-black py-4 mt-8 rounded-[24px]">Done</button>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {showDrafts && (
+          <>
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 bg-black/80 z-[60]" onClick={() => setShowDrafts(false)} />
+            <motion.div initial={{ x: '100%' }} animate={{ x: 0 }} exit={{ x: '100%' }} className="fixed inset-y-0 right-0 w-full bg-zinc-950 z-[70] flex flex-col p-8 pt-[calc(env(safe-area-inset-top)+20px)]">
+              <div className="flex items-center justify-between mb-10">
+                <h3 className="text-2xl font-black text-white">Recent Drafts</h3>
+                <button onClick={() => setShowDrafts(false)} className="p-2 bg-zinc-900 rounded-full"><XMarkIcon className="w-6 h-6" /></button>
+              </div>
+              
+              <div className="flex-1 space-y-4">
+                {drafts.length === 0 ? (
+                  <div className="h-full flex flex-col items-center justify-center text-center px-10">
+                    <DocumentDuplicateIcon className="w-12 h-12 text-zinc-800 mb-4" />
+                    <p className="text-zinc-600 font-bold">No drafts yet. Start writing to see them here.</p>
+                  </div>
+                ) : (
+                  drafts.map((d, i) => (
+                    <div key={i} onClick={() => { setThread(d.thread); setShowDrafts(false); triggerHaptic() }} className="p-6 bg-zinc-900 rounded-[24px] border border-zinc-800 group active:scale-[0.98] transition-all">
+                      <p className="text-white font-bold line-clamp-2 mb-2">{d.thread[0].content || 'Empty post'}</p>
+                      <p className="text-[10px] text-zinc-500 font-bold uppercase">{new Date(d.date).toLocaleDateString()}</p>
+                    </div>
+                  ))
+                )}
+              </div>
+              
+              {drafts.length > 0 && (
+                <button onClick={() => { setDrafts([]); localStorage.removeItem('echo_drafts_v4'); triggerHaptic() }} className="mt-6 text-zinc-500 font-bold text-xs uppercase tracking-widest hover:text-red-500 transition-colors">Clear All History</button>
+              )}
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence>{showGiphy && <GiphyPicker onGifSelect={(url) => {
+        const post = thread[showGiphy.postIndex]
+        const newRemote = [...post.remoteUrls, url].slice(0, 4 - post.images.length)
+        updatePost(showGiphy.postIndex, { remoteUrls: newRemote, previewUrls: [...newRemote, ...post.images.map(f => URL.createObjectURL(f))] })
+        setShowGiphy(null)
+      }} onClose={() => setShowGiphy(null)} />}</AnimatePresence>
     </div>
   )
 }

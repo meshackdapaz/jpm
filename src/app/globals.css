@@ -39,7 +39,7 @@ html, body {
 html { color-scheme: light dark; }
 
 body {
-  font-family: 'Inter', var(--font-geist-sans), -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   color: var(--foreground);
@@ -60,6 +60,31 @@ body {
 
 /* Hide all scrollbars globally */
 * { scrollbar-width: none; -ms-overflow-style: none; }
+
+/* ── Subtle Scrollbar Utility ──────────────────────────────────────────────── */
+.subtle-scroll::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
+  display: block;
+}
+.subtle-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+.subtle-scroll::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.1);
+  border-radius: 20px;
+}
+.dark .subtle-scroll::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.1);
+}
+.subtle-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(0, 0, 0, 0.1) transparent;
+  -ms-overflow-style: auto;
+}
+.dark .subtle-scroll {
+  scrollbar-color: rgba(255, 255, 255, 0.1) transparent;
+}
 
 /* ── Safe area ─────────────────────────────────────────────────────────────── */
 .pb-safe { padding-bottom: env(safe-area-inset-bottom); }

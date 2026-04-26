@@ -10,6 +10,7 @@ interface DirectAdProps {
     title: string
     description: string
     image_url: string
+    video_url?: string | null
     target_url: string
   }
 }
@@ -40,14 +41,26 @@ export function DirectAd({ ad }: DirectAdProps) {
         <span className="text-[10px] font-bold text-violet-500 uppercase tracking-widest">Sponsored</span>
       </div>
       
-      <div className="relative w-full aspect-[16/9] bg-zinc-100 dark:bg-zinc-800">
-        <Image 
-          src={ad.image_url} 
-          alt={ad.title} 
-          fill 
-          className="object-cover transition-transform duration-700 group-hover:scale-105"
-          unoptimized 
-        />
+      <div className="relative w-full aspect-[16/9] bg-zinc-100 dark:bg-zinc-800 overflow-hidden">
+        {ad.video_url ? (
+          <video
+            src={ad.video_url}
+            poster={ad.image_url}
+            autoPlay
+            muted
+            loop
+            playsInline
+            className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+          />
+        ) : (
+          <Image 
+            src={ad.image_url} 
+            alt={ad.title} 
+            fill 
+            className="object-cover transition-transform duration-700 group-hover:scale-105"
+            unoptimized 
+          />
+        )}
       </div>
       
       <div className="p-4">

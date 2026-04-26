@@ -43,8 +43,8 @@ export function useFeedTelemetry(user: any) {
               
               // Increment view count on post-dwell (unique view logic)
               await supabase.rpc('increment_post_view', { 
-                post_id: postId, 
-                viewer_id: user.id 
+                p_post_id: postId, 
+                p_viewer_id: user.id 
               })
             }
             observers.current.set(postId, {

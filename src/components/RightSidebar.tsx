@@ -68,7 +68,7 @@ export function RightSidebar({ mobile = false }: { mobile?: boolean }) {
         .from('posts')
         .select('id, title, content, image_url, view_count, creator_id, profiles(username, full_name, avatar_url, is_verified)')
         .order('view_count', { ascending: false })
-        .limit(5)
+        .limit(10)
       if (data) setTrending(data as unknown as TrendingPost[])
     }
     fetchTrending()
@@ -94,7 +94,7 @@ export function RightSidebar({ mobile = false }: { mobile?: boolean }) {
         .from('profiles')
         .select('id, full_name, username, avatar_url, is_verified')
         .not('id', 'in', `(${excludeIds.join(',')})`)
-        .limit(3)
+        .limit(10)
 
       if (data) setSuggested(data as SuggestedUser[])
     }
@@ -192,13 +192,20 @@ export function RightSidebar({ mobile = false }: { mobile?: boolean }) {
     setAuthError(null)
   }
 
-  if (authLoading) return null
+  // ─── STABLE PLACEHOLDER (Loading) ───────────────────────────────────────
+  if (authLoading) return (
+    <aside className="hidden lg:flex flex-col gap-6 w-[300px] xl:w-[350px] flex-none pt-6 sticky top-0 px-2 opacity-50 pointer-events-none">
+      <div className="h-10 bg-zinc-100 dark:bg-zinc-800 rounded-xl mb-4 animate-pulse" />
+      <div className="h-64 bg-zinc-100 dark:bg-zinc-800 rounded-2xl mb-4 animate-pulse" />
+      <div className="h-48 bg-zinc-100 dark:bg-zinc-800 rounded-2xl animate-pulse" />
+    </aside>
+  )
 
   // ─── LOGGED IN VIEW ───────────────────────────────────────────────────
   if (user) return (
     <aside className={mobile 
       ? "flex flex-col gap-4 w-full flex-none pb-6" 
-      : "hidden lg:flex flex-col gap-6 w-[300px] xl:w-[350px] flex-none pt-6 sticky top-0 max-h-screen overflow-y-auto pb-6 scroll-smooth px-2"
+      : "hidden lg:flex flex-col gap-6 w-[300px] xl:w-[350px] flex-none pt-6 sticky top-0 pb-6 px-2"
     }>
       {/* Search Bar - Top of Sidebar */}
       <section className="px-1 mb-2">
@@ -257,8 +264,8 @@ export function RightSidebar({ mobile = false }: { mobile?: boolean }) {
           <div className="px-6 py-8 text-center text-zinc-400 text-sm italic">Nothing trending yet...</div>
         )}
         
-        <div className="flex flex-col">
-          {trending.slice(0, 5).map((post: TrendingPost, i: number) => (
+        <div className="flex flex-col max-h-[300px] overflow-y-auto subtle-scroll pb-2">
+          {trending.map((post: TrendingPost, i: number) => (
             <div key={post.id} className="group relative flex gap-4 px-6 py-4 hover:bg-zinc-50 dark:hover:bg-white/[0.03] transition-all cursor-pointer border-t border-zinc-50 dark:border-zinc-800/40">
               <span className="flex-none text-[15px] font-black text-zinc-200 dark:text-zinc-800 group-hover:text-zinc-400 dark:group-hover:text-zinc-600 transition-colors w-5 pt-0.5">
                 {i + 1}
@@ -296,8 +303,8 @@ export function RightSidebar({ mobile = false }: { mobile?: boolean }) {
             <h2 className="font-black text-[20px] tracking-tight text-zinc-900 dark:text-white leading-tight">Who to follow</h2>
           </div>
           
-          <div className="flex flex-col">
-            {suggested.slice(0, 5).map((profile: SuggestedUser) => (
+          <div className="flex flex-col max-h-[350px] overflow-y-auto subtle-scroll pb-2">
+            {suggested.map((profile: SuggestedUser) => (
               <div key={profile.id} className="flex items-center gap-3 px-6 py-4 hover:bg-zinc-50 dark:hover:bg-white/[0.03] transition-all border-t border-zinc-50 dark:border-zinc-800/40">
                 <Link href={`/profile?id=${profile.id}`} className="flex-none group">
                   <div className="relative">
@@ -346,15 +353,15 @@ export function RightSidebar({ mobile = false }: { mobile?: boolean }) {
   return (
     <aside className={mobile 
       ? "flex flex-col gap-4 w-full flex-none pb-6"
-      : "hidden lg:flex flex-col gap-4 w-[300px] xl:w-[340px] flex-none pt-6 sticky top-0 max-h-screen overflow-y-auto pb-6 scroll-smooth"
+      : "hidden lg:flex flex-col gap-4 w-[300px] xl:w-[340px] flex-none pt-6 sticky top-0 pb-6 transition-all duration-300"
     }>
 
       {/* Auth Card */}
       <div className="bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 p-5 space-y-4 shadow-sm">
         <div className="space-y-1">
-          <div className="font-black text-2xl tracking-tighter text-black dark:text-white">JPM</div>
+          <div className="font-black text-2xl tracking-tighter text-black dark:text-white">Join the community</div>
           <p className="text-zinc-500 text-sm leading-relaxed">
-            {mode === 'login' ? "Log in to JPM to see what's happening right now." : "Join JPM today. Share memes, connect with others."}
+            {mode === 'login' ? "Log in to see what's happening right now." : "Join today. Share memes, connect with others."}
           </p>
         </div>
 
@@ -381,7 +388,7 @@ export function RightSidebar({ mobile = false }: { mobile?: boolean }) {
 
         <div className="pt-2 text-center border-t border-zinc-100 dark:border-zinc-800">
           <p className="text-zinc-500 text-xs">
-            {mode === 'login' ? "New to JPM?" : "Already have an account?"}{' '}
+            {mode === 'login' ? "New here?" : "Already have an account?"}{' '}
             <button onClick={() => { setMode(mode === 'login' ? 'signup' : 'login'); setAuthError(null) }} className="text-black dark:text-white font-bold hover:underline ml-1">
               {mode === 'login' ? 'Sign up' : 'Log in'}
             </button>

@@ -1,0 +1,1651 @@
+﻿
+> Configure project :app
+WARNING: Using flatDir should be avoided because it doesn't support any meta-data formats.
+
+> Configure project :capacitor-cordova-android-plugins
+WARNING: Using flatDir should be avoided because it doesn't support any meta-data formats.
+WARNING: We recommend using a newer Android Gradle plugin to use compileSdk = 35
+
+This Android Gradle plugin (8.1.0) was tested up to compileSdk = 33 (and compileSdkPreview = "UpsideDownCakePrivacySandbox").
+
+You are strongly encouraged to update your project to use a newer
+Android Gradle plugin that has been tested with compileSdk = 35.
+
+If you are already using the latest version of the Android Gradle plugin,
+you may need to wait until a newer version with support for compileSdk = 35 is available.
+
+To suppress this warning, add/update
+    android.suppressUnsupportedCompileSdk=35
+to this project's gradle.properties.
+
+> Task :app:preBuild UP-TO-DATE
+> Task :app:preReleaseBuild UP-TO-DATE
+> Task :app:mergeReleaseJniLibFolders UP-TO-DATE
+> Task :capacitor-android:preBuild UP-TO-DATE
+> Task :capacitor-android:preReleaseBuild UP-TO-DATE
+> Task :capacitor-android:mergeReleaseJniLibFolders UP-TO-DATE
+> Task :capacitor-android:mergeReleaseNativeLibs NO-SOURCE
+> Task :capacitor-android:copyReleaseJniLibsProjectOnly UP-TO-DATE
+> Task :capacitor-app:preBuild UP-TO-DATE
+> Task :capacitor-app:preReleaseBuild UP-TO-DATE
+> Task :capacitor-app:mergeReleaseJniLibFolders UP-TO-DATE
+> Task :capacitor-app:mergeReleaseNativeLibs NO-SOURCE
+> Task :capacitor-app:copyReleaseJniLibsProjectOnly UP-TO-DATE
+> Task :capacitor-community-admob:preBuild UP-TO-DATE
+> Task :capacitor-community-admob:preReleaseBuild UP-TO-DATE
+> Task :capacitor-community-admob:mergeReleaseJniLibFolders UP-TO-DATE
+> Task :capacitor-community-admob:mergeReleaseNativeLibs NO-SOURCE
+> Task :capacitor-community-admob:copyReleaseJniLibsProjectOnly UP-TO-DATE
+> Task :capacitor-cordova-android-plugins:preBuild UP-TO-DATE
+> Task :capacitor-cordova-android-plugins:preReleaseBuild UP-TO-DATE
+> Task :capacitor-cordova-android-plugins:mergeReleaseJniLibFolders UP-TO-DATE
+> Task :capacitor-cordova-android-plugins:mergeReleaseNativeLibs NO-SOURCE
+> Task :capacitor-cordova-android-plugins:copyReleaseJniLibsProjectOnly UP-TO-DATE
+> Task :capacitor-filesystem:preBuild UP-TO-DATE
+> Task :capacitor-filesystem:preReleaseBuild UP-TO-DATE
+> Task :capacitor-filesystem:mergeReleaseJniLibFolders UP-TO-DATE
+> Task :capacitor-filesystem:mergeReleaseNativeLibs NO-SOURCE
+> Task :capacitor-filesystem:copyReleaseJniLibsProjectOnly UP-TO-DATE
+> Task :capacitor-firebase-messaging:preBuild UP-TO-DATE
+> Task :capacitor-firebase-messaging:preReleaseBuild UP-TO-DATE
+> Task :capacitor-firebase-messaging:mergeReleaseJniLibFolders UP-TO-DATE
+> Task :capacitor-firebase-messaging:mergeReleaseNativeLibs NO-SOURCE
+> Task :capacitor-firebase-messaging:copyReleaseJniLibsProjectOnly UP-TO-DATE
+> Task :capacitor-haptics:preBuild UP-TO-DATE
+> Task :capacitor-haptics:preReleaseBuild UP-TO-DATE
+> Task :capacitor-haptics:mergeReleaseJniLibFolders UP-TO-DATE
+> Task :capacitor-haptics:mergeReleaseNativeLibs NO-SOURCE
+> Task :capacitor-haptics:copyReleaseJniLibsProjectOnly UP-TO-DATE
+> Task :capacitor-keyboard:preBuild UP-TO-DATE
+> Task :capacitor-keyboard:preReleaseBuild UP-TO-DATE
+> Task :capacitor-keyboard:mergeReleaseJniLibFolders UP-TO-DATE
+> Task :capacitor-keyboard:mergeReleaseNativeLibs NO-SOURCE
+> Task :capacitor-keyboard:copyReleaseJniLibsProjectOnly UP-TO-DATE
+> Task :capacitor-local-notifications:preBuild UP-TO-DATE
+> Task :capacitor-local-notifications:preReleaseBuild UP-TO-DATE
+> Task :capacitor-local-notifications:mergeReleaseJniLibFolders UP-TO-DATE
+> Task :capacitor-local-notifications:mergeReleaseNativeLibs NO-SOURCE
+> Task :capacitor-local-notifications:copyReleaseJniLibsProjectOnly UP-TO-DATE
+> Task :capacitor-network:preBuild UP-TO-DATE
+> Task :capacitor-network:preReleaseBuild UP-TO-DATE
+> Task :capacitor-network:mergeReleaseJniLibFolders UP-TO-DATE
+> Task :capacitor-network:mergeReleaseNativeLibs NO-SOURCE
+> Task :capacitor-network:copyReleaseJniLibsProjectOnly UP-TO-DATE
+> Task :capacitor-push-notifications:preBuild UP-TO-DATE
+> Task :capacitor-push-notifications:preReleaseBuild UP-TO-DATE
+> Task :capacitor-push-notifications:mergeReleaseJniLibFolders UP-TO-DATE
+> Task :capacitor-push-notifications:mergeReleaseNativeLibs NO-SOURCE
+> Task :capacitor-push-notifications:copyReleaseJniLibsProjectOnly UP-TO-DATE
+> Task :capacitor-splash-screen:preBuild UP-TO-DATE
+> Task :capacitor-splash-screen:preReleaseBuild UP-TO-DATE
+> Task :capacitor-splash-screen:mergeReleaseJniLibFolders UP-TO-DATE
+> Task :capacitor-splash-screen:mergeReleaseNativeLibs NO-SOURCE
+> Task :capacitor-splash-screen:copyReleaseJniLibsProjectOnly UP-TO-DATE
+> Task :capawesome-capacitor-app-update:preBuild UP-TO-DATE
+> Task :capawesome-capacitor-app-update:preReleaseBuild UP-TO-DATE
+> Task :capawesome-capacitor-app-update:mergeReleaseJniLibFolders UP-TO-DATE
+> Task :capawesome-capacitor-app-update:mergeReleaseNativeLibs NO-SOURCE
+> Task :capawesome-capacitor-app-update:copyReleaseJniLibsProjectOnly UP-TO-DATE
+> Task :app:mergeReleaseNativeLibs NO-SOURCE
+> Task :app:stripReleaseDebugSymbols NO-SOURCE
+> Task :app:extractReleaseNativeSymbolTables NO-SOURCE
+> Task :app:mergeReleaseNativeDebugMetadata NO-SOURCE
+> Task :capacitor-android:generateReleaseResValues UP-TO-DATE
+> Task :capacitor-android:generateReleaseResources UP-TO-DATE
+> Task :capacitor-android:packageReleaseResources UP-TO-DATE
+> Task :capacitor-android:parseReleaseLocalResources UP-TO-DATE
+> Task :capacitor-android:processReleaseManifest UP-TO-DATE
+> Task :capacitor-android:generateReleaseRFile UP-TO-DATE
+> Task :capacitor-android:javaPreCompileRelease UP-TO-DATE
+> Task :capacitor-android:compileReleaseJavaWithJavac UP-TO-DATE
+> Task :capacitor-android:bundleLibCompileToJarRelease UP-TO-DATE
+> Task :capacitor-community-admob:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :capacitor-community-admob:generateReleaseResValues UP-TO-DATE
+> Task :capacitor-community-admob:generateReleaseResources UP-TO-DATE
+> Task :capacitor-community-admob:packageReleaseResources UP-TO-DATE
+> Task :capacitor-community-admob:parseReleaseLocalResources UP-TO-DATE
+> Task :capacitor-community-admob:processReleaseManifest UP-TO-DATE
+> Task :capacitor-community-admob:generateReleaseRFile UP-TO-DATE
+> Task :capacitor-community-admob:compileReleaseKotlin UP-TO-DATE
+> Task :capacitor-community-admob:javaPreCompileRelease UP-TO-DATE
+
+> Task :capacitor-community-admob:compileReleaseJavaWithJavac
+.\gradlew : Note: C:\Us
+ers\Joshan\Desktop\onli
+ne mem sharing\web\node
+_modules\@capacitor-com
+munity\admob\android\sr
+c\main\java\com\getcapa
+citor\community\admob\b
+anner\BannerExecutor.ja
+va uses or overrides a 
+deprecated API.
+At line:1 char:1
++ .\gradlew 
+assembleRelease 
+--stacktrace > 
+build_err2.txt 2>&1 ; 
+Get-Co ...
++ ~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~
+    + CategoryInfo     
+         : 
+NotSpecified: (Not    
+e: C:\Users\...depreca 
+   ted API.:String) 
+[], R    emoteException
+    + 
+FullyQualifiedErrorI   
+ d : NativeCommandError
+ 
+Note: Recompile with 
+-Xlint:deprecation for 
+details.
+
+> Task :capacitor-firebase-messaging:generateReleaseResValues UP-TO-DATE
+> Task :capacitor-firebase-messaging:generateReleaseResources UP-TO-DATE
+> Task :capacitor-firebase-messaging:packageReleaseResources UP-TO-DATE
+> Task :capacitor-firebase-messaging:parseReleaseLocalResources UP-TO-DATE
+> Task :capacitor-firebase-messaging:processReleaseManifest UP-TO-DATE
+> Task :capacitor-firebase-messaging:generateReleaseRFile UP-TO-DATE
+> Task :capacitor-firebase-messaging:javaPreCompileRelease UP-TO-DATE
+> Task :capacitor-firebase-messaging:compileReleaseJavaWithJavac UP-TO-DATE
+> Task :capacitor-firebase-messaging:bundleLibRuntimeToDirRelease UP-TO-DATE
+> Task :capacitor-app:generateReleaseResValues UP-TO-DATE
+> Task :capacitor-app:generateReleaseResources UP-TO-DATE
+> Task :capacitor-app:packageReleaseResources UP-TO-DATE
+> Task :capacitor-app:parseReleaseLocalResources UP-TO-DATE
+> Task :capacitor-app:processReleaseManifest UP-TO-DATE
+> Task :capacitor-app:generateReleaseRFile UP-TO-DATE
+> Task :capacitor-app:javaPreCompileRelease UP-TO-DATE
+> Task :capacitor-app:compileReleaseJavaWithJavac UP-TO-DATE
+> Task :capacitor-app:bundleLibRuntimeToDirRelease UP-TO-DATE
+> Task :capacitor-filesystem:generateReleaseResValues UP-TO-DATE
+> Task :capacitor-filesystem:generateReleaseResources UP-TO-DATE
+> Task :capacitor-filesystem:packageReleaseResources UP-TO-DATE
+> Task :capacitor-filesystem:parseReleaseLocalResources UP-TO-DATE
+> Task :capacitor-filesystem:processReleaseManifest UP-TO-DATE
+> Task :capacitor-filesystem:generateReleaseRFile UP-TO-DATE
+> Task :capacitor-filesystem:javaPreCompileRelease UP-TO-DATE
+> Task :capacitor-filesystem:compileReleaseJavaWithJavac UP-TO-DATE
+> Task :capacitor-filesystem:bundleLibRuntimeToDirRelease UP-TO-DATE
+> Task :capacitor-haptics:generateReleaseResValues UP-TO-DATE
+> Task :capacitor-haptics:generateReleaseResources UP-TO-DATE
+> Task :capacitor-haptics:packageReleaseResources UP-TO-DATE
+> Task :capacitor-community-admob:bundleLibRuntimeToDirRelease
+> Task :capacitor-haptics:parseReleaseLocalResources UP-TO-DATE
+> Task :capacitor-haptics:processReleaseManifest UP-TO-DATE
+> Task :capacitor-haptics:generateReleaseRFile UP-TO-DATE
+> Task :capacitor-haptics:javaPreCompileRelease UP-TO-DATE
+> Task :capacitor-haptics:compileReleaseJavaWithJavac UP-TO-DATE
+> Task :capacitor-haptics:bundleLibRuntimeToDirRelease UP-TO-DATE
+> Task :capacitor-keyboard:generateReleaseResValues UP-TO-DATE
+> Task :capacitor-keyboard:generateReleaseResources UP-TO-DATE
+> Task :capacitor-keyboard:packageReleaseResources UP-TO-DATE
+> Task :capacitor-keyboard:parseReleaseLocalResources UP-TO-DATE
+> Task :capacitor-keyboard:processReleaseManifest UP-TO-DATE
+> Task :capacitor-keyboard:generateReleaseRFile UP-TO-DATE
+> Task :capacitor-keyboard:javaPreCompileRelease UP-TO-DATE
+> Task :capacitor-keyboard:compileReleaseJavaWithJavac UP-TO-DATE
+> Task :capacitor-keyboard:bundleLibRuntimeToDirRelease UP-TO-DATE
+> Task :capacitor-local-notifications:generateReleaseResValues UP-TO-DATE
+> Task :capacitor-local-notifications:generateReleaseResources UP-TO-DATE
+> Task :capacitor-local-notifications:packageReleaseResources UP-TO-DATE
+> Task :capacitor-local-notifications:parseReleaseLocalResources UP-TO-DATE
+> Task :capacitor-local-notifications:processReleaseManifest UP-TO-DATE
+> Task :capacitor-local-notifications:generateReleaseRFile UP-TO-DATE
+> Task :capacitor-local-notifications:javaPreCompileRelease UP-TO-DATE
+> Task :capacitor-local-notifications:compileReleaseJavaWithJavac UP-TO-DATE
+> Task :capacitor-local-notifications:bundleLibRuntimeToDirRelease UP-TO-DATE
+> Task :capacitor-network:generateReleaseResValues UP-TO-DATE
+> Task :capacitor-network:generateReleaseResources UP-TO-DATE
+> Task :capacitor-network:packageReleaseResources UP-TO-DATE
+> Task :capacitor-network:parseReleaseLocalResources UP-TO-DATE
+> Task :capacitor-network:processReleaseManifest UP-TO-DATE
+> Task :capacitor-network:generateReleaseRFile UP-TO-DATE
+> Task :capacitor-network:javaPreCompileRelease UP-TO-DATE
+> Task :capacitor-network:compileReleaseJavaWithJavac UP-TO-DATE
+> Task :capacitor-network:bundleLibRuntimeToDirRelease UP-TO-DATE
+> Task :capacitor-push-notifications:generateReleaseResValues UP-TO-DATE
+> Task :capacitor-push-notifications:generateReleaseResources UP-TO-DATE
+> Task :capacitor-push-notifications:packageReleaseResources UP-TO-DATE
+> Task :capacitor-push-notifications:parseReleaseLocalResources UP-TO-DATE
+> Task :capacitor-push-notifications:processReleaseManifest UP-TO-DATE
+> Task :capacitor-push-notifications:generateReleaseRFile UP-TO-DATE
+> Task :capacitor-push-notifications:javaPreCompileRelease UP-TO-DATE
+> Task :capacitor-push-notifications:compileReleaseJavaWithJavac UP-TO-DATE
+> Task :capacitor-push-notifications:bundleLibRuntimeToDirRelease UP-TO-DATE
+> Task :capacitor-splash-screen:generateReleaseResValues UP-TO-DATE
+> Task :capacitor-splash-screen:generateReleaseResources UP-TO-DATE
+> Task :capacitor-splash-screen:packageReleaseResources UP-TO-DATE
+> Task :capacitor-splash-screen:parseReleaseLocalResources UP-TO-DATE
+> Task :capacitor-splash-screen:processReleaseManifest UP-TO-DATE
+> Task :capacitor-splash-screen:generateReleaseRFile UP-TO-DATE
+> Task :capacitor-splash-screen:javaPreCompileRelease UP-TO-DATE
+> Task :capacitor-splash-screen:compileReleaseJavaWithJavac UP-TO-DATE
+> Task :capacitor-splash-screen:bundleLibRuntimeToDirRelease UP-TO-DATE
+> Task :capawesome-capacitor-app-update:generateReleaseResValues UP-TO-DATE
+> Task :capawesome-capacitor-app-update:generateReleaseResources UP-TO-DATE
+> Task :capawesome-capacitor-app-update:packageReleaseResources UP-TO-DATE
+> Task :capawesome-capacitor-app-update:parseReleaseLocalResources UP-TO-DATE
+> Task :capawesome-capacitor-app-update:processReleaseManifest UP-TO-DATE
+> Task :capawesome-capacitor-app-update:generateReleaseRFile UP-TO-DATE
+> Task :capawesome-capacitor-app-update:javaPreCompileRelease UP-TO-DATE
+> Task :capawesome-capacitor-app-update:compileReleaseJavaWithJavac UP-TO-DATE
+> Task :capawesome-capacitor-app-update:bundleLibRuntimeToDirRelease UP-TO-DATE
+> Task :capacitor-android:bundleLibRuntimeToDirRelease UP-TO-DATE
+> Task :capacitor-cordova-android-plugins:generateReleaseResValues UP-TO-DATE
+> Task :capacitor-cordova-android-plugins:generateReleaseResources UP-TO-DATE
+> Task :capacitor-cordova-android-plugins:packageReleaseResources UP-TO-DATE
+> Task :capacitor-cordova-android-plugins:parseReleaseLocalResources UP-TO-DATE
+> Task :capacitor-cordova-android-plugins:processReleaseManifest UP-TO-DATE
+> Task :capacitor-cordova-android-plugins:generateReleaseRFile UP-TO-DATE
+> Task :capacitor-cordova-android-plugins:javaPreCompileRelease UP-TO-DATE
+> Task :capacitor-cordova-android-plugins:compileReleaseJavaWithJavac NO-SOURCE
+> Task :capacitor-cordova-android-plugins:bundleLibRuntimeToDirRelease UP-TO-DATE
+> Task :app:checkReleaseDuplicateClasses UP-TO-DATE
+> Task :app:javaPreCompileRelease UP-TO-DATE
+> Task :capacitor-android:writeReleaseAarMetadata UP-TO-DATE
+> Task :capacitor-app:writeReleaseAarMetadata UP-TO-DATE
+> Task :capacitor-community-admob:writeReleaseAarMetadata UP-TO-DATE
+> Task :capacitor-cordova-android-plugins:writeReleaseAarMetadata UP-TO-DATE
+> Task :capacitor-filesystem:writeReleaseAarMetadata UP-TO-DATE
+> Task :capacitor-firebase-messaging:writeReleaseAarMetadata UP-TO-DATE
+> Task :capacitor-haptics:writeReleaseAarMetadata UP-TO-DATE
+> Task :capacitor-keyboard:writeReleaseAarMetadata UP-TO-DATE
+> Task :capacitor-local-notifications:writeReleaseAarMetadata UP-TO-DATE
+> Task :capacitor-network:writeReleaseAarMetadata UP-TO-DATE
+> Task :capacitor-push-notifications:writeReleaseAarMetadata UP-TO-DATE
+> Task :capacitor-splash-screen:writeReleaseAarMetadata UP-TO-DATE
+> Task :capawesome-capacitor-app-update:writeReleaseAarMetadata UP-TO-DATE
+> Task :app:generateReleaseResValues UP-TO-DATE
+> Task :app:processReleaseGoogleServices UP-TO-DATE
+> Task :app:mapReleaseSourceSetPaths UP-TO-DATE
+> Task :app:generateReleaseResources UP-TO-DATE
+> Task :app:checkReleaseAarMetadata FAILED
+> Task :app:mergeReleaseResources
+
+[Incubating] Problems report is available at: file:///C:/Users/Joshan/Desktop/online%20mem%20sharing/web/android/build/reports/problems/problems-report.html
+
+FAILURE: Build failed 
+with an exception.
+
+* What went wrong:
+Execution failed for 
+task ':app:checkRelease
+AarMetadata'.
+> A failure occurred 
+while executing com.and
+roid.build.gradle.inter
+nal.tasks.CheckAarMetad
+ataWorkAction
+   > 7 issues were 
+found when checking 
+AAR metadata:
+     
+       1.  Dependency '
+androidx.webkit:webkit:
+1.14.0' requires 
+Android Gradle plugin 
+8.1.1 or higher.
+     
+           This build 
+currently uses Android 
+Gradle plugin 8.1.0.
+     
+       2.  Dependency '
+androidx.core:core-ktx:
+1.17.0' requires 
+libraries and 
+applications that
+           depend on 
+it to compile against 
+version 36 or later of 
+the
+           Android 
+APIs.
+     
+           :app is 
+currently compiled 
+against android-35.
+     
+           Also, the 
+maximum recommended 
+compile SDK version 
+for Android Gradle
+           plugin 
+8.1.0 is 33.
+     
+           Recommended 
+action: Update this 
+project's version of 
+the Android Gradle
+           plugin to 
+one that supports 36, 
+then update this 
+project to use
+           compileSdk 
+of at least 36.
+     
+           Note that 
+updating a library or 
+application's 
+compileSdk (which
+           allows 
+newer APIs to be used) 
+can be done separately 
+from updating
+           targetSdk 
+(which opts the app in 
+to new runtime 
+behavior) and
+           minSdk 
+(which determines 
+which devices the app 
+can be installed
+           on).
+     
+       3.  Dependency '
+androidx.core:core-ktx:
+1.17.0' requires 
+Android Gradle plugin 
+8.9.1 or higher.
+     
+           This build 
+currently uses Android 
+Gradle plugin 8.1.0.
+     
+       4.  Dependency '
+androidx.core:core:1.17
+.0' requires libraries 
+and applications that
+           depend on 
+it to compile against 
+version 36 or later of 
+the
+           Android 
+APIs.
+     
+           :app is 
+currently compiled 
+against android-35.
+     
+           Also, the 
+maximum recommended 
+compile SDK version 
+for Android Gradle
+           plugin 
+8.1.0 is 33.
+     
+           Recommended 
+action: Update this 
+project's version of 
+the Android Gradle
+           plugin to 
+one that supports 36, 
+then update this 
+project to use
+           compileSdk 
+of at least 36.
+     
+           Note that 
+updating a library or 
+application's 
+compileSdk (which
+           allows 
+newer APIs to be used) 
+can be done separately 
+from updating
+           targetSdk 
+(which opts the app in 
+to new runtime 
+behavior) and
+           minSdk 
+(which determines 
+which devices the app 
+can be installed
+           on).
+     
+       5.  Dependency '
+androidx.core:core:1.17
+.0' requires Android 
+Gradle plugin 8.9.1 or 
+higher.
+     
+           This build 
+currently uses Android 
+Gradle plugin 8.1.0.
+     
+       6.  Dependency '
+androidx.activity:activ
+ity:1.11.0' requires 
+libraries and 
+applications that
+           depend on 
+it to compile against 
+version 36 or later of 
+the
+           Android 
+APIs.
+     
+           :app is 
+currently compiled 
+against android-35.
+     
+           Also, the 
+maximum recommended 
+compile SDK version 
+for Android Gradle
+           plugin 
+8.1.0 is 33.
+     
+           Recommended 
+action: Update this 
+project's version of 
+the Android Gradle
+           plugin to 
+one that supports 36, 
+then update this 
+project to use
+           compileSdk 
+of at least 36.
+     
+           Note that 
+updating a library or 
+application's 
+compileSdk (which
+           allows 
+newer APIs to be used) 
+can be done separately 
+from updating
+           targetSdk 
+(which opts the app in 
+to new runtime 
+behavior) and
+           minSdk 
+(which determines 
+which devices the app 
+can be installed
+           on).
+     
+       7.  Dependency '
+androidx.activity:activ
+ity:1.11.0' requires 
+Android Gradle plugin 
+8.9.1 or higher.
+     
+           This build 
+currently uses Android 
+Gradle plugin 8.1.0.
+
+* Try:
+> Run with --info or 
+--debug option to get 
+more log output.
+> Run with --scan to 
+get full insights.
+> Get more help at http
+s://help.gradle.org.
+
+* Exception is:
+org.gradle.api.tasks.Ta
+skExecutionException: 
+Execution failed for 
+task ':app:checkRelease
+AarMetadata'.
+	at org.gradle.api.inte
+rnal.tasks.execution.Ex
+ecuteActionsTaskExecute
+r.lambda$executeIfValid
+$1(ExecuteActionsTaskEx
+ecuter.java:130)
+	at org.gradle.internal
+.Try$Failure.ifSuccessf
+ulOrElse(Try.java:293)
+	at org.gradle.api.inte
+rnal.tasks.execution.Ex
+ecuteActionsTaskExecute
+r.executeIfValid(Execut
+eActionsTaskExecuter.ja
+va:128)
+	at org.gradle.api.inte
+rnal.tasks.execution.Ex
+ecuteActionsTaskExecute
+r.execute(ExecuteAction
+sTaskExecuter.java:116)
+	at org.gradle.api.inte
+rnal.tasks.execution.Pr
+oblemsTaskPathTrackingT
+askExecuter.execute(Pro
+blemsTaskPathTrackingTa
+skExecuter.java:41)
+	at org.gradle.api.inte
+rnal.tasks.execution.Fi
+nalizePropertiesTaskExe
+cuter.execute(FinalizeP
+ropertiesTaskExecuter.j
+ava:46)
+	at org.gradle.api.inte
+rnal.tasks.execution.Re
+solveTaskExecutionModeE
+xecuter.execute(Resolve
+TaskExecutionModeExecut
+er.java:51)
+	at org.gradle.api.inte
+rnal.tasks.execution.Sk
+ipTaskWithNoActionsExec
+uter.execute(SkipTaskWi
+thNoActionsExecuter.jav
+a:57)
+	at org.gradle.api.inte
+rnal.tasks.execution.Sk
+ipOnlyIfTaskExecuter.ex
+ecute(SkipOnlyIfTaskExe
+cuter.java:74)
+	at org.gradle.api.inte
+rnal.tasks.execution.Ca
+tchExceptionTaskExecute
+r.execute(CatchExceptio
+nTaskExecuter.java:36)
+	at org.gradle.api.inte
+rnal.tasks.execution.Ev
+entFiringTaskExecuter$1
+.executeTask(EventFirin
+gTaskExecuter.java:77)
+	at org.gradle.api.inte
+rnal.tasks.execution.Ev
+entFiringTaskExecuter$1
+.call(EventFiringTaskEx
+ecuter.java:55)
+	at org.gradle.api.inte
+rnal.tasks.execution.Ev
+entFiringTaskExecuter$1
+.call(EventFiringTaskEx
+ecuter.java:52)
+	at org.gradle.internal
+.operations.DefaultBuil
+dOperationRunner$Callab
+leBuildOperationWorker.
+execute(DefaultBuildOpe
+rationRunner.java:210)
+	at org.gradle.internal
+.operations.DefaultBuil
+dOperationRunner$Callab
+leBuildOperationWorker.
+execute(DefaultBuildOpe
+rationRunner.java:205)
+	at org.gradle.internal
+.operations.DefaultBuil
+dOperationRunner$2.exec
+ute(DefaultBuildOperati
+onRunner.java:67)
+	at org.gradle.internal
+.operations.DefaultBuil
+dOperationRunner$2.exec
+ute(DefaultBuildOperati
+onRunner.java:60)
+	at org.gradle.internal
+.operations.DefaultBuil
+dOperationRunner.execut
+e(DefaultBuildOperation
+Runner.java:167)
+	at org.gradle.internal
+.operations.DefaultBuil
+dOperationRunner.execut
+e(DefaultBuildOperation
+Runner.java:60)
+	at org.gradle.internal
+.operations.DefaultBuil
+dOperationRunner.call(D
+efaultBuildOperationRun
+ner.java:54)
+	at org.gradle.api.inte
+rnal.tasks.execution.Ev
+entFiringTaskExecuter.e
+xecute(EventFiringTaskE
+xecuter.java:52)
+	at org.gradle.executio
+n.plan.LocalTaskNodeExe
+cutor.execute(LocalTask
+NodeExecutor.java:42)
+	at org.gradle.executio
+n.taskgraph.DefaultTask
+ExecutionGraph$InvokeNo
+deExecutorsAction.execu
+te(DefaultTaskExecution
+Graph.java:331)
+	at org.gradle.executio
+n.taskgraph.DefaultTask
+ExecutionGraph$InvokeNo
+deExecutorsAction.execu
+te(DefaultTaskExecution
+Graph.java:318)
+	at org.gradle.executio
+n.taskgraph.DefaultTask
+ExecutionGraph$BuildOpe
+rationAwareExecutionAct
+ion.lambda$execute$0(De
+faultTaskExecutionGraph
+.java:314)
+	at org.gradle.internal
+.operations.CurrentBuil
+dOperationRef.with(Curr
+entBuildOperationRef.ja
+va:85)
+	at org.gradle.executio
+n.taskgraph.DefaultTask
+ExecutionGraph$BuildOpe
+rationAwareExecutionAct
+ion.execute(DefaultTask
+ExecutionGraph.java:314
+)
+	at org.gradle.executio
+n.taskgraph.DefaultTask
+ExecutionGraph$BuildOpe
+rationAwareExecutionAct
+ion.execute(DefaultTask
+ExecutionGraph.java:303
+)
+	at org.gradle.executio
+n.plan.DefaultPlanExecu
+tor$ExecutorWorker.exec
+ute(DefaultPlanExecutor
+.java:459)
+	at org.gradle.executio
+n.plan.DefaultPlanExecu
+tor$ExecutorWorker.run(
+DefaultPlanExecutor.jav
+a:376)
+	at org.gradle.internal
+.concurrent.ExecutorPol
+icy$CatchAndRecordFailu
+res.onExecute(ExecutorP
+olicy.java:64)
+	at org.gradle.internal
+.concurrent.AbstractMan
+agedExecutor$1.run(Abst
+ractManagedExecutor.jav
+a:48)
+Caused by: org.gradle.w
+orkers.internal.Default
+WorkerExecutor$WorkExec
+utionException: A 
+failure occurred while 
+executing com.android.b
+uild.gradle.internal.ta
+sks.CheckAarMetadataWor
+kAction
+	at org.gradle.workers.
+internal.DefaultWorkerE
+xecutor$WorkItemExecuti
+on.waitForCompletion(De
+faultWorkerExecutor.jav
+a:287)
+	at org.gradle.internal
+.work.DefaultAsyncWorkT
+racker.lambda$waitForIt
+emsAndGatherFailures$2(
+DefaultAsyncWorkTracker
+.java:130)
+	at org.gradle.internal
+.Factories$1.create(Fac
+tories.java:31)
+	at org.gradle.internal
+.work.DefaultWorkerLeas
+eService.withoutLocks(D
+efaultWorkerLeaseServic
+e.java:335)
+	at org.gradle.internal
+.work.DefaultWorkerLeas
+eService.withoutLocks(D
+efaultWorkerLeaseServic
+e.java:318)
+	at org.gradle.internal
+.work.DefaultWorkerLeas
+eService.withoutLock(De
+faultWorkerLeaseService
+.java:323)
+	at org.gradle.internal
+.work.DefaultAsyncWorkT
+racker.waitForItemsAndG
+atherFailures(DefaultAs
+yncWorkTracker.java:126
+)
+	at org.gradle.internal
+.work.DefaultAsyncWorkT
+racker.waitForItemsAndG
+atherFailures(DefaultAs
+yncWorkTracker.java:92)
+	at org.gradle.internal
+.work.DefaultAsyncWorkT
+racker.waitForAll(Defau
+ltAsyncWorkTracker.java
+:78)
+	at org.gradle.internal
+.work.DefaultAsyncWorkT
+racker.waitForCompletio
+n(DefaultAsyncWorkTrack
+er.java:66)
+	at org.gradle.api.inte
+rnal.tasks.execution.Ta
+skExecution$3.run(TaskE
+xecution.java:252)
+	at org.gradle.internal
+.operations.DefaultBuil
+dOperationRunner$1.exec
+ute(DefaultBuildOperati
+onRunner.java:30)
+	at org.gradle.internal
+.operations.DefaultBuil
+dOperationRunner$1.exec
+ute(DefaultBuildOperati
+onRunner.java:27)
+	at org.gradle.internal
+.operations.DefaultBuil
+dOperationRunner$2.exec
+ute(DefaultBuildOperati
+onRunner.java:67)
+	at org.gradle.internal
+.operations.DefaultBuil
+dOperationRunner$2.exec
+ute(DefaultBuildOperati
+onRunner.java:60)
+	at org.gradle.internal
+.operations.DefaultBuil
+dOperationRunner.execut
+e(DefaultBuildOperation
+Runner.java:167)
+	at org.gradle.internal
+.operations.DefaultBuil
+dOperationRunner.execut
+e(DefaultBuildOperation
+Runner.java:60)
+	at org.gradle.internal
+.operations.DefaultBuil
+dOperationRunner.run(De
+faultBuildOperationRunn
+er.java:48)
+	at org.gradle.api.inte
+rnal.tasks.execution.Ta
+skExecution.executeActi
+on(TaskExecution.java:2
+29)
+	at org.gradle.api.inte
+rnal.tasks.execution.Ta
+skExecution.executeActi
+ons(TaskExecution.java:
+212)
+	at org.gradle.api.inte
+rnal.tasks.execution.Ta
+skExecution.executeWith
+PreviousOutputFiles(Tas
+kExecution.java:195)
+	at org.gradle.api.inte
+rnal.tasks.execution.Ta
+skExecution.execute(Tas
+kExecution.java:162)
+	at org.gradle.internal
+.execution.steps.Execut
+eStep.executeInternal(E
+xecuteStep.java:105)
+	at org.gradle.internal
+.execution.steps.Execut
+eStep.access$000(Execut
+eStep.java:44)
+	at org.gradle.internal
+.execution.steps.Execut
+eStep$1.call(ExecuteSte
+p.java:59)
+	at org.gradle.internal
+.execution.steps.Execut
+eStep$1.call(ExecuteSte
+p.java:56)
+	at org.gradle.internal
+.operations.DefaultBuil
+dOperationRunner$Callab
+leBuildOperationWorker.
+execute(DefaultBuildOpe
+rationRunner.java:210)
+	at org.gradle.internal
+.operations.DefaultBuil
+dOperationRunner$Callab
+leBuildOperationWorker.
+execute(DefaultBuildOpe
+rationRunner.java:205)
+	at org.gradle.internal
+.operations.DefaultBuil
+dOperationRunner$2.exec
+ute(DefaultBuildOperati
+onRunner.java:67)
+	at org.gradle.internal
+.operations.DefaultBuil
+dOperationRunner$2.exec
+ute(DefaultBuildOperati
+onRunner.java:60)
+	at org.gradle.internal
+.operations.DefaultBuil
+dOperationRunner.execut
+e(DefaultBuildOperation
+Runner.java:167)
+	at org.gradle.internal
+.operations.DefaultBuil
+dOperationRunner.execut
+e(DefaultBuildOperation
+Runner.java:60)
+	at org.gradle.internal
+.operations.DefaultBuil
+dOperationRunner.call(D
+efaultBuildOperationRun
+ner.java:54)
+	at org.gradle.internal
+.execution.steps.Execut
+eStep.execute(ExecuteSt
+ep.java:56)
+	at org.gradle.internal
+.execution.steps.Execut
+eStep.execute(ExecuteSt
+ep.java:44)
+	at org.gradle.internal
+.execution.steps.Cancel
+ExecutionStep.execute(C
+ancelExecutionStep.java
+:42)
+	at org.gradle.internal
+.execution.steps.Timeou
+tStep.executeWithoutTim
+eout(TimeoutStep.java:7
+5)
+	at org.gradle.internal
+.execution.steps.Timeou
+tStep.execute(TimeoutSt
+ep.java:55)
+	at org.gradle.internal
+.execution.steps.PreCre
+ateOutputParentsStep.ex
+ecute(PreCreateOutputPa
+rentsStep.java:50)
+	at org.gradle.internal
+.execution.steps.PreCre
+ateOutputParentsStep.ex
+ecute(PreCreateOutputPa
+rentsStep.java:28)
+	at org.gradle.internal
+.execution.steps.Remove
+PreviousOutputsStep.exe
+cute(RemovePreviousOutp
+utsStep.java:67)
+	at org.gradle.internal
+.execution.steps.Remove
+PreviousOutputsStep.exe
+cute(RemovePreviousOutp
+utsStep.java:37)
+	at org.gradle.internal
+.execution.steps.Broadc
+astChangingOutputsStep.
+execute(BroadcastChangi
+ngOutputsStep.java:61)
+	at org.gradle.internal
+.execution.steps.Broadc
+astChangingOutputsStep.
+execute(BroadcastChangi
+ngOutputsStep.java:26)
+	at org.gradle.internal
+.execution.steps.Captur
+eOutputsAfterExecutionS
+tep.execute(CaptureOutp
+utsAfterExecutionStep.j
+ava:69)
+	at org.gradle.internal
+.execution.steps.Captur
+eOutputsAfterExecutionS
+tep.execute(CaptureOutp
+utsAfterExecutionStep.j
+ava:46)
+	at org.gradle.internal
+.execution.steps.Resolv
+eInputChangesStep.execu
+te(ResolveInputChangesS
+tep.java:40)
+	at org.gradle.internal
+.execution.steps.Resolv
+eInputChangesStep.execu
+te(ResolveInputChangesS
+tep.java:29)
+	at org.gradle.internal
+.execution.steps.BuildC
+acheStep.executeWithout
+Cache(BuildCacheStep.ja
+va:189)
+	at org.gradle.internal
+.execution.steps.BuildC
+acheStep.lambda$execute
+$1(BuildCacheStep.java:
+75)
+	at org.gradle.internal
+.Either$Right.fold(Eith
+er.java:175)
+	at org.gradle.internal
+.execution.caching.Cach
+ingState.fold(CachingSt
+ate.java:62)
+	at org.gradle.internal
+.execution.steps.BuildC
+acheStep.execute(BuildC
+acheStep.java:73)
+	at org.gradle.internal
+.execution.steps.BuildC
+acheStep.execute(BuildC
+acheStep.java:48)
+	at org.gradle.internal
+.execution.steps.StoreE
+xecutionStateStep.execu
+te(StoreExecutionStateS
+tep.java:46)
+	at org.gradle.internal
+.execution.steps.StoreE
+xecutionStateStep.execu
+te(StoreExecutionStateS
+tep.java:35)
+	at org.gradle.internal
+.execution.steps.SkipUp
+ToDateStep.executeBecau
+se(SkipUpToDateStep.jav
+a:75)
+	at org.gradle.internal
+.execution.steps.SkipUp
+ToDateStep.lambda$execu
+te$2(SkipUpToDateStep.j
+ava:53)
+	at org.gradle.internal
+.execution.steps.SkipUp
+ToDateStep.execute(Skip
+UpToDateStep.java:53)
+	at org.gradle.internal
+.execution.steps.SkipUp
+ToDateStep.execute(Skip
+UpToDateStep.java:35)
+	at org.gradle.internal
+.execution.steps.legacy
+.MarkSnapshottingInputs
+FinishedStep.execute(Ma
+rkSnapshottingInputsFin
+ishedStep.java:37)
+	at org.gradle.internal
+.execution.steps.legacy
+.MarkSnapshottingInputs
+FinishedStep.execute(Ma
+rkSnapshottingInputsFin
+ishedStep.java:27)
+	at org.gradle.internal
+.execution.steps.Resolv
+eIncrementalCachingStat
+eStep.executeDelegate(R
+esolveIncrementalCachin
+gStateStep.java:49)
+	at org.gradle.internal
+.execution.steps.Resolv
+eIncrementalCachingStat
+eStep.executeDelegate(R
+esolveIncrementalCachin
+gStateStep.java:27)
+	at org.gradle.internal
+.execution.steps.Abstra
+ctResolveCachingStateSt
+ep.execute(AbstractReso
+lveCachingStateStep.jav
+a:71)
+	at org.gradle.internal
+.execution.steps.Abstra
+ctResolveCachingStateSt
+ep.execute(AbstractReso
+lveCachingStateStep.jav
+a:39)
+	at org.gradle.internal
+.execution.steps.Resolv
+eChangesStep.execute(Re
+solveChangesStep.java:6
+5)
+	at org.gradle.internal
+.execution.steps.Resolv
+eChangesStep.execute(Re
+solveChangesStep.java:3
+6)
+	at org.gradle.internal
+.execution.steps.Valida
+teStep.execute(Validate
+Step.java:107)
+	at org.gradle.internal
+.execution.steps.Valida
+teStep.execute(Validate
+Step.java:56)
+	at org.gradle.internal
+.execution.steps.Abstra
+ctCaptureStateBeforeExe
+cutionStep.execute(Abst
+ractCaptureStateBeforeE
+xecutionStep.java:64)
+	at org.gradle.internal
+.execution.steps.Abstra
+ctCaptureStateBeforeExe
+cutionStep.execute(Abst
+ractCaptureStateBeforeE
+xecutionStep.java:43)
+	at org.gradle.internal
+.execution.steps.Abstra
+ctSkipEmptyWorkStep.exe
+cuteWithNonEmptySources
+(AbstractSkipEmptyWorkS
+tep.java:125)
+	at org.gradle.internal
+.execution.steps.Abstra
+ctSkipEmptyWorkStep.exe
+cute(AbstractSkipEmptyW
+orkStep.java:56)
+	at org.gradle.internal
+.execution.steps.Abstra
+ctSkipEmptyWorkStep.exe
+cute(AbstractSkipEmptyW
+orkStep.java:36)
+	at org.gradle.internal
+.execution.steps.legacy
+.MarkSnapshottingInputs
+StartedStep.execute(Mar
+kSnapshottingInputsStar
+tedStep.java:38)
+	at org.gradle.internal
+.execution.steps.LoadPr
+eviousExecutionStateSte
+p.execute(LoadPreviousE
+xecutionStateStep.java:
+36)
+	at org.gradle.internal
+.execution.steps.LoadPr
+eviousExecutionStateSte
+p.execute(LoadPreviousE
+xecutionStateStep.java:
+23)
+	at org.gradle.internal
+.execution.steps.Handle
+StaleOutputsStep.execut
+e(HandleStaleOutputsSte
+p.java:75)
+	at org.gradle.internal
+.execution.steps.Handle
+StaleOutputsStep.execut
+e(HandleStaleOutputsSte
+p.java:41)
+	at org.gradle.internal
+.execution.steps.Assign
+MutableWorkspaceStep.la
+mbda$execute$0(AssignMu
+tableWorkspaceStep.java
+:35)
+	at org.gradle.api.inte
+rnal.tasks.execution.Ta
+skExecution$4.withWorks
+pace(TaskExecution.java
+:289)
+	at org.gradle.internal
+.execution.steps.Assign
+MutableWorkspaceStep.ex
+ecute(AssignMutableWork
+spaceStep.java:31)
+	at org.gradle.internal
+.execution.steps.Assign
+MutableWorkspaceStep.ex
+ecute(AssignMutableWork
+spaceStep.java:22)
+	at org.gradle.internal
+.execution.steps.Choose
+PipelineStep.execute(Ch
+oosePipelineStep.java:4
+0)
+	at org.gradle.internal
+.execution.steps.Choose
+PipelineStep.execute(Ch
+oosePipelineStep.java:2
+3)
+	at org.gradle.internal
+.execution.steps.Execut
+eWorkBuildOperationFiri
+ngStep.lambda$execute$2
+(ExecuteWorkBuildOperat
+ionFiringStep.java:67)
+	at org.gradle.internal
+.execution.steps.Execut
+eWorkBuildOperationFiri
+ngStep.execute(ExecuteW
+orkBuildOperationFiring
+Step.java:67)
+	at org.gradle.internal
+.execution.steps.Execut
+eWorkBuildOperationFiri
+ngStep.execute(ExecuteW
+orkBuildOperationFiring
+Step.java:39)
+	at org.gradle.internal
+.execution.steps.Identi
+tyCacheStep.execute(Ide
+ntityCacheStep.java:46)
+	at org.gradle.internal
+.execution.steps.Identi
+tyCacheStep.execute(Ide
+ntityCacheStep.java:34)
+	at org.gradle.internal
+.execution.steps.Identi
+fyStep.execute(Identify
+Step.java:48)
+	at org.gradle.internal
+.execution.steps.Identi
+fyStep.execute(Identify
+Step.java:35)
+	at org.gradle.internal
+.execution.impl.Default
+ExecutionEngine$1.execu
+te(DefaultExecutionEngi
+ne.java:64)
+	at org.gradle.api.inte
+rnal.tasks.execution.Ex
+ecuteActionsTaskExecute
+r.executeIfValid(Execut
+eActionsTaskExecuter.ja
+va:127)
+	at org.gradle.api.inte
+rnal.tasks.execution.Ex
+ecuteActionsTaskExecute
+r.execute(ExecuteAction
+sTaskExecuter.java:116)
+	at org.gradle.api.inte
+rnal.tasks.execution.Pr
+oblemsTaskPathTrackingT
+askExecuter.execute(Pro
+blemsTaskPathTrackingTa
+skExecuter.java:41)
+	at org.gradle.api.inte
+rnal.tasks.execution.Fi
+nalizePropertiesTaskExe
+cuter.execute(FinalizeP
+ropertiesTaskExecuter.j
+ava:46)
+	at org.gradle.api.inte
+rnal.tasks.execution.Re
+solveTaskExecutionModeE
+xecuter.execute(Resolve
+TaskExecutionModeExecut
+er.java:51)
+	at org.gradle.api.inte
+rnal.tasks.execution.Sk
+ipTaskWithNoActionsExec
+uter.execute(SkipTaskWi
+thNoActionsExecuter.jav
+a:57)
+	at org.gradle.api.inte
+rnal.tasks.execution.Sk
+ipOnlyIfTaskExecuter.ex
+ecute(SkipOnlyIfTaskExe
+cuter.java:74)
+	at org.gradle.api.inte
+rnal.tasks.execution.Ca
+tchExceptionTaskExecute
+r.execute(CatchExceptio
+nTaskExecuter.java:36)
+	at org.gradle.api.inte
+rnal.tasks.execution.Ev
+entFiringTaskExecuter$1
+.executeTask(EventFirin
+gTaskExecuter.java:77)
+	at org.gradle.api.inte
+rnal.tasks.execution.Ev
+entFiringTaskExecuter$1
+.call(EventFiringTaskEx
+ecuter.java:55)
+	at org.gradle.api.inte
+rnal.tasks.execution.Ev
+entFiringTaskExecuter$1
+.call(EventFiringTaskEx
+ecuter.java:52)
+	at org.gradle.internal
+.operations.DefaultBuil
+dOperationRunner$Callab
+leBuildOperationWorker.
+execute(DefaultBuildOpe
+rationRunner.java:210)
+	at org.gradle.internal
+.operations.DefaultBuil
+dOperationRunner$Callab
+leBuildOperationWorker.
+execute(DefaultBuildOpe
+rationRunner.java:205)
+	at org.gradle.internal
+.operations.DefaultBuil
+dOperationRunner$2.exec
+ute(DefaultBuildOperati
+onRunner.java:67)
+	at org.gradle.internal
+.operations.DefaultBuil
+dOperationRunner$2.exec
+ute(DefaultBuildOperati
+onRunner.java:60)
+	at org.gradle.internal
+.operations.DefaultBuil
+dOperationRunner.execut
+e(DefaultBuildOperation
+Runner.java:167)
+	at org.gradle.internal
+.operations.DefaultBuil
+dOperationRunner.execut
+e(DefaultBuildOperation
+Runner.java:60)
+	at org.gradle.internal
+.operations.DefaultBuil
+dOperationRunner.call(D
+efaultBuildOperationRun
+ner.java:54)
+	at org.gradle.api.inte
+rnal.tasks.execution.Ev
+entFiringTaskExecuter.e
+xecute(EventFiringTaskE
+xecuter.java:52)
+	at org.gradle.executio
+n.plan.LocalTaskNodeExe
+cutor.execute(LocalTask
+NodeExecutor.java:42)
+	at org.gradle.executio
+n.taskgraph.DefaultTask
+ExecutionGraph$InvokeNo
+deExecutorsAction.execu
+te(DefaultTaskExecution
+Graph.java:331)
+	at org.gradle.executio
+n.taskgraph.DefaultTask
+ExecutionGraph$InvokeNo
+deExecutorsAction.execu
+te(DefaultTaskExecution
+Graph.java:318)
+	at org.gradle.executio
+n.taskgraph.DefaultTask
+ExecutionGraph$BuildOpe
+rationAwareExecutionAct
+ion.lambda$execute$0(De
+faultTaskExecutionGraph
+.java:314)
+	at org.gradle.internal
+.operations.CurrentBuil
+dOperationRef.with(Curr
+entBuildOperationRef.ja
+va:85)
+	at org.gradle.executio
+n.taskgraph.DefaultTask
+ExecutionGraph$BuildOpe
+rationAwareExecutionAct
+ion.execute(DefaultTask
+ExecutionGraph.java:314
+)
+	at org.gradle.executio
+n.taskgraph.DefaultTask
+ExecutionGraph$BuildOpe
+rationAwareExecutionAct
+ion.execute(DefaultTask
+ExecutionGraph.java:303
+)
+	at org.gradle.executio
+n.plan.DefaultPlanExecu
+tor$ExecutorWorker.exec
+ute(DefaultPlanExecutor
+.java:459)
+	at org.gradle.executio
+n.plan.DefaultPlanExecu
+tor$ExecutorWorker.run(
+DefaultPlanExecutor.jav
+a:376)
+	at org.gradle.internal
+.concurrent.ExecutorPol
+icy$CatchAndRecordFailu
+res.onExecute(ExecutorP
+olicy.java:64)
+	at org.gradle.internal
+.concurrent.AbstractMan
+agedExecutor$1.run(Abst
+ractManagedExecutor.jav
+a:48)
+Caused by: java.lang.Ru
+ntimeException: 7 
+issues were found when 
+checking AAR metadata:
+
+  1.  Dependency 'andro
+idx.webkit:webkit:1.14.
+0' requires Android 
+Gradle plugin 8.1.1 or 
+higher.
+
+      This build 
+currently uses Android 
+Gradle plugin 8.1.0.
+
+  2.  Dependency 'andro
+idx.core:core-ktx:1.17.
+0' requires libraries 
+and applications that
+      depend on it to 
+compile against 
+version 36 or later of 
+the
+      Android APIs.
+
+      :app is 
+currently compiled 
+against android-35.
+
+      Also, the 
+maximum recommended 
+compile SDK version 
+for Android Gradle
+      plugin 8.1.0 is 
+33.
+
+      Recommended 
+action: Update this 
+project's version of 
+the Android Gradle
+      plugin to one 
+that supports 36, then 
+update this project to 
+use
+      compileSdk of at 
+least 36.
+
+      Note that 
+updating a library or 
+application's 
+compileSdk (which
+      allows newer 
+APIs to be used) can 
+be done separately 
+from updating
+      targetSdk (which 
+opts the app in to new 
+runtime behavior) and
+      minSdk (which 
+determines which 
+devices the app can be 
+installed
+      on).
+
+  3.  Dependency 'andro
+idx.core:core-ktx:1.17.
+0' requires Android 
+Gradle plugin 8.9.1 or 
+higher.
+
+      This build 
+currently uses Android 
+Gradle plugin 8.1.0.
+
+  4.  Dependency 'andro
+idx.core:core:1.17.0' 
+requires libraries and 
+applications that
+      depend on it to 
+compile against 
+version 36 or later of 
+the
+      Android APIs.
+
+      :app is 
+currently compiled 
+against android-35.
+
+      Also, the 
+maximum recommended 
+compile SDK version 
+for Android Gradle
+
+Deprecated Gradle features were used in this build, making it incompatible with Gradle 9.0.
+
+You can use '--warning-mode all' to show the individual deprecation warnings and determine if they come from your own scripts or plugins.
+
+For more on this, please refer to https://docs.gradle.org/8.14.3/userguide/command_line_interface.html#sec:command_line_warnings in the Gradle documentation.
+152 actionable tasks: 4 executed, 148 up-to-date
+      plugin 8.1.0 is 
+33.
+
+      Recommended 
+action: Update this 
+project's version of 
+the Android Gradle
+      plugin to one 
+that supports 36, then 
+update this project to 
+use
+      compileSdk of at 
+least 36.
+
+      Note that 
+updating a library or 
+application's 
+compileSdk (which
+      allows newer 
+APIs to be used) can 
+be done separately 
+from updating
+      targetSdk (which 
+opts the app in to new 
+runtime behavior) and
+      minSdk (which 
+determines which 
+devices the app can be 
+installed
+      on).
+
+  5.  Dependency 'andro
+idx.core:core:1.17.0' 
+requires Android 
+Gradle plugin 8.9.1 or 
+higher.
+
+      This build 
+currently uses Android 
+Gradle plugin 8.1.0.
+
+  6.  Dependency 'andro
+idx.activity:activity:1
+.11.0' requires 
+libraries and 
+applications that
+      depend on it to 
+compile against 
+version 36 or later of 
+the
+      Android APIs.
+
+      :app is 
+currently compiled 
+against android-35.
+
+      Also, the 
+maximum recommended 
+compile SDK version 
+for Android Gradle
+      plugin 8.1.0 is 
+33.
+
+      Recommended 
+action: Update this 
+project's version of 
+the Android Gradle
+      plugin to one 
+that supports 36, then 
+update this project to 
+use
+      compileSdk of at 
+least 36.
+
+      Note that 
+updating a library or 
+application's 
+compileSdk (which
+      allows newer 
+APIs to be used) can 
+be done separately 
+from updating
+      targetSdk (which 
+opts the app in to new 
+runtime behavior) and
+      minSdk (which 
+determines which 
+devices the app can be 
+installed
+      on).
+
+  7.  Dependency 'andro
+idx.activity:activity:1
+.11.0' requires 
+Android Gradle plugin 
+8.9.1 or higher.
+
+      This build 
+currently uses Android 
+Gradle plugin 8.1.0.
+	at com.android.build.g
+radle.internal.tasks.Ch
+eckAarMetadataWorkActio
+n.execute(CheckAarMetad
+ataTask.kt:213)
+	at org.gradle.workers.
+internal.DefaultWorkerS
+erver.execute(DefaultWo
+rkerServer.java:63)
+	at org.gradle.workers.
+internal.NoIsolationWor
+kerFactory$1$1.create(N
+oIsolationWorkerFactory
+.java:66)
+	at org.gradle.workers.
+internal.NoIsolationWor
+kerFactory$1$1.create(N
+oIsolationWorkerFactory
+.java:62)
+	at org.gradle.internal
+.classloader.ClassLoade
+rUtils.executeInClasslo
+ader(ClassLoaderUtils.j
+ava:100)
+	at org.gradle.workers.
+internal.NoIsolationWor
+kerFactory$1.lambda$exe
+cute$0(NoIsolationWorke
+rFactory.java:62)
+	at org.gradle.workers.
+internal.AbstractWorker
+$1.call(AbstractWorker.
+java:44)
+	at org.gradle.workers.
+internal.AbstractWorker
+$1.call(AbstractWorker.
+java:41)
+	at org.gradle.internal
+.operations.DefaultBuil
+dOperationRunner$Callab
+leBuildOperationWorker.
+execute(DefaultBuildOpe
+rationRunner.java:210)
+	at org.gradle.internal
+.operations.DefaultBuil
+dOperationRunner$Callab
+leBuildOperationWorker.
+execute(DefaultBuildOpe
+rationRunner.java:205)
+	at org.gradle.internal
+.operations.DefaultBuil
+dOperationRunner$2.exec
+ute(DefaultBuildOperati
+onRunner.java:67)
+	at org.gradle.internal
+.operations.DefaultBuil
+dOperationRunner$2.exec
+ute(DefaultBuildOperati
+onRunner.java:60)
+	at org.gradle.internal
+.operations.DefaultBuil
+dOperationRunner.execut
+e(DefaultBuildOperation
+Runner.java:167)
+	at org.gradle.internal
+.operations.DefaultBuil
+dOperationRunner.execut
+e(DefaultBuildOperation
+Runner.java:60)
+	at org.gradle.internal
+.operations.DefaultBuil
+dOperationRunner.call(D
+efaultBuildOperationRun
+ner.java:54)
+	at org.gradle.workers.
+internal.AbstractWorker
+.executeWrappedInBuildO
+peration(AbstractWorker
+.java:41)
+	at org.gradle.workers.
+internal.NoIsolationWor
+kerFactory$1.execute(No
+IsolationWorkerFactory.
+java:59)
+	at org.gradle.workers.
+internal.DefaultWorkerE
+xecutor.lambda$submitWo
+rk$0(DefaultWorkerExecu
+tor.java:174)
+	at org.gradle.internal
+.work.DefaultConditiona
+lExecutionQueue$Executi
+onRunner.runExecution(D
+efaultConditionalExecut
+ionQueue.java:194)
+	at org.gradle.internal
+.work.DefaultConditiona
+lExecutionQueue$Executi
+onRunner.access$700(Def
+aultConditionalExecutio
+nQueue.java:127)
+	at org.gradle.internal
+.work.DefaultConditiona
+lExecutionQueue$Executi
+onRunner$1.run(DefaultC
+onditionalExecutionQueu
+e.java:169)
+	at org.gradle.internal
+.Factories$1.create(Fac
+tories.java:31)
+	at org.gradle.internal
+.work.DefaultWorkerLeas
+eService.withLocks(Defa
+ultWorkerLeaseService.j
+ava:263)
+	at org.gradle.internal
+.work.DefaultWorkerLeas
+eService.runAsWorkerThr
+ead(DefaultWorkerLeaseS
+ervice.java:127)
+	at org.gradle.internal
+.work.DefaultWorkerLeas
+eService.runAsWorkerThr
+ead(DefaultWorkerLeaseS
+ervice.java:132)
+	at org.gradle.internal
+.work.DefaultConditiona
+lExecutionQueue$Executi
+onRunner.runBatch(Defau
+ltConditionalExecutionQ
+ueue.java:164)
+	at org.gradle.internal
+.work.DefaultConditiona
+lExecutionQueue$Executi
+onRunner.run(DefaultCon
+ditionalExecutionQueue.
+java:133)
+	... 2 more
+
+
+BUILD FAILED in 1m 7s

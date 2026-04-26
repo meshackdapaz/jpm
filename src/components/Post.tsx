@@ -44,7 +44,169 @@ function formatRelativeTime(dateString: string) {
   return date.toLocaleDateString(undefined, { month: 'short', day: 'numeric' })
 }
 
-export function Post({ post }: { post: any }) {
+const CommentItem = React.memo(({ 
+  comment, 
+  depth, 
+  currentUser, 
+  post, 
+  fetchComments, 
+  supabase 
+}: { 
+  comment: any, depth: number, currentUser: any, post: any, fetchComments: () => void, supabase: any 
+}) => {
+  const [isReplying, setIsReplying] = useState(false)
+  const [replyText, setReplyText] = useState('')
+  const [isSubmitting, setIsSubmitting] = useState(false)
+
+  const upvotes = comment.comment_likes?.filter((l: any) => l.is_like).length || 0
+  const downvotes = comment.comment_likes?.filter((l: any) => !l.is_like).length || 0
+  const userVote = currentUser ? comment.comment_likes?.find((l: any) => l.user_id === currentUser.id) : null
+
+  const handleCommentLike = async (isLike: boolean) => {
+    if (!currentUser) return alert('Please login to vote')
+    if (userVote) {
+      if (userVote.is_like === isLike) {
+        await supabase.from('comment_likes').delete().eq('id', userVote.id)
+      } else {
+        await supabase.from('comment_likes').update({ is_like: isLike }).eq('id', userVote.id)
+      }
+    } else {
+      await supabase.from('comment_likes').insert({
+        comment_id: comment.id,
+        user_id: currentUser.id,
+        is_like: isLike
+      })
+    }
+    fetchComments()
+  }
+
+  const handleReplySubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!replyText.trim() || !currentUser) return
+    setIsSubmitting(true)
+    const { error } = await supabase.from('comments').insert({
+      post_id: post.id,
+      user_id: currentUser.id,
+      content: replyText,
+      parent_id: comment.id
+    })
+    if (!error) {
+      setReplyText('')
+      setIsReplying(false)
+      fetchComments()
+    } else {
+      alert('Failed to post reply: ' + error.message)
+    }
+    setIsSubmitting(false)
+  }
+
+  return (
+    <div className="relative flex gap-3 mt-4 group/comment">
+      {comment.replies && comment.replies.length > 0 && (
+        <div className="absolute left-[15px] top-[36px] bottom-[-20px] w-[2px] bg-gradient-to-b from-zinc-200 to-transparent dark:from-zinc-800 dark:to-transparent z-0" />
+      )}
+      
+      <div className="relative z-10 flex-none h-max">
+        <Link href={`/profile?id=${comment.profiles?.id}`}>
+          {comment.profiles?.avatar_url ? (
+            <Image src={comment.profiles.avatar_url} alt="A" width={32} height={32} className="rounded-full w-8 h-8 object-cover shadow-sm cursor-pointer hover:opacity-80 transition-opacity" unoptimized />
+          ) : (
+            <div className="w-8 h-8 bg-zinc-200 dark:bg-zinc-800 rounded-full flex items-center justify-center text-xs font-bold text-zinc-500 cursor-pointer shadow-sm">
+              {comment.profiles?.full_name?.[0]?.toUpperCase() || 'U'}
+            </div>
+          )}
+        </Link>
+      </div>
+
+      <div className="flex-grow pb-1 min-w-0">
+        <div className="flex items-center gap-1.5 flex-wrap">
+          <Link href={`/profile?id=${comment.profiles?.id}`} className="font-bold text-sm hover:underline truncate flex items-center gap-1">
+            {comment.profiles?.full_name}
+            {comment.profiles?.is_verified && <VerifiedBadge className="w-3.5 h-3.5 flex-none" />}
+          </Link>
+          <span className="text-zinc-500 text-xs truncate">@{comment.profiles?.username}</span>
+          <span className="text-zinc-500 text-xs">·</span>
+          <span className="text-zinc-500 text-xs">{new Date(comment.created_at).toLocaleDateString()}</span>
+        </div>
+        
+        <div className="text-sm mt-0.5 text-zinc-900 dark:text-zinc-100 whitespace-pre-wrap leading-relaxed break-words">
+          {comment.content}
+        </div>
+        
+        <div className="mt-1.5 flex items-center gap-4 text-zinc-500">
+          <div className="flex items-center gap-1 bg-zinc-100 dark:bg-zinc-900/80 rounded-full p-0.5 px-1">
+            <button
+              onClick={() => handleCommentLike(true)}
+              className={`flex items-center gap-1 p-1 rounded-full transition-colors ${userVote?.is_like === true ? 'text-blue-500' : 'hover:text-blue-500'}`}
+              title="Like"
+            >
+              <svg className="w-4 h-4" fill={userVote?.is_like === true ? 'currentColor' : 'none'} stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 10h4.764a2 2 0 011.789 2.894l-3.5 7A2 2 0 0115.263 21h-4.017c-.163 0-.326-.02-.485-.06L7 20m7-10V5a2 2 0 00-2-2h-.095c-.5 0-.905.405-.905.905 0 .714-.211 1.412-.608 2.006L7 11v9m7-10h-2M7 20H5a2 2 0 01-2-2v-6a2 2 0 012-2h2.514" />
+              </svg>
+            </button>
+            <span className={`text-xs font-semibold px-1 ${upvotes > downvotes ? 'text-blue-500' : downvotes > upvotes ? 'text-red-500' : ''}`}>
+              {upvotes - downvotes || 'Vote'}
+            </span>
+            <button
+              onClick={() => handleCommentLike(false)}
+              className={`flex items-center gap-1 p-1 rounded-full transition-colors ${userVote?.is_like === false ? 'text-red-500' : 'hover:text-red-500'}`}
+              title="Dislike"
+            >
+              <svg className="w-4 h-4" fill={userVote?.is_like === false ? 'currentColor' : 'none'} stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 14H5.236a2 2 0 01-1.789-2.894l3.5-7A2 2 0 018.736 3h4.018a2 2 0 01.485.06l3.76.94m-7 10v5a2 2 0 002 2h.096c.5 0 .905-.405.905-.904 0-.715.211-1.413.608-2.008L17 13V4m-7 10h2m5-10h2a2 2 0 012 2v6a2 2 0 01-2 2h-2.514" />
+              </svg>
+            </button>
+          </div>
+          <button
+            onClick={() => setIsReplying(!isReplying)}
+            className="text-xs font-semibold hover:text-zinc-800 dark:hover:text-zinc-200 transition-colors flex items-center gap-1"
+          >
+            <ChatBubbleLeftIcon className="w-4 h-4" />
+            Reply
+          </button>
+        </div>
+        
+        {isReplying && (
+          <form onSubmit={handleReplySubmit} className="mt-3 flex gap-2 animate-in fade-in slide-in-from-top-1 relative">
+            <input
+              type="text"
+              value={replyText}
+              onChange={(e) => setReplyText(e.target.value)}
+              placeholder={`Replying to @${comment.profiles?.username}`}
+              className="flex-grow bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-full px-4 py-2 pr-20 focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm shadow-sm"
+              autoFocus
+            />
+            <button
+              type="submit"
+              disabled={isSubmitting || !replyText.trim()}
+              className="absolute right-1.5 top-1.5 bottom-1.5 bg-black dark:bg-white text-white dark:text-black px-4 rounded-full text-xs font-bold disabled:opacity-50 transition-opacity"
+            >
+              {isSubmitting ? '...' : 'Reply'}
+            </button>
+          </form>
+        )}
+
+        {comment.replies && comment.replies.length > 0 && (
+          <div className="mt-1 relative z-10 w-full">
+            {comment.replies.map((reply: any) => (
+              <CommentItem
+                key={reply.id}
+                comment={reply}
+                depth={depth + 1}
+                currentUser={currentUser}
+                post={post}
+                fetchComments={fetchComments}
+                supabase={supabase}
+              />
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
+  )
+})
+
+export const Post = React.memo(({ post, onObserve }: { post: any; onObserve?: (postId: string, el: HTMLElement | null) => void }) => {
   const [isDeleting, setIsDeleting] = useState(false)
   const [isDeletedLocally, setIsDeletedLocally] = useState(false)
   const [showOptions, setShowOptions] = useState(false)
@@ -445,6 +607,7 @@ export function Post({ post }: { post: any }) {
           Main clickable / post body
       ────────────────────────────────────── */}
       <div
+        ref={(el) => onObserve?.(post.id, el)}
         onClick={() => setShowComments(!showComments)}
         className="px-4 py-3 flex flex-col gap-2 transition-colors cursor-pointer group/post"
       >
@@ -490,6 +653,7 @@ export function Post({ post }: { post: any }) {
                 >
                   <span className="font-bold text-[15px] leading-snug group-hover/author:underline truncate max-w-[130px] sm:max-w-none">{profile.full_name}</span>
                   {profile.is_verified && <VerifiedBadge className="w-4 h-4 flex-none" />}
+                  {profile.is_staff && <VerifiedBadge className="w-auto h-3.5 flex-none" type="staff" />}
                 </Link>
                 <span className="text-zinc-400 dark:text-zinc-500 text-sm truncate max-w-[100px] sm:max-w-none">@{profile.username}</span>
                 <span className="text-zinc-400 text-sm">·</span>
@@ -941,166 +1105,5 @@ export function Post({ post }: { post: any }) {
       )}
     </div>
   )
-}
+})
 
-function CommentItem({ 
-  comment, 
-  depth, 
-  currentUser, 
-  post, 
-  fetchComments, 
-  supabase 
-}: { 
-  comment: any, depth: number, currentUser: any, post: any, fetchComments: () => void, supabase: any 
-}) {
-  const [isReplying, setIsReplying] = useState(false)
-  const [replyText, setReplyText] = useState('')
-  const [isSubmitting, setIsSubmitting] = useState(false)
-
-  const upvotes = comment.comment_likes?.filter((l: any) => l.is_like).length || 0
-  const downvotes = comment.comment_likes?.filter((l: any) => !l.is_like).length || 0
-  const userVote = currentUser ? comment.comment_likes?.find((l: any) => l.user_id === currentUser.id) : null
-
-  const handleCommentLike = async (isLike: boolean) => {
-    if (!currentUser) return alert('Please login to vote')
-    if (userVote) {
-      if (userVote.is_like === isLike) {
-        await supabase.from('comment_likes').delete().eq('id', userVote.id)
-      } else {
-        await supabase.from('comment_likes').update({ is_like: isLike }).eq('id', userVote.id)
-      }
-    } else {
-      await supabase.from('comment_likes').insert({
-        comment_id: comment.id,
-        user_id: currentUser.id,
-        is_like: isLike
-      })
-    }
-    fetchComments()
-  }
-
-  const handleReplySubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    if (!replyText.trim() || !currentUser) return
-    setIsSubmitting(true)
-    const { error } = await supabase.from('comments').insert({
-      post_id: post.id,
-      user_id: currentUser.id,
-      content: replyText,
-      parent_id: comment.id
-    })
-    if (!error) {
-      setReplyText('')
-      setIsReplying(false)
-      fetchComments()
-    } else {
-      alert('Failed to post reply: ' + error.message)
-    }
-    setIsSubmitting(false)
-  }
-
-  return (
-    <div className="relative flex gap-3 mt-4 group/comment">
-      {comment.replies && comment.replies.length > 0 && (
-        <div className="absolute left-[15px] top-[36px] bottom-[-20px] w-[2px] bg-gradient-to-b from-zinc-200 to-transparent dark:from-zinc-800 dark:to-transparent z-0" />
-      )}
-      
-      <div className="relative z-10 flex-none h-max">
-        <Link href={`/profile?id=${comment.profiles?.id}`}>
-          {comment.profiles?.avatar_url ? (
-            <Image src={comment.profiles.avatar_url} alt="A" width={32} height={32} className="rounded-full w-8 h-8 object-cover shadow-sm cursor-pointer hover:opacity-80 transition-opacity" unoptimized />
-          ) : (
-            <div className="w-8 h-8 bg-zinc-200 dark:bg-zinc-800 rounded-full flex items-center justify-center text-xs font-bold text-zinc-500 cursor-pointer shadow-sm">
-              {comment.profiles?.full_name?.[0]?.toUpperCase() || 'U'}
-            </div>
-          )}
-        </Link>
-      </div>
-
-      <div className="flex-grow pb-1 min-w-0">
-        <div className="flex items-center gap-1.5 flex-wrap">
-          <Link href={`/profile?id=${comment.profiles?.id}`} className="font-bold text-sm hover:underline truncate flex items-center gap-1">
-            {comment.profiles?.full_name}
-            {comment.profiles?.is_verified && <VerifiedBadge className="w-3.5 h-3.5 flex-none" />}
-          </Link>
-          <span className="text-zinc-500 text-xs truncate">@{comment.profiles?.username}</span>
-          <span className="text-zinc-500 text-xs">·</span>
-          <span className="text-zinc-500 text-xs">{new Date(comment.created_at).toLocaleDateString()}</span>
-        </div>
-        
-        <div className="text-sm mt-0.5 text-zinc-900 dark:text-zinc-100 whitespace-pre-wrap leading-relaxed break-words">
-          {comment.content}
-        </div>
-        
-        <div className="mt-1.5 flex items-center gap-4 text-zinc-500">
-          <div className="flex items-center gap-1 bg-zinc-100 dark:bg-zinc-900/80 rounded-full p-0.5 px-1">
-            <button
-              onClick={() => handleCommentLike(true)}
-              className={`flex items-center gap-1 p-1 rounded-full transition-colors ${userVote?.is_like === true ? 'text-blue-500' : 'hover:text-blue-500'}`}
-              title="Like"
-            >
-              <svg className="w-4 h-4" fill={userVote?.is_like === true ? 'currentColor' : 'none'} stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 10h4.764a2 2 0 011.789 2.894l-3.5 7A2 2 0 0115.263 21h-4.017c-.163 0-.326-.02-.485-.06L7 20m7-10V5a2 2 0 00-2-2h-.095c-.5 0-.905.405-.905.905 0 .714-.211 1.412-.608 2.006L7 11v9m7-10h-2M7 20H5a2 2 0 01-2-2v-6a2 2 0 012-2h2.514" />
-              </svg>
-            </button>
-            <span className={`text-xs font-semibold px-1 ${upvotes > downvotes ? 'text-blue-500' : downvotes > upvotes ? 'text-red-500' : ''}`}>
-              {upvotes - downvotes || 'Vote'}
-            </span>
-            <button
-              onClick={() => handleCommentLike(false)}
-              className={`flex items-center gap-1 p-1 rounded-full transition-colors ${userVote?.is_like === false ? 'text-red-500' : 'hover:text-red-500'}`}
-              title="Dislike"
-            >
-              <svg className="w-4 h-4" fill={userVote?.is_like === false ? 'currentColor' : 'none'} stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 14H5.236a2 2 0 01-1.789-2.894l3.5-7A2 2 0 018.736 3h4.018a2 2 0 01.485.06l3.76.94m-7 10v5a2 2 0 002 2h.096c.5 0 .905-.405.905-.904 0-.715.211-1.413.608-2.008L17 13V4m-7 10h2m5-10h2a2 2 0 012 2v6a2 2 0 01-2 2h-2.514" />
-              </svg>
-            </button>
-          </div>
-          <button
-            onClick={() => setIsReplying(!isReplying)}
-            className="text-xs font-semibold hover:text-zinc-800 dark:hover:text-zinc-200 transition-colors flex items-center gap-1"
-          >
-            <ChatBubbleLeftIcon className="w-4 h-4" />
-            Reply
-          </button>
-        </div>
-        
-        {isReplying && (
-          <form onSubmit={handleReplySubmit} className="mt-3 flex gap-2 animate-in fade-in slide-in-from-top-1 relative">
-            <input
-              type="text"
-              value={replyText}
-              onChange={(e) => setReplyText(e.target.value)}
-              placeholder={`Replying to @${comment.profiles?.username}`}
-              className="flex-grow bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-full px-4 py-2 pr-20 focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm shadow-sm"
-              autoFocus
-            />
-            <button
-              type="submit"
-              disabled={isSubmitting || !replyText.trim()}
-              className="absolute right-1.5 top-1.5 bottom-1.5 bg-black dark:bg-white text-white dark:text-black px-4 rounded-full text-xs font-bold disabled:opacity-50 transition-opacity"
-            >
-              {isSubmitting ? '...' : 'Reply'}
-            </button>
-          </form>
-        )}
-
-        {comment.replies && comment.replies.length > 0 && (
-          <div className="mt-1 relative z-10 w-full">
-            {comment.replies.map((reply: any) => (
-              <CommentItem
-                key={reply.id}
-                comment={reply}
-                depth={depth + 1}
-                currentUser={currentUser}
-                post={post}
-                fetchComments={fetchComments}
-                supabase={supabase}
-              />
-            ))}
-          </div>
-        )}
-      </div>
-    </div>
-  )
-}

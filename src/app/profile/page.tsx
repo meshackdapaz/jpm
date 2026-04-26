@@ -69,14 +69,19 @@ function ProfileContent() {
     async function fetchProfile() {
       if (!id) return
       
-      // Phase 1: Metadata (Profile, Counts, Relationship) - Parallel
-      const [profileRes, followersRes, followingRes, followCheckRes] = await Promise.all([
+      const postSel = '*, quoted_post:quoted_post_id(id, content, profiles:creator_id(id, username, full_name, avatar_url)), profiles:creator_id(id, full_name, username, avatar_url, is_verified, last_seen, settings), likes(count), comments(count), reposts(count)'
+
+      // Phase 1: Everything in Parallel
+      const [profileRes, followersRes, followingRes, followCheckRes, postsRes, repostsRes, likesRes] = await Promise.all([
         supabase.from('profiles').select('*, settings, last_seen').eq('id', id).single(),
         supabase.from('follows').select('*', { count: 'exact', head: true }).eq('following_id', id),
         supabase.from('follows').select('*', { count: 'exact', head: true }).eq('follower_id', id),
         currentUser && currentUser.id !== id 
           ? supabase.from('follows').select('*').eq('follower_id', currentUser.id).eq('following_id', id).maybeSingle()
-          : Promise.resolve({ data: null })
+          : Promise.resolve({ data: null }),
+        supabase.from('posts').select(postSel).eq('creator_id', id).order('is_pinned', { ascending: false }).order('created_at', { ascending: false }).limit(20),
+        supabase.from('reposts').select(`created_at, user_id, profiles:user_id(id, full_name, username, avatar_url, is_verified, last_seen, settings), post:posts(${postSel})`).eq('user_id', id).order('created_at', { ascending: false }).limit(20),
+        supabase.from('likes').select(`created_at, post:posts(${postSel})`).eq('user_id', id).order('created_at', { ascending: false }).limit(20)
       ])
       
       if (profileRes.data) {
@@ -99,15 +104,6 @@ function ProfileContent() {
       setFollowers(followersRes.count || 0)
       setFollowing(followingRes.count || 0)
       setIsFollowing(!!followCheckRes.data)
-
-      // Phase 2: Feed Data - Parallel
-      const postSel = '*, quoted_post:quoted_post_id(id, content, profiles:creator_id(id, username, full_name, avatar_url)), profiles:creator_id(id, full_name, username, avatar_url, is_verified, last_seen, settings), likes(count), comments(count), reposts(count)'
-      
-      const [postsRes, repostsRes, likesRes] = await Promise.all([
-        supabase.from('posts').select(postSel).eq('creator_id', id).order('is_pinned', { ascending: false }).order('created_at', { ascending: false }),
-        supabase.from('reposts').select(`created_at, user_id, profiles:user_id(id, full_name, username, avatar_url, is_verified, last_seen, settings), post:posts(${postSel})`).eq('user_id', id).order('created_at', { ascending: false }),
-        supabase.from('likes').select(`created_at, post:posts(${postSel})`).eq('user_id', id).order('created_at', { ascending: false })
-      ])
 
       let combinedFeed: any[] = []
 
@@ -337,7 +333,7 @@ function ProfileContent() {
         </div>
       )}
 
-      {/* Mobile Profile Header — JPM style */}
+      {/* Mobile Profile Header — Echo style */}
       <div className="sm:hidden sticky top-0 z-30 bg-white dark:bg-black border-b border-zinc-100 dark:border-zinc-900 pt-[env(safe-area-inset-top)]">
         <div className="flex items-center justify-between px-4 h-14">
           {/* Analytics / insights icon top-left - Only for owner */}
@@ -628,7 +624,7 @@ function ProfileContent() {
       )}
 
 
-      {/* ── Content Tabs — JPM style ── */}
+      {/* ── Content Tabs — Echo style ── */}
       <div className="border-t border-zinc-100 dark:border-zinc-900 mt-2">
         <div className="flex border-b border-zinc-100 dark:border-zinc-900 overflow-x-auto hide-scrollbar">
           {(isOwner 
@@ -670,7 +666,7 @@ function ProfileContent() {
               if (activeTab === 'archive') return post.is_archived && !post.is_repost && !post.is_liked_tab
               if (activeTab === 'media')   return !post.is_repost && !post.is_liked_tab && !post.is_archived && (post.image_url || (post.image_urls && post.image_urls.length > 0))
               if (activeTab === 'replies') return !post.is_repost && !post.is_liked_tab && !post.is_archived && post.parent_id
-              return !post.is_repost && !post.is_archived && !post.is_liked_tab // 'posts' (JPM) tab
+              return !post.is_repost && !post.is_archived && !post.is_liked_tab // 'posts' (Echo) tab
             })
 
             return (

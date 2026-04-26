@@ -62,7 +62,8 @@ function getAction(type: string) {
   }
 }
 
-// JPM-style filter tabs: All | Follows | Conversations
+// Filter tabs: All | Follows | Conversations
+
 const FILTERS = ['All', 'Follows', 'Conversations'] as const
 type Filter = typeof FILTERS[number]
 
@@ -161,7 +162,7 @@ export default function NotificationsPage() {
     <AppLayout>
       <div className="max-w-2xl mx-auto">
 
-        {/* ── Header — JPM "Activity" style ── */}
+        {/* ── Header — Echo "Activity" style ── */}
         <div className="sticky top-0 z-30 bg-white dark:bg-black border-b border-zinc-100 dark:border-zinc-900 pt-[env(safe-area-inset-top)]">
           <div className="px-4 pt-3 pb-3">
             <h1 className="text-[28px] font-black tracking-tight text-black dark:text-white">Activity</h1>

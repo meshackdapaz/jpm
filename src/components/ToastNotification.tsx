@@ -3,26 +3,22 @@
 /**
  * ToastNotification — in-app sliding toast for:
  *  - New messages received while NOT in that conversation
- *  - Incoming calls (shown alongside the CallUI)
  */
 
 import React, { useEffect, useState, useRef, useCallback } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useAuth } from './AuthProvider'
-import { useCall } from './CallProvider'
 import { usePathname, useRouter, useSearchParams } from 'next/navigation'
 import Image from 'next/image'
-import { XMarkIcon, PhoneIcon } from '@heroicons/react/24/solid'
+import { XMarkIcon } from '@heroicons/react/24/solid'
 
 interface Toast {
   id: string
-  type: 'message' | 'call'
+  type: 'message'
   title: string
   body: string
   avatarUrl?: string | null
   href?: string
-  onAccept?: () => void
-  onDecline?: () => void
 }
 
 const TOAST_DURATION = 5000 // ms
@@ -90,10 +86,6 @@ function ToastItem({ toast, onDismiss }: { toast: Toast; onDismiss: (id: string)
       <div className="flex-none w-11 h-11 rounded-full overflow-hidden bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center border border-zinc-100 dark:border-zinc-700">
         {toast.avatarUrl ? (
           <Image src={toast.avatarUrl} alt="" width={44} height={44} className="w-full h-full object-cover" unoptimized />
-        ) : toast.type === 'call' ? (
-          <div className="w-full h-full bg-green-500 flex items-center justify-center">
-            <PhoneIcon className="w-5 h-5 text-white animate-pulse" />
-          </div>
         ) : (
           <span className="text-[20px]">💬</span>
         )}
@@ -105,37 +97,18 @@ function ToastItem({ toast, onDismiss }: { toast: Toast; onDismiss: (id: string)
         <p className="text-[12px] text-zinc-500 dark:text-zinc-400 truncate mt-0.5 font-medium">{toast.body}</p>
       </div>
 
-      {/* Call actions or dismiss */}
-      {toast.type === 'call' && toast.onAccept && toast.onDecline ? (
-        <div className="flex gap-2 flex-none ml-1" onClick={e => e.stopPropagation()}>
-          <button
-            onClick={() => { toast.onDecline!(); dismiss() }}
-            className="w-9 h-9 rounded-full bg-red-500 hover:bg-red-600 text-white flex items-center justify-center shadow-lg transition-transform active:scale-90"
-          >
-            <XMarkIcon className="w-5 h-5" />
-          </button>
-          <button
-            onClick={() => { toast.onAccept!(); dismiss() }}
-            className="w-9 h-9 rounded-full bg-green-500 hover:bg-green-600 text-white flex items-center justify-center shadow-lg transition-transform active:scale-90"
-          >
-            <span className="text-lg font-bold">✓</span>
-          </button>
-        </div>
-      ) : (
-        <button
-          onClick={e => { e.stopPropagation(); dismiss() }}
-          className="flex-none w-8 h-8 rounded-full flex items-center justify-center hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
-        >
-          <XMarkIcon className="w-4 h-4 text-zinc-400" />
-        </button>
-      )}
+      <button
+        onClick={e => { e.stopPropagation(); dismiss() }}
+        className="flex-none w-8 h-8 rounded-full flex items-center justify-center hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
+      >
+        <XMarkIcon className="w-4 h-4 text-zinc-400" />
+      </button>
     </div>
   )
 }
 
 export function ToastNotification() {
   const { user } = useAuth()
-  const { callState, callInfo, acceptCall, rejectCall } = useCall()
   const supabase = createClient()
   const pathname = usePathname()
 
@@ -199,26 +172,19 @@ export function ToastNotification() {
         })
       .subscribe()
 
-    return () => { supabase.removeChannel(ch) }
-  }, [user, pathname])
+    // ── Listen for local generic toasts ─────────────────────────────────────
+    const handleLocalToast = (e: any) => {
+      if (e.detail) {
+        addToast(e.detail)
+      }
+    }
+    window.addEventListener('show-toast', handleLocalToast)
 
-  // ── Show call toast when incoming call arrives ──────────────────────────────
-  useEffect(() => {
-    if (callState === 'ringing' && callInfo && !callToastAddedRef.current) {
-      callToastAddedRef.current = true
-      addToast({
-        type: 'call',
-        title: `📞 Incoming Call`,
-        body: `${callInfo.remoteUserName} is calling`,
-        avatarUrl: callInfo.remoteAvatarUrl,
-        onAccept: acceptCall,
-        onDecline: rejectCall,
-      })
+    return () => { 
+      supabase.removeChannel(ch)
+      window.removeEventListener('show-toast', handleLocalToast)
     }
-    if (callState === 'idle') {
-      callToastAddedRef.current = false
-    }
-  }, [callState, callInfo])
+  }, [user, pathname])
 
   if (toasts.length === 0) return null
 

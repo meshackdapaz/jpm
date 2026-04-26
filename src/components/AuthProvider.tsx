@@ -6,6 +6,7 @@ import { User } from '@supabase/supabase-js'
 import { CURRENT_APP_VERSION } from '@/lib/constants'
 import { UpdateModal } from './UpdateModal'
 import { Capacitor } from '@capacitor/core'
+import { Network } from '@capacitor/network'
 
 type AuthContextType = {
   user: User | null
@@ -105,9 +106,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     checkForUpdates()
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event: any, session: any) => {
-      setUser(session?.user ?? null)
-      setLoading(false)
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event: any, session: any) => {
+      try {
+        const status = await Network.getStatus()
+        if (status.connected) {
+          setUser(session?.user ?? null)
+        }
+      } catch (e) {
+        console.error('Auth network check failed:', e)
+      } finally {
+        setLoading(false)
+      }
     })
 
     return () => subscription.unsubscribe()

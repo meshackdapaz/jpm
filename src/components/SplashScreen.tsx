@@ -14,8 +14,8 @@ export function SplashScreen() {
 
     const timer = setTimeout(() => {
       setFadeOut(true)
-      setTimeout(() => setVisible(false), 500)
-    }, 1500)
+      setTimeout(() => setVisible(false), 400)
+    }, 1000)
     return () => clearTimeout(timer)
   }, [])
 
@@ -27,7 +27,14 @@ export function SplashScreen() {
         fadeOut ? 'opacity-0' : 'opacity-100'
       }`}
     >
-      <div className="font-black text-[72px] tracking-tighter text-white animate-pulse">Echo</div>
+      <div className="flex flex-col items-center animate-pulse">
+        <h1 className="text-5xl font-black text-white tracking-[0.2em] uppercase mb-4">
+          JPM
+        </h1>
+        <p className="text-[13px] text-zinc-400 font-medium tracking-widest uppercase">
+          always in our heart
+        </p>
+      </div>
     </div>
   )
 }

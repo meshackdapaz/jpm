@@ -4,7 +4,7 @@ import React, { useEffect, useState, useRef, useCallback, Suspense } from 'react
 import { AppLayout } from '@/components/AppLayout'
 import { createClient } from '@/lib/supabase/client'
 import { useAuth } from '@/components/AuthProvider'
-import { useCall } from '@/components/CallProvider'
+
 import { VoiceNote } from '@/components/VoiceNote'
 import { GiphyPicker } from '@/components/GiphyPicker'
 import Image from 'next/image'
@@ -15,8 +15,6 @@ import { Haptics, ImpactStyle } from '@capacitor/haptics'
 import { Capacitor } from '@capacitor/core'
 
 import {
-  PhoneIcon,
-  VideoCameraIcon,
   InformationCircleIcon,
   ChevronLeftIcon,
   Bars3Icon,
@@ -30,8 +28,6 @@ import {
   NoSymbolIcon,
   HandRaisedIcon,
   ExclamationTriangleIcon,
-  PhoneXMarkIcon,
-  PhoneArrowDownLeftIcon,
   MagnifyingGlassIcon,
   LockClosedIcon,
   EllipsisHorizontalIcon,
@@ -107,7 +103,6 @@ type ActiveTab = 'Inbox' | 'Requests'
 function MessagesContent() {
   const searchParams = useSearchParams()
   const { user, loading: authLoading } = useAuth()
-  const { startCall, callState } = useCall()
   const supabase = createClient()
 
   const [convos, setConvos] = useState<any[]>([])
@@ -299,23 +294,7 @@ function MessagesContent() {
     
     const timeline = decryptedData.map((m: any) => ({ ...m, _type: 'message' }))
 
-    // Load call history
-    const { data: calls } = await supabase
-      .from('calls')
-      .select('*')
-      .or(
-        `and(caller_id.eq.${user.id},callee_id.eq.${selected.id}),` +
-        `and(caller_id.eq.${selected.id},callee_id.eq.${user.id})`
-      )
-      .order('created_at', { ascending: true })
-
-    const callItems = (calls || []).map((c: any) => ({ ...c, _type: 'call' }))
-
-    // Merge & sort by time
-    const combined = [...timeline, ...callItems].sort((a, b) =>
-      new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
-    )
-    setMessages(combined)
+    setMessages(timeline)
     setLoadingMessages(false)
   }, [user, selected])
 
@@ -801,17 +780,8 @@ function MessagesContent() {
                     </p>
                   </div>
                 </Link>
-                {/* Audio call button — only show when messaging is allowed */}
                 {requestStatus === 'allowed' && (
                   <div className="flex items-center gap-1.5 flex-none">
-                    <button
-                      onClick={() => startCall(selected.id, selected.full_name, selected.avatar_url || null)}
-                      disabled={callState !== 'idle'}
-                      className="w-10 h-10 flex items-center justify-center rounded-full hover:bg-zinc-100 dark:hover:bg-zinc-900 transition-colors disabled:opacity-40"
-                      aria-label="Start audio call"
-                    >
-                      <PhoneIcon className="w-5 h-5" />
-                    </button>
                     <button
                       onClick={() => setShowOptions(true)}
                       className="w-10 h-10 flex items-center justify-center rounded-full hover:bg-zinc-100 dark:hover:bg-zinc-900 transition-colors"
@@ -884,42 +854,14 @@ function MessagesContent() {
                     <div className="text-center">
                       <h2 className="text-[16px] font-black">{selected.full_name}</h2>
                       <p className="text-[12px] text-zinc-400">@{selected.username} · <span className="font-semibold text-zinc-600 dark:text-zinc-300">{selectedFollowers}</span> followers</p>
-                      <p className="text-[11px] text-zinc-400 mt-1">You're both on JPM</p>
+                      <p className="text-[11px] text-zinc-400 mt-1">You both joined recently</p>
                     </div>
                   </div>
                 )}
 
                 <div className="flex flex-col gap-0.5 pt-2">
                   {messages.map((m: any, i: number) => {
-                    if (m._type === 'call') {
-                      const isMissed = m.status === 'rejected' || (m.status === 'ringing' && !m.ended_at)
-                      const isMine = m.caller_id === user.id
-                      let durationLabel = ''
-                      if (m.duration_seconds && m.duration_seconds > 0) {
-                        const mins = Math.floor(m.duration_seconds / 60)
-                        const secs = m.duration_seconds % 60
-                        durationLabel = mins > 0 ? `${mins} min${mins > 1 ? 's' : ''}` : `${secs}s`
-                      }
-                      return (
-                        <div key={m.id} className="flex items-center justify-center my-2">
-                          <div className={`flex items-center gap-2 px-4 py-2 rounded-full text-[12.5px] font-semibold ${
-                            isMissed ? 'bg-red-50 dark:bg-red-950/40 text-red-500' : 'bg-zinc-100 dark:bg-zinc-900 text-zinc-600 dark:text-zinc-400'
-                          }`}>
-                            {isMissed
-                              ? <PhoneXMarkIcon className="w-3.5 h-3.5 flex-none" />
-                              : <PhoneArrowDownLeftIcon className="w-3.5 h-3.5 flex-none" />
-                            }
-                            <span>
-                              {isMissed
-                                ? (isMine ? 'Call not answered' : 'Missed call')
-                                : `${isMine ? 'Outgoing' : 'Incoming'} call${durationLabel ? ` · ${durationLabel}` : ''}`
-                              }
-                            </span>
-                            <span className="text-zinc-400 font-normal">· {msgTime(m.created_at)}</span>
-                          </div>
-                        </div>
-                      )
-                    }
+
 
                     const mine = m.sender_id === user.id
                     const next = messages[i + 1]

@@ -1,45 +1,58 @@
 // Top-level build file where you can add configuration options common to all sub-projects/modules.
 
 buildscript {
-    
     repositories {
         google()
         mavenCentral()
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:8.13.0'
-        classpath 'com.google.gms:google-services:4.4.4'
-
-        // NOTE: Do not place your application dependencies here; they belong
-        // in the individual module build.gradle files
+        classpath 'com.android.tools.build:gradle:8.2.1'
+        classpath 'com.google.gms:google-services:4.4.0'
     }
 }
 
 apply from: "variables.gradle"
 
 allprojects {
+    configurations.all {
+        resolutionStrategy {
+            force 'org.jetbrains:annotations:23.1.0'
+            force 'org.jetbrains.kotlin:kotlin-stdlib:1.9.22'
+            // Prevent bleeding-edge alpha libraries from demanding SDK 36 and AGP 8.9+
+            force 'androidx.core:core:1.13.1'
+            force 'androidx.core:core-ktx:1.13.1'
+            force 'androidx.activity:activity:1.9.1'
+            force 'androidx.webkit:webkit:1.11.0'
+        }
+    }
     repositories {
         google()
         mavenCentral()
     }
-    // Force Java 17 compatibility for all modules to avoid source release mismatches
+}
+
+subprojects {
     afterEvaluate { project ->
         if (project.hasProperty('android')) {
-            project.android {
+            android {
+                compileSdk rootProject.ext.compileSdkVersion
+                defaultConfig {
+                    targetSdk rootProject.ext.targetSdkVersion
+                }
                 compileOptions {
                     sourceCompatibility JavaVersion.VERSION_17
                     targetCompatibility JavaVersion.VERSION_17
                 }
-                // Only set kotlinOptions if the plugin is actually applied to this project
-                if (project.plugins.hasPlugin('org.jetbrains.kotlin.android') || project.plugins.hasPlugin('kotlin-android')) {
+                tasks.matching { it.class.name.contains("KotlinCompile") }.configureEach {
                     kotlinOptions {
-                        jvmTarget = '17'
+                        jvmTarget = "17"
                     }
                 }
             }
         }
     }
 }
+
 
 task clean(type: Delete) {
     delete rootProject.buildDir

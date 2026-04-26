@@ -1,6 +1,13 @@
 import React from 'react'
 
-export function VerifiedBadge({ className = "w-4 h-4" }: { className?: string }) {
+export function VerifiedBadge({ className = "w-4 h-4", type = "verified" }: { className?: string; type?: 'verified' | 'staff' }) {
+  if (type === 'staff') {
+    return (
+      <div className={`${className} bg-violet-600 text-white rounded-md flex items-center justify-center text-[8px] font-black uppercase tracking-tighter px-1 inline-flex ml-1 flex-none shadow-sm h-3.5`}>
+        Staff
+      </div>
+    )
+  }
   return (
     <svg 
       className={`${className} text-sky-500 fill-current inline-block ml-1 flex-none`} 

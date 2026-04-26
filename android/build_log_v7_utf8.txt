@@ -1,0 +1,1824 @@
+﻿
+> Configure project :app
+WARNING: Using flatDir should be avoided because it doesn't support any meta-data formats.
+
+> Configure project :capacitor-cordova-android-plugins
+WARNING: Using flatDir should be avoided because it doesn't support any meta-data formats.
+
+> Task :app:preBuild UP-TO-DATE
+> Task :app:preReleaseBuild UP-TO-DATE
+> Task :app:mergeReleaseJniLibFolders UP-TO-DATE
+> Task :capacitor-android:preBuild UP-TO-DATE
+> Task :capacitor-android:preReleaseBuild UP-TO-DATE
+> Task :capacitor-android:mergeReleaseJniLibFolders UP-TO-DATE
+> Task :capacitor-android:mergeReleaseNativeLibs NO-SOURCE
+> Task :capacitor-android:copyReleaseJniLibsProjectOnly UP-TO-DATE
+> Task :capacitor-app:preBuild UP-TO-DATE
+> Task :capacitor-app:preReleaseBuild UP-TO-DATE
+> Task :capacitor-app:mergeReleaseJniLibFolders UP-TO-DATE
+> Task :capacitor-app:mergeReleaseNativeLibs NO-SOURCE
+> Task :capacitor-app:copyReleaseJniLibsProjectOnly UP-TO-DATE
+> Task :capacitor-community-admob:preBuild UP-TO-DATE
+> Task :capacitor-community-admob:preReleaseBuild UP-TO-DATE
+> Task :capacitor-community-admob:mergeReleaseJniLibFolders UP-TO-DATE
+> Task :capacitor-community-admob:mergeReleaseNativeLibs NO-SOURCE
+> Task :capacitor-community-admob:copyReleaseJniLibsProjectOnly UP-TO-DATE
+> Task :capacitor-cordova-android-plugins:preBuild UP-TO-DATE
+> Task :capacitor-cordova-android-plugins:preReleaseBuild UP-TO-DATE
+> Task :capacitor-cordova-android-plugins:mergeReleaseJniLibFolders UP-TO-DATE
+> Task :capacitor-cordova-android-plugins:mergeReleaseNativeLibs NO-SOURCE
+> Task :capacitor-cordova-android-plugins:copyReleaseJniLibsProjectOnly UP-TO-DATE
+> Task :capacitor-filesystem:preBuild UP-TO-DATE
+> Task :capacitor-filesystem:preReleaseBuild UP-TO-DATE
+> Task :capacitor-filesystem:mergeReleaseJniLibFolders UP-TO-DATE
+> Task :capacitor-filesystem:mergeReleaseNativeLibs NO-SOURCE
+> Task :capacitor-filesystem:copyReleaseJniLibsProjectOnly UP-TO-DATE
+> Task :capacitor-firebase-messaging:preBuild UP-TO-DATE
+> Task :capacitor-firebase-messaging:preReleaseBuild UP-TO-DATE
+> Task :capacitor-firebase-messaging:mergeReleaseJniLibFolders UP-TO-DATE
+> Task :capacitor-firebase-messaging:mergeReleaseNativeLibs NO-SOURCE
+> Task :capacitor-firebase-messaging:copyReleaseJniLibsProjectOnly UP-TO-DATE
+> Task :capacitor-haptics:preBuild UP-TO-DATE
+> Task :capacitor-haptics:preReleaseBuild UP-TO-DATE
+> Task :capacitor-haptics:mergeReleaseJniLibFolders UP-TO-DATE
+> Task :capacitor-haptics:mergeReleaseNativeLibs NO-SOURCE
+> Task :capacitor-haptics:copyReleaseJniLibsProjectOnly UP-TO-DATE
+> Task :capacitor-keyboard:preBuild UP-TO-DATE
+> Task :capacitor-keyboard:preReleaseBuild UP-TO-DATE
+> Task :capacitor-keyboard:mergeReleaseJniLibFolders UP-TO-DATE
+> Task :capacitor-keyboard:mergeReleaseNativeLibs NO-SOURCE
+> Task :capacitor-keyboard:copyReleaseJniLibsProjectOnly UP-TO-DATE
+> Task :capacitor-local-notifications:preBuild UP-TO-DATE
+> Task :capacitor-local-notifications:preReleaseBuild UP-TO-DATE
+> Task :capacitor-local-notifications:mergeReleaseJniLibFolders UP-TO-DATE
+> Task :capacitor-local-notifications:mergeReleaseNativeLibs NO-SOURCE
+> Task :capacitor-local-notifications:copyReleaseJniLibsProjectOnly UP-TO-DATE
+> Task :capacitor-network:preBuild UP-TO-DATE
+> Task :capacitor-network:preReleaseBuild UP-TO-DATE
+> Task :capacitor-network:mergeReleaseJniLibFolders UP-TO-DATE
+> Task :capacitor-network:mergeReleaseNativeLibs NO-SOURCE
+> Task :capacitor-network:copyReleaseJniLibsProjectOnly UP-TO-DATE
+> Task :capacitor-push-notifications:preBuild UP-TO-DATE
+> Task :capacitor-push-notifications:preReleaseBuild UP-TO-DATE
+> Task :capacitor-push-notifications:mergeReleaseJniLibFolders UP-TO-DATE
+> Task :capacitor-push-notifications:mergeReleaseNativeLibs NO-SOURCE
+> Task :capacitor-push-notifications:copyReleaseJniLibsProjectOnly UP-TO-DATE
+> Task :capacitor-splash-screen:preBuild UP-TO-DATE
+> Task :capacitor-splash-screen:preReleaseBuild UP-TO-DATE
+> Task :capacitor-splash-screen:mergeReleaseJniLibFolders UP-TO-DATE
+> Task :capacitor-splash-screen:mergeReleaseNativeLibs NO-SOURCE
+> Task :capacitor-splash-screen:copyReleaseJniLibsProjectOnly UP-TO-DATE
+> Task :capawesome-capacitor-app-update:preBuild UP-TO-DATE
+> Task :capawesome-capacitor-app-update:preReleaseBuild UP-TO-DATE
+> Task :capawesome-capacitor-app-update:mergeReleaseJniLibFolders UP-TO-DATE
+> Task :capawesome-capacitor-app-update:mergeReleaseNativeLibs NO-SOURCE
+> Task :capawesome-capacitor-app-update:copyReleaseJniLibsProjectOnly UP-TO-DATE
+> Task :app:mergeReleaseNativeLibs FAILED
+
+[Incubating] Problems report is available at: file:///C:/Users/Joshan/Desktop/online%20mem%20sharing/web/android/build/reports/problems/problems-report.html
+.\gradlew : 
+At line:1 char:1
++ .\gradlew 
+assembleRelease 
+--stacktrace > 
+build_log_v7.txt 2>&1
++ ~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~
+    + CategoryInfo     
+         : NotSpecifi  
+  ed: (:String) [],    
+ RemoteException
+    + FullyQualifiedEr 
+   rorId : NativeComm  
+  andError
+ 
+FAILURE: Build failed 
+with an exception.
+
+* What went wrong:
+Execution failed for 
+task ':app:mergeRelease
+NativeLibs'.
+> Could not resolve 
+all files for 
+configuration ':app:rel
+easeRuntimeClasspath'.
+   > Could not find and
+roidx.appcompat:appcomp
+at:1.7.1.
+     Searched in the 
+following locations:
+       - file:/C:/Users
+/Joshan/Desktop/online%
+20mem%20sharing/web/and
+roid/capacitor-cordova-
+android-plugins/src/mai
+n/libs/appcompat-1.7.1.
+jar
+       - file:/C:/Users
+/Joshan/Desktop/online%
+20mem%20sharing/web/and
+roid/capacitor-cordova-
+android-plugins/src/mai
+n/libs/appcompat.jar
+       - file:/C:/Users
+/Joshan/Desktop/online%
+20mem%20sharing/web/and
+roid/app/libs/appcompat
+-1.7.1.jar
+       - file:/C:/Users
+/Joshan/Desktop/online%
+20mem%20sharing/web/and
+roid/app/libs/appcompat
+.jar
+     Required by:
+         project :app
+         project :app 
+> project 
+:capacitor-android
+         project :app 
+> project :capacitor-co
+rdova-android-plugins
+         project :app 
+> project :capacitor-co
+mmunity-admob
+         project :app 
+> project :capacitor-fi
+rebase-messaging
+         project :app 
+> project 
+:capacitor-app
+         project :app 
+> project 
+:capacitor-filesystem
+         project :app 
+> project 
+:capacitor-haptics
+         project :app 
+> project 
+:capacitor-keyboard
+         project :app 
+> project :capacitor-lo
+cal-notifications
+         project :app 
+> project 
+:capacitor-network
+         project :app 
+> project :capacitor-pu
+sh-notifications
+         project :app 
+> project :capacitor-sp
+lash-screen
+         project :app 
+> project :capawesome-c
+apacitor-app-update
+   > Could not find and
+roidx.coordinatorlayout
+:coordinatorlayout:1.3.
+0.
+     Searched in the 
+following locations:
+       - file:/C:/Users
+/Joshan/Desktop/online%
+20mem%20sharing/web/and
+roid/capacitor-cordova-
+android-plugins/src/mai
+n/libs/coordinatorlayou
+t-1.3.0.jar
+       - file:/C:/Users
+/Joshan/Desktop/online%
+20mem%20sharing/web/and
+roid/capacitor-cordova-
+android-plugins/src/mai
+n/libs/coordinatorlayou
+t.jar
+       - file:/C:/Users
+/Joshan/Desktop/online%
+20mem%20sharing/web/and
+roid/app/libs/coordinat
+orlayout-1.3.0.jar
+       - file:/C:/Users
+/Joshan/Desktop/online%
+20mem%20sharing/web/and
+roid/app/libs/coordinat
+orlayout.jar
+     Required by:
+         project :app
+         project :app 
+> project 
+:capacitor-android
+         project :app 
+> project :capacitor-co
+mmunity-admob
+   > Could not find and
+roidx.core:core-splashs
+creen:1.0.1.
+     Searched in the 
+following locations:
+       - file:/C:/Users
+/Joshan/Desktop/online%
+20mem%20sharing/web/and
+roid/capacitor-cordova-
+android-plugins/src/mai
+n/libs/core-splashscree
+n-1.0.1.jar
+       - file:/C:/Users
+/Joshan/Desktop/online%
+20mem%20sharing/web/and
+roid/capacitor-cordova-
+android-plugins/src/mai
+n/libs/core-splashscree
+n.jar
+       - file:/C:/Users
+/Joshan/Desktop/online%
+20mem%20sharing/web/and
+roid/app/libs/core-spla
+shscreen-1.0.1.jar
+       - file:/C:/Users
+/Joshan/Desktop/online%
+20mem%20sharing/web/and
+roid/app/libs/core-spla
+shscreen.jar
+     Required by:
+         project :app
+         project :app 
+> project :capacitor-sp
+lash-screen
+   > Could not find and
+roidx.core:core:1.17.0.
+     Searched in the 
+following locations:
+       - file:/C:/Users
+/Joshan/Desktop/online%
+20mem%20sharing/web/and
+roid/capacitor-cordova-
+android-plugins/src/mai
+n/libs/core-1.17.0.jar
+       - file:/C:/Users
+/Joshan/Desktop/online%
+20mem%20sharing/web/and
+roid/capacitor-cordova-
+android-plugins/src/mai
+n/libs/core.jar
+       - file:/C:/Users
+/Joshan/Desktop/online%
+20mem%20sharing/web/and
+roid/app/libs/core-1.17
+.0.jar
+       - file:/C:/Users
+/Joshan/Desktop/online%
+20mem%20sharing/web/and
+roid/app/libs/core.jar
+     Required by:
+         project :app 
+> project 
+:capacitor-android
+   > Could not find and
+roidx.activity:activity
+:1.11.0.
+     Searched in the 
+following locations:
+       - file:/C:/Users
+/Joshan/Desktop/online%
+20mem%20sharing/web/and
+roid/capacitor-cordova-
+android-plugins/src/mai
+n/libs/activity-1.11.0.
+jar
+       - file:/C:/Users
+/Joshan/Desktop/online%
+20mem%20sharing/web/and
+roid/capacitor-cordova-
+android-plugins/src/mai
+n/libs/activity.jar
+       - file:/C:/Users
+/Joshan/Desktop/online%
+20mem%20sharing/web/and
+roid/app/libs/activity-
+1.11.0.jar
+       - file:/C:/Users
+/Joshan/Desktop/online%
+20mem%20sharing/web/and
+roid/app/libs/activity.
+jar
+     Required by:
+         project :app 
+> project 
+:capacitor-android
+   > Could not find and
+roidx.fragment:fragment
+:1.8.9.
+     Searched in the 
+following locations:
+       - file:/C:/Users
+/Joshan/Desktop/online%
+20mem%20sharing/web/and
+roid/capacitor-cordova-
+android-plugins/src/mai
+n/libs/fragment-1.8.9.j
+ar
+       - file:/C:/Users
+/Joshan/Desktop/online%
+20mem%20sharing/web/and
+roid/capacitor-cordova-
+android-plugins/src/mai
+n/libs/fragment.jar
+       - file:/C:/Users
+/Joshan/Desktop/online%
+20mem%20sharing/web/and
+roid/app/libs/fragment-
+1.8.9.jar
+       - file:/C:/Users
+/Joshan/Desktop/online%
+20mem%20sharing/web/and
+roid/app/libs/fragment.
+jar
+     Required by:
+         project :app 
+> project 
+:capacitor-android
+   > Could not find and
+roidx.webkit:webkit:1.1
+4.0.
+     Searched in the 
+following locations:
+       - file:/C:/Users
+/Joshan/Desktop/online%
+20mem%20sharing/web/and
+roid/capacitor-cordova-
+android-plugins/src/mai
+n/libs/webkit-1.14.0.ja
+r
+       - file:/C:/Users
+/Joshan/Desktop/online%
+20mem%20sharing/web/and
+roid/capacitor-cordova-
+android-plugins/src/mai
+n/libs/webkit.jar
+       - file:/C:/Users
+/Joshan/Desktop/online%
+20mem%20sharing/web/and
+roid/app/libs/webkit-1.
+14.0.jar
+       - file:/C:/Users
+/Joshan/Desktop/online%
+20mem%20sharing/web/and
+roid/app/libs/webkit.ja
+r
+     Required by:
+         project :app 
+> project 
+:capacitor-android
+   > Could not find org
+.apache.cordova:framewo
+rk:14.0.1.
+     Searched in the 
+following locations:
+       - file:/C:/Users
+/Joshan/Desktop/online%
+20mem%20sharing/web/and
+roid/capacitor-cordova-
+android-plugins/src/mai
+n/libs/framework-14.0.1
+.jar
+       - file:/C:/Users
+/Joshan/Desktop/online%
+20mem%20sharing/web/and
+roid/capacitor-cordova-
+android-plugins/src/mai
+n/libs/framework.jar
+       - file:/C:/Users
+/Joshan/Desktop/online%
+20mem%20sharing/web/and
+roid/app/libs/framework
+-14.0.1.jar
+       - file:/C:/Users
+/Joshan/Desktop/online%
+20mem%20sharing/web/and
+roid/app/libs/framework
+.jar
+     Required by:
+         project :app 
+> project 
+:capacitor-android
+         project :app 
+> project :capacitor-co
+rdova-android-plugins
+   > Could not find 
+any matches for com.goo
+gle.android.gms:play-se
+rvices-ads:24.9.+ as 
+no versions of com.goog
+le.android.gms:play-ser
+vices-ads are 
+available.
+     Searched in the 
+following locations:
+       - file:/C:/Users
+/Joshan/Desktop/online%
+20mem%20sharing/web/and
+roid/capacitor-cordova-
+android-plugins/src/mai
+n/libs/
+       - file:/C:/Users
+/Joshan/Desktop/online%
+20mem%20sharing/web/and
+roid/app/libs/
+     Required by:
+         project :app 
+> project :capacitor-co
+mmunity-admob
+   > Could not find com
+.google.android.ump:use
+r-messaging-platform:4.
+0.0.
+     Searched in the 
+following locations:
+       - file:/C:/Users
+/Joshan/Desktop/online%
+20mem%20sharing/web/and
+roid/capacitor-cordova-
+android-plugins/src/mai
+n/libs/user-messaging-p
+latform-4.0.0.jar
+       - file:/C:/Users
+/Joshan/Desktop/online%
+20mem%20sharing/web/and
+roid/capacitor-cordova-
+android-plugins/src/mai
+n/libs/user-messaging-p
+latform.jar
+       - file:/C:/Users
+/Joshan/Desktop/online%
+20mem%20sharing/web/and
+roid/app/libs/user-mess
+aging-platform-4.0.0.ja
+r
+       - file:/C:/Users
+/Joshan/Desktop/online%
+20mem%20sharing/web/and
+roid/app/libs/user-mess
+aging-platform.jar
+     Required by:
+         project :app 
+> project :capacitor-co
+mmunity-admob
+   > Could not find and
+roidx.core:core-ktx:1.1
+5.0.
+     Searched in the 
+following locations:
+       - file:/C:/Users
+/Joshan/Desktop/online%
+20mem%20sharing/web/and
+roid/capacitor-cordova-
+android-plugins/src/mai
+n/libs/core-ktx-1.15.0.
+jar
+       - file:/C:/Users
+/Joshan/Desktop/online%
+20mem%20sharing/web/and
+roid/capacitor-cordova-
+android-plugins/src/mai
+n/libs/core-ktx.jar
+       - file:/C:/Users
+/Joshan/Desktop/online%
+20mem%20sharing/web/and
+roid/app/libs/core-ktx-
+1.15.0.jar
+       - file:/C:/Users
+/Joshan/Desktop/online%
+20mem%20sharing/web/and
+roid/app/libs/core-ktx.
+jar
+     Required by:
+         project :app 
+> project :capacitor-co
+mmunity-admob
+   > Could not find org
+.jetbrains.kotlin:kotli
+n-stdlib:2.2.20.
+     Searched in the 
+following locations:
+       - file:/C:/Users
+/Joshan/Desktop/online%
+20mem%20sharing/web/and
+roid/capacitor-cordova-
+android-plugins/src/mai
+n/libs/kotlin-stdlib-2.
+2.20.jar
+       - file:/C:/Users
+/Joshan/Desktop/online%
+20mem%20sharing/web/and
+roid/capacitor-cordova-
+android-plugins/src/mai
+n/libs/kotlin-stdlib.ja
+r
+       - file:/C:/Users
+/Joshan/Desktop/online%
+20mem%20sharing/web/and
+roid/app/libs/kotlin-st
+dlib-2.2.20.jar
+       - file:/C:/Users
+/Joshan/Desktop/online%
+20mem%20sharing/web/and
+roid/app/libs/kotlin-st
+dlib.jar
+     Required by:
+         project :app 
+> project :capacitor-co
+mmunity-admob
+   > Could not find com
+.google.firebase:fireba
+se-messaging:25.0.1.
+     Searched in the 
+following locations:
+       - file:/C:/Users
+/Joshan/Desktop/online%
+20mem%20sharing/web/and
+roid/capacitor-cordova-
+android-plugins/src/mai
+n/libs/firebase-messagi
+ng-25.0.1.jar
+       - file:/C:/Users
+/Joshan/Desktop/online%
+20mem%20sharing/web/and
+roid/capacitor-cordova-
+android-plugins/src/mai
+n/libs/firebase-messagi
+ng.jar
+       - file:/C:/Users
+/Joshan/Desktop/online%
+20mem%20sharing/web/and
+roid/app/libs/firebase-
+messaging-25.0.1.jar
+       - file:/C:/Users
+/Joshan/Desktop/online%
+20mem%20sharing/web/and
+roid/app/libs/firebase-
+messaging.jar
+     Required by:
+         project :app 
+> project :capacitor-fi
+rebase-messaging
+         project :app 
+> project :capacitor-pu
+sh-notifications
+   > Could not find com
+.google.android.play:ap
+p-update:2.1.0.
+     Searched in the 
+following locations:
+       - file:/C:/Users
+/Joshan/Desktop/online%
+20mem%20sharing/web/and
+roid/capacitor-cordova-
+android-plugins/src/mai
+n/libs/app-update-2.1.0
+.jar
+       - file:/C:/Users
+/Joshan/Desktop/online%
+20mem%20sharing/web/and
+roid/capacitor-cordova-
+android-plugins/src/mai
+n/libs/app-update.jar
+       - file:/C:/Users
+/Joshan/Desktop/online%
+20mem%20sharing/web/and
+roid/app/libs/app-updat
+e-2.1.0.jar
+       - file:/C:/Users
+/Joshan/Desktop/online%
+20mem%20sharing/web/and
+roid/app/libs/app-updat
+e.jar
+     Required by:
+         project :app 
+> project :capawesome-c
+apacitor-app-update
+   > Could not find com
+.google.android.gms:pla
+y-services-base:18.9.0.
+     Searched in the 
+following locations:
+       - file:/C:/Users
+/Joshan/Desktop/online%
+20mem%20sharing/web/and
+roid/capacitor-cordova-
+android-plugins/src/mai
+n/libs/play-services-ba
+se-18.9.0.jar
+       - file:/C:/Users
+/Joshan/Desktop/online%
+20mem%20sharing/web/and
+roid/capacitor-cordova-
+android-plugins/src/mai
+n/libs/play-services-ba
+se.jar
+       - file:/C:/Users
+/Joshan/Desktop/online%
+20mem%20sharing/web/and
+roid/app/libs/play-serv
+ices-base-18.9.0.jar
+       - file:/C:/Users
+/Joshan/Desktop/online%
+20mem%20sharing/web/and
+roid/app/libs/play-serv
+ices-base.jar
+     Required by:
+         project :app 
+> project :capawesome-c
+apacitor-app-update
+
+* Try:
+> Run with --info or 
+--debug option to get 
+more log output.
+> Run with --scan to 
+get full insights.
+> Get more help at http
+s://help.gradle.org.
+
+* Exception is:
+org.gradle.api.tasks.Ta
+skExecutionException: 
+Execution failed for 
+task ':app:mergeRelease
+NativeLibs'.
+	at org.gradle.api.inte
+rnal.tasks.execution.Ca
+tchExceptionTaskExecute
+r.execute(CatchExceptio
+nTaskExecuter.java:38)
+	at org.gradle.api.inte
+rnal.tasks.execution.Ev
+entFiringTaskExecuter$1
+.executeTask(EventFirin
+gTaskExecuter.java:77)
+	at org.gradle.api.inte
+rnal.tasks.execution.Ev
+entFiringTaskExecuter$1
+.call(EventFiringTaskEx
+ecuter.java:55)
+	at org.gradle.api.inte
+rnal.tasks.execution.Ev
+entFiringTaskExecuter$1
+.call(EventFiringTaskEx
+ecuter.java:52)
+	at org.gradle.internal
+.operations.DefaultBuil
+dOperationRunner$Callab
+leBuildOperationWorker.
+execute(DefaultBuildOpe
+rationRunner.java:210)
+	at org.gradle.internal
+.operations.DefaultBuil
+dOperationRunner$Callab
+leBuildOperationWorker.
+execute(DefaultBuildOpe
+rationRunner.java:205)
+	at org.gradle.internal
+.operations.DefaultBuil
+dOperationRunner$2.exec
+ute(DefaultBuildOperati
+onRunner.java:67)
+	at org.gradle.internal
+.operations.DefaultBuil
+dOperationRunner$2.exec
+ute(DefaultBuildOperati
+onRunner.java:60)
+	at org.gradle.internal
+.operations.DefaultBuil
+dOperationRunner.execut
+e(DefaultBuildOperation
+Runner.java:167)
+	at org.gradle.internal
+.operations.DefaultBuil
+dOperationRunner.execut
+e(DefaultBuildOperation
+Runner.java:60)
+	at org.gradle.internal
+.operations.DefaultBuil
+dOperationRunner.call(D
+efaultBuildOperationRun
+ner.java:54)
+	at org.gradle.api.inte
+rnal.tasks.execution.Ev
+entFiringTaskExecuter.e
+xecute(EventFiringTaskE
+xecuter.java:52)
+	at org.gradle.executio
+n.plan.LocalTaskNodeExe
+cutor.execute(LocalTask
+NodeExecutor.java:42)
+	at org.gradle.executio
+n.taskgraph.DefaultTask
+ExecutionGraph$InvokeNo
+deExecutorsAction.execu
+te(DefaultTaskExecution
+Graph.java:331)
+	at org.gradle.executio
+n.taskgraph.DefaultTask
+ExecutionGraph$InvokeNo
+deExecutorsAction.execu
+te(DefaultTaskExecution
+Graph.java:318)
+	at org.gradle.executio
+n.taskgraph.DefaultTask
+ExecutionGraph$BuildOpe
+rationAwareExecutionAct
+ion.lambda$execute$0(De
+faultTaskExecutionGraph
+.java:314)
+	at org.gradle.internal
+.operations.CurrentBuil
+dOperationRef.with(Curr
+entBuildOperationRef.ja
+va:85)
+	at org.gradle.executio
+n.taskgraph.DefaultTask
+ExecutionGraph$BuildOpe
+rationAwareExecutionAct
+ion.execute(DefaultTask
+ExecutionGraph.java:314
+)
+	at org.gradle.executio
+n.taskgraph.DefaultTask
+ExecutionGraph$BuildOpe
+rationAwareExecutionAct
+ion.execute(DefaultTask
+ExecutionGraph.java:303
+)
+	at org.gradle.executio
+n.plan.DefaultPlanExecu
+tor$ExecutorWorker.exec
+ute(DefaultPlanExecutor
+.java:459)
+	at org.gradle.executio
+n.plan.DefaultPlanExecu
+tor$ExecutorWorker.run(
+DefaultPlanExecutor.jav
+a:376)
+	at org.gradle.internal
+.concurrent.ExecutorPol
+icy$CatchAndRecordFailu
+res.onExecute(ExecutorP
+olicy.java:64)
+	at org.gradle.internal
+.concurrent.AbstractMan
+agedExecutor$1.run(Abst
+ractManagedExecutor.jav
+a:48)
+Caused by: org.gradle.a
+pi.internal.artifacts.i
+vyservice.TypedResolveE
+xception: Could not 
+resolve all files for 
+configuration ':app:rel
+easeRuntimeClasspath'.
+	at org.gradle.api.inte
+rnal.artifacts.ResolveE
+xceptionMapper.mapFailu
+res(ResolveExceptionMap
+per.java:61)
+	at org.gradle.api.inte
+rnal.artifacts.configur
+ations.DefaultConfigura
+tion$DefaultResolutionH
+ost.consolidateFailures
+(DefaultConfiguration.j
+ava:1931)
+	at org.gradle.api.inte
+rnal.artifacts.configur
+ations.ResolutionHost.r
+ethrowFailuresAndReport
+Problems(ResolutionHost
+.java:75)
+	at org.gradle.api.inte
+rnal.artifacts.configur
+ations.ResolutionBacked
+FileCollection.maybeThr
+owResolutionFailures(Re
+solutionBackedFileColle
+ction.java:86)
+	at org.gradle.api.inte
+rnal.artifacts.configur
+ations.ResolutionBacked
+FileCollection.visitCon
+tents(ResolutionBackedF
+ileCollection.java:76)
+	at org.gradle.api.inte
+rnal.file.AbstractFileC
+ollection.getFiles(Abst
+ractFileCollection.java
+:124)
+	at org.gradle.api.inte
+rnal.file.AbstractFileC
+ollection.iterator(Abst
+ractFileCollection.java
+:165)
+	at org.gradle.api.inte
+rnal.file.FilteredFileC
+ollection.iterator(Filt
+eredFileCollection.java
+:80)
+	at com.google.common.c
+ollect.ImmutableSet.cop
+yOf(ImmutableSet.java:2
+24)
+	at org.gradle.api.inte
+rnal.file.collections.D
+efaultConfigurableFileC
+ollection$2.visitCollec
+tion(DefaultConfigurabl
+eFileCollection.java:42
+6)
+	at org.gradle.api.inte
+rnal.file.AbstractFileC
+ollection.visitContents
+(AbstractFileCollection
+.java:366)
+	at org.gradle.api.inte
+rnal.file.AbstractFileC
+ollection.visitStructur
+e(AbstractFileCollectio
+n.java:361)
+	at org.gradle.api.inte
+rnal.file.collections.D
+efaultConfigurableFileC
+ollection.lambda$calcul
+ateFinalizedValue$1(Def
+aultConfigurableFileCol
+lection.java:423)
+	at org.gradle.api.inte
+rnal.file.collections.U
+npackingVisitor.add(Unp
+ackingVisitor.java:66)
+	at org.gradle.api.inte
+rnal.file.collections.D
+efaultConfigurableFileC
+ollection$UnresolvedIte
+msCollector.visitConten
+ts(DefaultConfigurableF
+ileCollection.java:635)
+	at org.gradle.api.inte
+rnal.file.collections.D
+efaultConfigurableFileC
+ollection.calculateFina
+lizedValue(DefaultConfi
+gurableFileCollection.j
+ava:423)
+	at org.gradle.api.inte
+rnal.file.collections.D
+efaultConfigurableFileC
+ollection.finalizeNow(D
+efaultConfigurableFileC
+ollection.java:125)
+	at org.gradle.api.inte
+rnal.file.collections.D
+efaultConfigurableFileC
+ollection.lambda$visitC
+hildren$2(DefaultConfig
+urableFileCollection.ja
+va:447)
+	at org.gradle.api.inte
+rnal.provider.ValueStat
+e.finalizeOnReadIfNeede
+d(ValueState.java:140)
+	at org.gradle.api.inte
+rnal.file.collections.D
+efaultConfigurableFileC
+ollection.visitChildren
+(DefaultConfigurableFil
+eCollection.java:447)
+	at org.gradle.api.inte
+rnal.file.CompositeFile
+Collection.visitContent
+s(CompositeFileCollecti
+on.java:112)
+	at org.gradle.api.inte
+rnal.file.AbstractFileC
+ollection.visitStructur
+e(AbstractFileCollectio
+n.java:361)
+	at org.gradle.api.inte
+rnal.file.CompositeFile
+Collection.lambda$visit
+Contents$0(CompositeFil
+eCollection.java:112)
+	at org.gradle.api.inte
+rnal.file.collections.U
+npackingVisitor.add(Unp
+ackingVisitor.java:66)
+	at org.gradle.api.inte
+rnal.file.collections.U
+npackingVisitor.add(Unp
+ackingVisitor.java:91)
+	at org.gradle.api.inte
+rnal.file.DefaultFileCo
+llectionFactory$Resolvi
+ngFileCollection.visitC
+hildren(DefaultFileColl
+ectionFactory.java:306)
+	at org.gradle.api.inte
+rnal.file.CompositeFile
+Collection.visitContent
+s(CompositeFileCollecti
+on.java:112)
+	at org.gradle.api.inte
+rnal.file.AbstractFileC
+ollection.visitStructur
+e(AbstractFileCollectio
+n.java:361)
+	at org.gradle.api.inte
+rnal.file.CompositeFile
+Collection.lambda$visit
+Contents$0(CompositeFil
+eCollection.java:112)
+	at org.gradle.api.inte
+rnal.tasks.PropertyFile
+Collection.visitChildre
+n(PropertyFileCollectio
+n.java:48)
+	at org.gradle.api.inte
+rnal.file.CompositeFile
+Collection.visitContent
+s(CompositeFileCollecti
+on.java:112)
+	at org.gradle.api.inte
+rnal.file.AbstractFileC
+ollection.visitStructur
+e(AbstractFileCollectio
+n.java:361)
+	at org.gradle.internal
+.fingerprint.impl.Defau
+ltFileCollectionSnapsho
+tter.snapshot(DefaultFi
+leCollectionSnapshotter
+.java:47)
+	at org.gradle.internal
+.execution.impl.Default
+InputFingerprinter$Inpu
+tCollectingVisitor.visi
+tInputFileProperty(Defa
+ultInputFingerprinter.j
+ava:133)
+	at org.gradle.internal
+.execution.steps.Abstra
+ctSkipEmptyWorkStep$1.v
+isitInputFileProperty(A
+bstractSkipEmptyWorkSte
+p.java:104)
+	at org.gradle.api.inte
+rnal.tasks.execution.Ta
+skExecution.visitRegula
+rInputs(TaskExecution.j
+ava:324)
+	at org.gradle.internal
+.execution.steps.Abstra
+ctSkipEmptyWorkStep.lam
+bda$fingerprintPrimaryI
+nputs$2(AbstractSkipEmp
+tyWorkStep.java:100)
+	at org.gradle.internal
+.execution.impl.Default
+InputFingerprinter.fing
+erprintInputProperties(
+DefaultInputFingerprint
+er.java:63)
+	at org.gradle.internal
+.execution.steps.Abstra
+ctSkipEmptyWorkStep.fin
+gerprintPrimaryInputs(A
+bstractSkipEmptyWorkSte
+p.java:95)
+	at org.gradle.internal
+.execution.steps.Abstra
+ctSkipEmptyWorkStep.exe
+cute(AbstractSkipEmptyW
+orkStep.java:52)
+	at org.gradle.internal
+.execution.steps.Abstra
+ctSkipEmptyWorkStep.exe
+cute(AbstractSkipEmptyW
+orkStep.java:36)
+	at org.gradle.internal
+.execution.steps.legacy
+.MarkSnapshottingInputs
+StartedStep.execute(Mar
+kSnapshottingInputsStar
+tedStep.java:38)
+	at org.gradle.internal
+.execution.steps.LoadPr
+eviousExecutionStateSte
+p.execute(LoadPreviousE
+xecutionStateStep.java:
+36)
+	at org.gradle.internal
+.execution.steps.LoadPr
+eviousExecutionStateSte
+p.execute(LoadPreviousE
+xecutionStateStep.java:
+23)
+	at org.gradle.internal
+.execution.steps.Handle
+StaleOutputsStep.execut
+e(HandleStaleOutputsSte
+p.java:75)
+	at org.gradle.internal
+.execution.steps.Handle
+StaleOutputsStep.execut
+e(HandleStaleOutputsSte
+p.java:41)
+	at org.gradle.internal
+.execution.steps.Assign
+MutableWorkspaceStep.la
+mbda$execute$0(AssignMu
+tableWorkspaceStep.java
+:35)
+	at org.gradle.api.inte
+rnal.tasks.execution.Ta
+skExecution$4.withWorks
+pace(TaskExecution.java
+:289)
+	at org.gradle.internal
+.execution.steps.Assign
+MutableWorkspaceStep.ex
+ecute(AssignMutableWork
+spaceStep.java:31)
+	at org.gradle.internal
+.execution.steps.Assign
+MutableWorkspaceStep.ex
+ecute(AssignMutableWork
+spaceStep.java:22)
+	at org.gradle.internal
+.execution.steps.Choose
+PipelineStep.execute(Ch
+oosePipelineStep.java:4
+0)
+	at org.gradle.internal
+.execution.steps.Choose
+PipelineStep.execute(Ch
+oosePipelineStep.java:2
+3)
+	at org.gradle.internal
+.execution.steps.Execut
+eWorkBuildOperationFiri
+ngStep.lambda$execute$2
+(ExecuteWorkBuildOperat
+ionFiringStep.java:67)
+	at org.gradle.internal
+.execution.steps.Execut
+eWorkBuildOperationFiri
+ngStep.execute(ExecuteW
+orkBuildOperationFiring
+Step.java:67)
+	at org.gradle.internal
+.execution.steps.Execut
+eWorkBuildOperationFiri
+ngStep.execute(ExecuteW
+orkBuildOperationFiring
+Step.java:39)
+	at org.gradle.internal
+.execution.steps.Identi
+tyCacheStep.execute(Ide
+ntityCacheStep.java:46)
+	at org.gradle.internal
+.execution.steps.Identi
+tyCacheStep.execute(Ide
+ntityCacheStep.java:34)
+	at org.gradle.internal
+.execution.steps.Identi
+fyStep.execute(Identify
+Step.java:48)
+	at org.gradle.internal
+.execution.steps.Identi
+fyStep.execute(Identify
+Step.java:35)
+	at org.gradle.internal
+.execution.impl.Default
+ExecutionEngine$1.execu
+te(DefaultExecutionEngi
+ne.java:64)
+	at org.gradle.api.inte
+rnal.tasks.execution.Ex
+ecuteActionsTaskExecute
+r.executeIfValid(Execut
+eActionsTaskExecuter.ja
+va:127)
+	at org.gradle.api.inte
+rnal.tasks.execution.Ex
+ecuteActionsTaskExecute
+r.execute(ExecuteAction
+sTaskExecuter.java:116)
+	at org.gradle.api.inte
+rnal.tasks.execution.Pr
+oblemsTaskPathTrackingT
+askExecuter.execute(Pro
+blemsTaskPathTrackingTa
+skExecuter.java:41)
+	at org.gradle.api.inte
+rnal.tasks.execution.Fi
+nalizePropertiesTaskExe
+cuter.execute(FinalizeP
+ropertiesTaskExecuter.j
+ava:46)
+	at org.gradle.api.inte
+rnal.tasks.execution.Re
+solveTaskExecutionModeE
+xecuter.execute(Resolve
+TaskExecutionModeExecut
+er.java:51)
+	at org.gradle.api.inte
+rnal.tasks.execution.Sk
+ipTaskWithNoActionsExec
+uter.execute(SkipTaskWi
+thNoActionsExecuter.jav
+a:57)
+	at org.gradle.api.inte
+rnal.tasks.execution.Sk
+ipOnlyIfTaskExecuter.ex
+ecute(SkipOnlyIfTaskExe
+cuter.java:74)
+	at org.gradle.api.inte
+rnal.tasks.execution.Ca
+tchExceptionTaskExecute
+r.execute(CatchExceptio
+nTaskExecuter.java:36)
+	at org.gradle.api.inte
+rnal.tasks.execution.Ev
+entFiringTaskExecuter$1
+.executeTask(EventFirin
+gTaskExecuter.java:77)
+	at org.gradle.api.inte
+rnal.tasks.execution.Ev
+entFiringTaskExecuter$1
+.call(EventFiringTaskEx
+ecuter.java:55)
+	at org.gradle.api.inte
+rnal.tasks.execution.Ev
+entFiringTaskExecuter$1
+.call(EventFiringTaskEx
+ecuter.java:52)
+	at org.gradle.internal
+.operations.DefaultBuil
+dOperationRunner$Callab
+leBuildOperationWorker.
+execute(DefaultBuildOpe
+rationRunner.java:210)
+	at org.gradle.internal
+.operations.DefaultBuil
+dOperationRunner$Callab
+leBuildOperationWorker.
+execute(DefaultBuildOpe
+rationRunner.java:205)
+	at org.gradle.internal
+.operations.DefaultBuil
+dOperationRunner$2.exec
+ute(DefaultBuildOperati
+onRunner.java:67)
+	at org.gradle.internal
+.operations.DefaultBuil
+dOperationRunner$2.exec
+ute(DefaultBuildOperati
+onRunner.java:60)
+	at org.gradle.internal
+.operations.DefaultBuil
+dOperationRunner.execut
+e(DefaultBuildOperation
+Runner.java:167)
+	at org.gradle.internal
+.operations.DefaultBuil
+dOperationRunner.execut
+e(DefaultBuildOperation
+Runner.java:60)
+	at org.gradle.internal
+.operations.DefaultBuil
+dOperationRunner.call(D
+efaultBuildOperationRun
+ner.java:54)
+	at org.gradle.api.inte
+rnal.tasks.execution.Ev
+entFiringTaskExecuter.e
+xecute(EventFiringTaskE
+xecuter.java:52)
+	at org.gradle.executio
+n.plan.LocalTaskNodeExe
+cutor.execute(LocalTask
+NodeExecutor.java:42)
+	at org.gradle.executio
+n.taskgraph.DefaultTask
+ExecutionGraph$InvokeNo
+deExecutorsAction.execu
+te(DefaultTaskExecution
+Graph.java:331)
+	at org.gradle.executio
+n.taskgraph.DefaultTask
+ExecutionGraph$InvokeNo
+deExecutorsAction.execu
+te(DefaultTaskExecution
+Graph.java:318)
+	at org.gradle.executio
+n.taskgraph.DefaultTask
+ExecutionGraph$BuildOpe
+rationAwareExecutionAct
+ion.lambda$execute$0(De
+faultTaskExecutionGraph
+.java:314)
+	at org.gradle.internal
+.operations.CurrentBuil
+dOperationRef.with(Curr
+entBuildOperationRef.ja
+va:85)
+	at org.gradle.executio
+n.taskgraph.DefaultTask
+ExecutionGraph$BuildOpe
+rationAwareExecutionAct
+ion.execute(DefaultTask
+ExecutionGraph.java:314
+)
+	at org.gradle.executio
+n.taskgraph.DefaultTask
+ExecutionGraph$BuildOpe
+rationAwareExecutionAct
+ion.execute(DefaultTask
+ExecutionGraph.java:303
+)
+	at org.gradle.executio
+n.plan.DefaultPlanExecu
+tor$ExecutorWorker.exec
+ute(DefaultPlanExecutor
+.java:459)
+	at org.gradle.executio
+n.plan.DefaultPlanExecu
+tor$ExecutorWorker.run(
+DefaultPlanExecutor.jav
+a:376)
+	at org.gradle.internal
+.concurrent.ExecutorPol
+icy$CatchAndRecordFailu
+res.onExecute(ExecutorP
+olicy.java:64)
+	at org.gradle.internal
+.concurrent.AbstractMan
+agedExecutor$1.run(Abst
+ractManagedExecutor.jav
+a:48)
+Cause 1: org.gradle.int
+ernal.resolve.ModuleVer
+sionNotFoundException: 
+Could not find androidx
+.appcompat:appcompat:1.
+7.1.
+Searched in the 
+following locations:
+  - file:/C:/Users/Josh
+an/Desktop/online%20mem
+%20sharing/web/android/
+capacitor-cordova-andro
+id-plugins/src/main/lib
+s/appcompat-1.7.1.jar
+  - file:/C:/Users/Josh
+an/Desktop/online%20mem
+%20sharing/web/android/
+capacitor-cordova-andro
+id-plugins/src/main/lib
+s/appcompat.jar
+  - file:/C:/Users/Josh
+an/Desktop/online%20mem
+%20sharing/web/android/
+app/libs/appcompat-1.7.
+1.jar
+  - file:/C:/Users/Josh
+an/Desktop/online%20mem
+%20sharing/web/android/
+app/libs/appcompat.jar
+Required by:
+    project :app
+    project :app > 
+project 
+:capacitor-android
+    project :app > 
+project :capacitor-cord
+ova-android-plugins
+    project :app > 
+project :capacitor-comm
+unity-admob
+    project :app > 
+project :capacitor-fire
+base-messaging
+    project :app > 
+project :capacitor-app
+    project :app > 
+project 
+:capacitor-filesystem
+    project :app > 
+project 
+:capacitor-haptics
+    project :app > 
+project 
+:capacitor-keyboard
+    project :app > 
+project :capacitor-loca
+l-notifications
+    project :app > 
+project 
+:capacitor-network
+    project :app > 
+project :capacitor-push
+-notifications
+    project :app > 
+project :capacitor-spla
+sh-screen
+    project :app > 
+project :capawesome-cap
+acitor-app-update
+Cause 2: org.gradle.int
+ernal.resolve.ModuleVer
+sionNotFoundException: 
+Could not find androidx
+.coordinatorlayout:coor
+dinatorlayout:1.3.0.
+Searched in the 
+following locations:
+  - file:/C:/Users/Josh
+an/Desktop/online%20mem
+%20sharing/web/android/
+capacitor-cordova-andro
+id-plugins/src/main/lib
+s/coordinatorlayout-1.3
+.0.jar
+  - file:/C:/Users/Josh
+an/Desktop/online%20mem
+%20sharing/web/android/
+capacitor-cordova-andro
+id-plugins/src/main/lib
+s/coordinatorlayout.jar
+  - file:/C:/Users/Josh
+an/Desktop/online%20mem
+%20sharing/web/android/
+app/libs/coordinatorlay
+out-1.3.0.jar
+  - file:/C:/Users/Josh
+an/Desktop/online%20mem
+%20sharing/web/android/
+app/libs/coordinatorlay
+out.jar
+Required by:
+    project :app
+    project :app > 
+project 
+:capacitor-android
+    project :app > 
+project :capacitor-comm
+unity-admob
+Cause 3: org.gradle.int
+ernal.resolve.ModuleVer
+sionNotFoundException: 
+Could not find androidx
+.core:core-splashscreen
+:1.0.1.
+Searched in the 
+following locations:
+  - file:/C:/Users/Josh
+an/Desktop/online%20mem
+%20sharing/web/android/
+capacitor-cordova-andro
+id-plugins/src/main/lib
+s/core-splashscreen-1.0
+.1.jar
+  - file:/C:/Users/Josh
+an/Desktop/online%20mem
+%20sharing/web/android/
+capacitor-cordova-andro
+id-plugins/src/main/lib
+s/core-splashscreen.jar
+  - file:/C:/Users/Josh
+an/Desktop/online%20mem
+%20sharing/web/android/
+app/libs/core-splashscr
+een-1.0.1.jar
+  - file:/C:/Users/Josh
+an/Desktop/online%20mem
+%20sharing/web/android/
+app/libs/core-splashscr
+een.jar
+Required by:
+    project :app
+    project :app > 
+project :capacitor-spla
+sh-screen
+Cause 4: org.gradle.int
+ernal.resolve.ModuleVer
+sionNotFoundException: 
+Could not find androidx
+.core:core:1.17.0.
+Searched in the 
+following locations:
+  - file:/C:/Users/Josh
+an/Desktop/online%20mem
+%20sharing/web/android/
+capacitor-cordova-andro
+id-plugins/src/main/lib
+s/core-1.17.0.jar
+  - file:/C:/Users/Josh
+an/Desktop/online%20mem
+%20sharing/web/android/
+capacitor-cordova-andro
+id-plugins/src/main/lib
+s/core.jar
+  - file:/C:/Users/Josh
+an/Desktop/online%20mem
+%20sharing/web/android/
+app/libs/core-1.17.0.ja
+r
+  - file:/C:/Users/Josh
+an/Desktop/online%20mem
+%20sharing/web/android/
+app/libs/core.jar
+Required by:
+    project :app > 
+project 
+:capacitor-android
+Cause 5: org.gradle.int
+ernal.resolve.ModuleVer
+sionNotFoundException: 
+Could not find androidx
+.activity:activity:1.11
+.0.
+Searched in the 
+following locations:
+  - file:/C:/Users/Josh
+an/Desktop/online%20mem
+%20sharing/web/android/
+capacitor-cordova-andro
+id-plugins/src/main/lib
+s/activity-1.11.0.jar
+  - file:/C:/Users/Josh
+an/Desktop/online%20mem
+%20sharing/web/android/
+capacitor-cordova-andro
+id-plugins/src/main/lib
+s/activity.jar
+  - file:/C:/Users/Josh
+an/Desktop/online%20mem
+%20sharing/web/android/
+app/libs/activity-1.11.
+0.jar
+  - file:/C:/Users/Josh
+an/Desktop/online%20mem
+%20sharing/web/android/
+app/libs/activity.jar
+Required by:
+    project :app > 
+project 
+:capacitor-android
+Cause 6: org.gradle.int
+ernal.resolve.ModuleVer
+sionNotFoundException: 
+Could not find androidx
+.fragment:fragment:1.8.
+9.
+Searched in the 
+following locations:
+  - file:/C:/Users/Josh
+an/Desktop/online%20mem
+%20sharing/web/android/
+capacitor-cordova-andro
+id-plugins/src/main/lib
+s/fragment-1.8.9.jar
+  - file:/C:/Users/Josh
+an/Desktop/online%20mem
+%20sharing/web/android/
+capacitor-cordova-andro
+id-plugins/src/main/lib
+s/fragment.jar
+  - file:/C:/Users/Josh
+an/Desktop/online%20mem
+%20sharing/web/android/
+app/libs/fragment-1.8.9
+.jar
+  - file:/C:/Users/Josh
+an/Desktop/online%20mem
+%20sharing/web/android/
+app/libs/fragment.jar
+Required by:
+    project :app > 
+project 
+:capacitor-android
+Cause 7: org.gradle.int
+ernal.resolve.ModuleVer
+sionNotFoundException: 
+Could not find androidx
+.webkit:webkit:1.14.0.
+Searched in the 
+following locations:
+  - file:/C:/Users/Josh
+an/Desktop/online%20mem
+%20sharing/web/android/
+capacitor-cordova-andro
+id-plugins/src/main/lib
+s/webkit-1.14.0.jar
+  - file:/C:/Users/Josh
+an/Desktop/online%20mem
+%20sharing/web/android/
+capacitor-cordova-andro
+id-plugins/src/main/lib
+s/webkit.jar
+  - file:/C:/Users/Josh
+an/Desktop/online%20mem
+%20sharing/web/android/
+app/libs/webkit-1.14.0.
+jar
+  - file:/C:/Users/Josh
+an/Desktop/online%20mem
+%20sharing/web/android/
+app/libs/webkit.jar
+Required by:
+    project :app > 
+project 
+:capacitor-android
+Cause 8: org.gradle.int
+ernal.resolve.ModuleVer
+sionNotFoundException: 
+Could not find org.apac
+he.cordova:framework:14
+.0.1.
+Searched in the 
+following locations:
+  - file:/C:/Users/Josh
+an/Desktop/online%20mem
+%20sharing/web/android/
+capacitor-cordova-andro
+id-plugins/src/main/lib
+s/framework-14.0.1.jar
+  - file:/C:/Users/Josh
+an/Desktop/online%20mem
+%20sharing/web/android/
+capacitor-cordova-andro
+id-plugins/src/main/lib
+s/framework.jar
+  - file:/C:/Users/Josh
+an/Desktop/online%20mem
+%20sharing/web/android/
+app/libs/framework-14.0
+.1.jar
+  - file:/C:/Users/Josh
+an/Desktop/online%20mem
+%20sharing/web/android/
+app/libs/framework.jar
+Required by:
+
+Deprecated Gradle features were used in this build, making it incompatible with Gradle 9.0.
+
+You can use '--warning-mode all' to show the individual deprecation warnings and determine if they come from your own scripts or plugins.
+
+For more on this, please refer to https://docs.gradle.org/8.14.3/userguide/command_line_interface.html#sec:command_line_warnings in the Gradle documentation.
+28 actionable tasks: 1 executed, 27 up-to-date
+    project :app > 
+project 
+:capacitor-android
+    project :app > 
+project :capacitor-cord
+ova-android-plugins
+Cause 9: org.gradle.int
+ernal.resolve.ModuleVer
+sionNotFoundException: 
+Could not find any 
+matches for com.google.
+android.gms:play-servic
+es-ads:24.9.+ as no 
+versions of com.google.
+android.gms:play-servic
+es-ads are available.
+Searched in the 
+following locations:
+  - file:/C:/Users/Josh
+an/Desktop/online%20mem
+%20sharing/web/android/
+capacitor-cordova-andro
+id-plugins/src/main/lib
+s/
+  - file:/C:/Users/Josh
+an/Desktop/online%20mem
+%20sharing/web/android/
+app/libs/
+Required by:
+    project :app > 
+project :capacitor-comm
+unity-admob
+Cause 10: org.gradle.in
+ternal.resolve.ModuleVe
+rsionNotFoundException:
+ Could not find com.goo
+gle.android.ump:user-me
+ssaging-platform:4.0.0.
+Searched in the 
+following locations:
+  - file:/C:/Users/Josh
+an/Desktop/online%20mem
+%20sharing/web/android/
+capacitor-cordova-andro
+id-plugins/src/main/lib
+s/user-messaging-platfo
+rm-4.0.0.jar
+  - file:/C:/Users/Josh
+an/Desktop/online%20mem
+%20sharing/web/android/
+capacitor-cordova-andro
+id-plugins/src/main/lib
+s/user-messaging-platfo
+rm.jar
+  - file:/C:/Users/Josh
+an/Desktop/online%20mem
+%20sharing/web/android/
+app/libs/user-messaging
+-platform-4.0.0.jar
+  - file:/C:/Users/Josh
+an/Desktop/online%20mem
+%20sharing/web/android/
+app/libs/user-messaging
+-platform.jar
+Required by:
+    project :app > 
+project :capacitor-comm
+unity-admob
+Cause 11: org.gradle.in
+ternal.resolve.ModuleVe
+rsionNotFoundException:
+ Could not find android
+x.core:core-ktx:1.15.0.
+Searched in the 
+following locations:
+  - file:/C:/Users/Josh
+an/Desktop/online%20mem
+%20sharing/web/android/
+capacitor-cordova-andro
+id-plugins/src/main/lib
+s/core-ktx-1.15.0.jar
+  - file:/C:/Users/Josh
+an/Desktop/online%20mem
+%20sharing/web/android/
+capacitor-cordova-andro
+id-plugins/src/main/lib
+s/core-ktx.jar
+  - file:/C:/Users/Josh
+an/Desktop/online%20mem
+%20sharing/web/android/
+app/libs/core-ktx-1.15.
+0.jar
+  - file:/C:/Users/Josh
+an/Desktop/online%20mem
+%20sharing/web/android/
+app/libs/core-ktx.jar
+Required by:
+    project :app > 
+project :capacitor-comm
+unity-admob
+Cause 12: org.gradle.in
+ternal.resolve.ModuleVe
+rsionNotFoundException:
+ Could not find org.jet
+brains.kotlin:kotlin-st
+dlib:2.2.20.
+Searched in the 
+following locations:
+  - file:/C:/Users/Josh
+an/Desktop/online%20mem
+%20sharing/web/android/
+capacitor-cordova-andro
+id-plugins/src/main/lib
+s/kotlin-stdlib-2.2.20.
+jar
+  - file:/C:/Users/Josh
+an/Desktop/online%20mem
+%20sharing/web/android/
+capacitor-cordova-andro
+id-plugins/src/main/lib
+s/kotlin-stdlib.jar
+  - file:/C:/Users/Josh
+an/Desktop/online%20mem
+%20sharing/web/android/
+app/libs/kotlin-stdlib-
+2.2.20.jar
+  - file:/C:/Users/Josh
+an/Desktop/online%20mem
+%20sharing/web/android/
+app/libs/kotlin-stdlib.
+jar
+Required by:
+    project :app > 
+project :capacitor-comm
+unity-admob
+Cause 13: org.gradle.in
+ternal.resolve.ModuleVe
+rsionNotFoundException:
+ Could not find com.goo
+gle.firebase:firebase-m
+essaging:25.0.1.
+Searched in the 
+following locations:
+  - file:/C:/Users/Josh
+an/Desktop/online%20mem
+%20sharing/web/android/
+capacitor-cordova-andro
+id-plugins/src/main/lib
+s/firebase-messaging-25
+.0.1.jar
+  - file:/C:/Users/Josh
+an/Desktop/online%20mem
+%20sharing/web/android/
+capacitor-cordova-andro
+id-plugins/src/main/lib
+s/firebase-messaging.ja
+r
+  - file:/C:/Users/Josh
+an/Desktop/online%20mem
+%20sharing/web/android/
+app/libs/firebase-messa
+ging-25.0.1.jar
+  - file:/C:/Users/Josh
+an/Desktop/online%20mem
+%20sharing/web/android/
+app/libs/firebase-messa
+ging.jar
+Required by:
+    project :app > 
+project :capacitor-fire
+base-messaging
+    project :app > 
+project :capacitor-push
+-notifications
+Cause 14: org.gradle.in
+ternal.resolve.ModuleVe
+rsionNotFoundException:
+ Could not find com.goo
+gle.android.play:app-up
+date:2.1.0.
+Searched in the 
+following locations:
+  - file:/C:/Users/Josh
+an/Desktop/online%20mem
+%20sharing/web/android/
+capacitor-cordova-andro
+id-plugins/src/main/lib
+s/app-update-2.1.0.jar
+  - file:/C:/Users/Josh
+an/Desktop/online%20mem
+%20sharing/web/android/
+capacitor-cordova-andro
+id-plugins/src/main/lib
+s/app-update.jar
+  - file:/C:/Users/Josh
+an/Desktop/online%20mem
+%20sharing/web/android/
+app/libs/app-update-2.1
+.0.jar
+  - file:/C:/Users/Josh
+an/Desktop/online%20mem
+%20sharing/web/android/
+app/libs/app-update.jar
+Required by:
+    project :app > 
+project :capawesome-cap
+acitor-app-update
+Cause 15: org.gradle.in
+ternal.resolve.ModuleVe
+rsionNotFoundException:
+ Could not find com.goo
+gle.android.gms:play-se
+rvices-base:18.9.0.
+Searched in the 
+following locations:
+  - file:/C:/Users/Josh
+an/Desktop/online%20mem
+%20sharing/web/android/
+capacitor-cordova-andro
+id-plugins/src/main/lib
+s/play-services-base-18
+.9.0.jar
+  - file:/C:/Users/Josh
+an/Desktop/online%20mem
+%20sharing/web/android/
+capacitor-cordova-andro
+id-plugins/src/main/lib
+s/play-services-base.ja
+r
+  - file:/C:/Users/Josh
+an/Desktop/online%20mem
+%20sharing/web/android/
+app/libs/play-services-
+base-18.9.0.jar
+  - file:/C:/Users/Josh
+an/Desktop/online%20mem
+%20sharing/web/android/
+app/libs/play-services-
+base.jar
+Required by:
+    project :app > 
+project :capawesome-cap
+acitor-app-update
+
+
+BUILD FAILED in 7s

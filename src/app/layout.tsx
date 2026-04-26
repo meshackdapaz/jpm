@@ -1,20 +1,9 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
-
 export const metadata: Metadata = {
-  title: "JPM",
-  description: "Share the best memes online with JPM.",
+  title: " ",
+  description: "Share your thoughts anonymously.",
 };
 
 export const viewport = {
@@ -28,9 +17,8 @@ export const viewport = {
 import { I18nProvider } from "@/lib/i18n";
 import { AuthProvider } from "@/components/AuthProvider";
 import { ThemeProvider } from "@/components/ThemeProvider";
+import { OfflineNotice } from "@/components/OfflineNotice";
 import { SplashScreen } from "@/components/SplashScreen";
-import { CallProvider } from "@/components/CallProvider";
-import { CallUI } from "@/components/CallUI";
 
 export default function RootLayout({
   children,
@@ -41,16 +29,14 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning>
       <body
         suppressHydrationWarning
-        className={`${geistSans.variable} ${geistMono.variable} antialiased font-sans`}
+        className="antialiased font-sans"
       >
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
-          <SplashScreen />
           <AuthProvider>
+            <SplashScreen />
             <I18nProvider>
-              <CallProvider>
-                <CallUI />
-                {children}
-              </CallProvider>
+              <OfflineNotice />
+              {children}
             </I18nProvider>
           </AuthProvider>
         </ThemeProvider>
