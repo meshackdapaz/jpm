@@ -1,9 +1,13 @@
 import type { Metadata } from "next";
+import Script from "next/script";
 import "./globals.css";
 
 export const metadata: Metadata = {
   title: " ",
   description: "Share your thoughts anonymously.",
+  other: {
+    "google-adsense-account": "ca-pub-8166782428171770"
+  }
 };
 
 export const viewport = {
@@ -27,13 +31,16 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <head>
-        <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8166782428171770" crossOrigin="anonymous"></script>
-      </head>
       <body
         suppressHydrationWarning
         className="antialiased font-sans"
       >
+        <Script
+          async
+          src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8166782428171770"
+          crossOrigin="anonymous"
+          strategy="afterInteractive"
+        />
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
           <AuthProvider>
             <SplashScreen />
