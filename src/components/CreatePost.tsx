@@ -66,6 +66,9 @@ export function CreatePost({
   const [replyPrivacy, setReplyPrivacy] = useState<'Anyone' | 'Followers' | 'Followed' | 'Mentioned'>('Anyone')
   const [reviewReplies, setReviewReplies] = useState(false)
   const [isGhost, setIsGhost] = useState(false)
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null)
+  
+  const categories = ['Funny', 'Trending', 'Relatable', 'Dank', 'Wholesome', 'Meme', 'Video', 'Art']
   
   const fileInputRef = useRef<HTMLInputElement>(null)
   const videoInputRef = useRef<HTMLInputElement>(null)
@@ -174,7 +177,8 @@ export function CreatePost({
             review_replies: reviewReplies,
             thread_index: idx,
             is_quote: idx === 0 && !!quotedPost,
-            ghost_mode: isGhost
+            ghost_mode: isGhost,
+            category: selectedCategory
           }
         }).select('id').single()
 
@@ -196,20 +200,20 @@ export function CreatePost({
   }
 
   return (
-    <div className={`flex flex-col bg-zinc-950 h-full ${inModal ? 'fixed inset-0 z-50' : 'border border-zinc-900 rounded-3xl overflow-hidden'}`}>
+    <div className={`flex flex-col bg-white dark:bg-zinc-950 h-full ${inModal ? 'fixed inset-0 z-50' : 'border border-zinc-200 dark:border-zinc-900 rounded-3xl overflow-hidden'}`}>
       <form onSubmit={handleSubmit} className="flex-1 flex flex-col overflow-hidden">
         
         <div className="flex items-center justify-between px-6 pt-[calc(env(safe-area-inset-top)+12px)] pb-4 border-b border-zinc-900/50">
-          <button type="button" onClick={() => onSuccess?.()} className="p-2 -ml-2 text-zinc-500 hover:text-white transition-all">
+          <button type="button" onClick={() => onSuccess?.()} className="p-2 -ml-2 text-zinc-500 hover:text-black dark:hover:text-white transition-transform">
             <XMarkIcon className="w-6 h-6" />
           </button>
-          <h2 className="text-[17px] font-black tracking-tight text-white">Create Post</h2>
+          <h2 className="text-[17px] font-black tracking-tight text-zinc-900 dark:text-white">Create Post</h2>
           <div className="flex items-center gap-3">
-            <button type="button" onClick={() => setShowDrafts(true)} className="p-2 text-zinc-400 hover:text-white transition-all relative">
+            <button type="button" onClick={() => setShowDrafts(true)} className="p-2 text-zinc-400 hover:text-black dark:hover:text-white transition-transform relative">
               <DocumentDuplicateIcon className="w-5 h-5" />
-              {drafts.length > 0 && <div className="absolute top-1 right-1 w-2 h-2 bg-blue-500 rounded-full border-2 border-zinc-950" />}
+              {drafts.length > 0 && <div className="absolute top-1 right-1 w-2 h-2 bg-blue-500 rounded-full border-2 border-white dark:border-zinc-950" />}
             </button>
-            <button type="button" onClick={() => setShowOptions(true)} className="p-2 text-zinc-400 hover:text-white transition-all"><EllipsisHorizontalIcon className="w-6 h-6" /></button>
+            <button type="button" onClick={() => setShowOptions(true)} className="p-2 text-zinc-400 hover:text-black dark:hover:text-white transition-transform"><EllipsisHorizontalIcon className="w-6 h-6" /></button>
           </div>
         </div>
 
@@ -226,12 +230,12 @@ export function CreatePost({
                     <Image src={currentProfile.avatar_url} alt="" width={40} height={40} className="w-full h-full object-cover" unoptimized />
                   )}
                 </div>
-                {idx < thread.length - 1 && <div className="w-[2px] flex-1 bg-zinc-900 my-2 rounded-full" />}
+                {idx < thread.length - 1 && <div className="w-[2px] flex-1 bg-zinc-100 dark:bg-zinc-900 my-2 rounded-full" />}
               </div>
 
               <div className="flex-1 min-w-0 pt-0.5">
                 <div className="flex items-center gap-2 mb-1">
-                  <span className={`font-black text-sm ${isGhost ? 'text-amber-500' : 'text-zinc-100'}`}>
+                  <span className={`font-black text-sm ${isGhost ? 'text-amber-500' : 'text-zinc-900 dark:text-zinc-100'}`}>
                     {isGhost ? 'Anonymous Ghost' : currentProfile?.username || 'user'}
                   </span>
                   {idx === 0 && (
@@ -242,12 +246,35 @@ export function CreatePost({
                   )}
                 </div>
 
+                {/* Category Pills */}
+                {idx === 0 && (
+                  <div className="flex gap-2 mb-3 overflow-x-auto hide-scrollbar pb-1">
+                    {categories.map(cat => (
+                      <button
+                        key={cat}
+                        type="button"
+                        onClick={() => {
+                          setSelectedCategory(selectedCategory === cat ? null : cat)
+                          triggerHaptic(ImpactStyle.Light)
+                        }}
+                        className={`px-3 py-1 rounded-full text-[11px] font-bold border transition-all flex-none ${
+                          selectedCategory === cat
+                            ? 'bg-black dark:bg-white border-black dark:border-white text-white dark:text-black'
+                            : 'bg-zinc-100 dark:bg-zinc-900 border-zinc-200 dark:border-zinc-800 text-zinc-600 dark:text-zinc-400 hover:border-zinc-300 dark:hover:border-zinc-700'
+                        }`}
+                      >
+                        #{cat}
+                      </button>
+                    ))}
+                  </div>
+                )}
+
                 <textarea
                   ref={el => { textareaRefs.current[post.id] = el }}
                   value={post.content}
                   onChange={(e) => updatePost(idx, { content: e.target.value })}
                   placeholder={idx === 0 ? "What's happening?" : "Say more..."}
-                  className="w-full bg-transparent border-none focus:ring-0 resize-none placeholder-zinc-700 text-white font-medium text-[16px] p-0 min-h-[40px]"
+                  className="w-full bg-transparent border-none focus:ring-0 resize-none placeholder-zinc-400 dark:placeholder-zinc-700 text-zinc-900 dark:text-white font-medium text-[16px] p-0 min-h-[40px]"
                   rows={1}
                   onInput={(e: any) => {
                     e.target.style.height = 'auto'
@@ -257,7 +284,7 @@ export function CreatePost({
 
                 {/* Quote Preview */}
                 {idx === 0 && quotedPost && (
-                  <div className="mt-4 p-4 rounded-3xl border border-zinc-900 bg-zinc-900/40 relative">
+                  <div className="mt-4 p-4 rounded-3xl border border-zinc-100 dark:border-zinc-900 bg-zinc-50 dark:bg-zinc-900/40 relative">
                     <div className="flex items-center gap-2 mb-2">
                        <div className="w-5 h-5 rounded-full bg-zinc-800 overflow-hidden flex-none">
                          {quotedPost.profiles?.avatar_url && <Image src={quotedPost.profiles.avatar_url} alt="" width={20} height={20} className="w-full h-full object-cover" unoptimized />}
@@ -272,11 +299,11 @@ export function CreatePost({
                 )}
 
                 <div className="flex items-center gap-5 mt-3">
-                  <button type="button" onClick={() => fileInputRef.current?.click()} className="text-zinc-600 hover:text-white transition-all"><PhotoIcon className="w-[21px] h-[21px]" /></button>
-                  <button type="button" onClick={() => videoInputRef.current?.click()} className="text-zinc-600 hover:text-white transition-all"><VideoCameraIcon className="w-[21px] h-[21px]" /></button>
-                  <button type="button" onClick={() => setShowGiphy({ postIndex: idx })} className="text-zinc-600 hover:text-white transition-all"><GifIcon className="w-[21px] h-[21px]" /></button>
-                  <button type="button" onClick={addThreadPost} className="text-zinc-600 hover:text-white transition-all"><ListBulletIcon className="w-[21px] h-[21px]" /></button>
-                  <button type="button" onClick={() => setShowOptions(true)} className="text-zinc-600 hover:text-white transition-all"><EllipsisHorizontalIcon className="w-[21px] h-[21px]" /></button>
+                  <button type="button" onClick={() => fileInputRef.current?.click()} className="text-zinc-600 hover:text-black dark:hover:text-white transition-transform"><PhotoIcon className="w-[21px] h-[21px]" /></button>
+                  <button type="button" onClick={() => videoInputRef.current?.click()} className="text-zinc-600 hover:text-black dark:hover:text-white transition-transform"><VideoCameraIcon className="w-[21px] h-[21px]" /></button>
+                  <button type="button" onClick={() => setShowGiphy({ postIndex: idx })} className="text-zinc-600 hover:text-black dark:hover:text-white transition-transform"><GifIcon className="w-[21px] h-[21px]" /></button>
+                  <button type="button" onClick={addThreadPost} className="text-zinc-600 hover:text-black dark:hover:text-white transition-transform"><ListBulletIcon className="w-[21px] h-[21px]" /></button>
+                  <button type="button" onClick={() => setShowOptions(true)} className="text-zinc-600 hover:text-black dark:hover:text-white transition-transform"><EllipsisHorizontalIcon className="w-[21px] h-[21px]" /></button>
                 </div>
 
                 {(post.previewUrls.length > 0 || post.videoPreviewUrl) && (
@@ -304,7 +331,7 @@ export function CreatePost({
             onClick={addThreadPost}
             className="mt-6 flex items-center gap-3 group px-1"
           >
-             <div className="w-10 h-10 rounded-full border border-dashed border-zinc-800 flex items-center justify-center opacity-40 group-hover:opacity-100 transition-all">
+             <div className="w-10 h-10 rounded-full border border-dashed border-zinc-300 dark:border-zinc-800 flex items-center justify-center opacity-40 group-hover:opacity-100 transition-transform">
                 <span className="text-zinc-500 text-lg">+</span>
              </div>
              <span className="text-[14px] font-black text-zinc-600 group-hover:text-zinc-400 transition-colors">Add to thread</span>
@@ -314,12 +341,12 @@ export function CreatePost({
         <input type="file" hidden ref={fileInputRef} accept="image/*" multiple onChange={(e) => handleImageChange(e, thread.length - 1)} />
         <input type="file" hidden ref={videoInputRef} accept="video/*" onChange={(e) => handleVideoChange(e, thread.length - 1)} />
 
-        <div className="px-6 py-6 border-t border-zinc-900/30 bg-zinc-950/80 backdrop-blur-xl">
+        <div className="px-6 py-6 border-t border-zinc-100 dark:border-zinc-900/30 bg-white/80 dark:bg-zinc-950/80 backdrop-blur-xl">
           <div className="flex items-center justify-between mb-2">
             <button 
               type="button" 
               onClick={() => setShowOptions(true)}
-              className="px-4 py-2 rounded-[18px] bg-zinc-900 border border-zinc-800 text-zinc-400 font-bold text-[13px] hover:bg-zinc-800 hover:text-white transition-all active:scale-95"
+              className="px-4 py-2 rounded-[18px] bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 text-zinc-600 dark:text-zinc-400 font-bold text-[13px] hover:bg-zinc-200 dark:hover:bg-zinc-800 hover:text-zinc-900 dark:hover:text-white transition-transform active:scale-95"
             >
               Options
             </button>
@@ -327,7 +354,7 @@ export function CreatePost({
             <button 
               type="submit" 
               disabled={loading || (!thread[0].content.trim() && thread[0].images.length === 0 && !thread[0].video)} 
-              className="bg-white text-black px-8 py-3 rounded-[20px] font-black text-[15px] transition-all disabled:opacity-20 active:scale-95 shadow-xl shadow-white/5"
+              className="bg-black dark:bg-white text-white dark:text-black px-8 py-3 rounded-[20px] font-black text-[15px] transition-all disabled:opacity-20 active:scale-95 shadow-xl shadow-black/5 dark:shadow-white/5"
             >
               {loading ? '...' : 'Post'}
             </button>
@@ -340,18 +367,18 @@ export function CreatePost({
         {showOptions && (
           <>
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 bg-black/80 z-[60]" onClick={() => setShowOptions(false)} />
-            <motion.div initial={{ y: '100%' }} animate={{ y: 0 }} exit={{ y: '100%' }} transition={{ type: 'spring', damping: 25 }} className="fixed bottom-0 left-0 right-0 bg-zinc-950 border-t border-zinc-900 rounded-t-[40px] z-[70] px-8 pt-4 pb-[calc(env(safe-area-inset-bottom)+32px)]">
-              <div className="w-12 h-1.5 bg-zinc-800 rounded-full mx-auto mb-8" />
-              <h3 className="text-xl font-black text-white text-center mb-10">Post Settings</h3>
+            <motion.div initial={{ y: '100%' }} animate={{ y: 0 }} exit={{ y: '100%' }} transition={{ type: 'spring', damping: 25 }} className="fixed bottom-0 left-0 right-0 bg-white dark:bg-zinc-950 border-t border-zinc-200 dark:border-zinc-900 rounded-t-[40px] z-[70] px-8 pt-4 pb-[calc(env(safe-area-inset-bottom)+32px)]">
+              <div className="w-12 h-1.5 bg-zinc-200 dark:bg-zinc-800 rounded-full mx-auto mb-8" />
+              <h3 className="text-xl font-black text-zinc-900 dark:text-white text-center mb-10">Post Settings</h3>
               
               <div className="space-y-6">
                 <div>
                   <p className="text-[10px] font-black text-zinc-500 uppercase tracking-[2px] mb-4 ml-1">Who can reply?</p>
                   {(['Anyone', 'Followers', 'Followed', 'Mentioned'] as const).map(opt => (
-                    <button key={opt} onClick={() => { setReplyPrivacy(opt); triggerHaptic() }} className="w-full flex items-center justify-between py-5 border-b border-zinc-900/50 group">
-                      <span className={`font-bold transition-colors ${replyPrivacy === opt ? 'text-white' : 'text-zinc-500 group-hover:text-zinc-300'}`}>{opt}</span>
-                      <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all ${replyPrivacy === opt ? 'border-white bg-white' : 'border-zinc-800'}`}>
-                        {replyPrivacy === opt && <div className="w-2.5 h-2.5 rounded-full bg-black" />}
+                    <button key={opt} onClick={() => { setReplyPrivacy(opt); triggerHaptic() }} className="w-full flex items-center justify-between py-4 px-4 rounded-2xl outline-none focus:outline-none hover:bg-zinc-50 dark:hover:bg-zinc-900/50 transition-colors group">
+                      <span className={`font-bold transition-colors ${replyPrivacy === opt ? 'text-zinc-900 dark:text-white' : 'text-zinc-400 dark:text-zinc-500 group-hover:text-zinc-900 dark:group-hover:text-zinc-300'}`}>{opt}</span>
+                      <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-transform ${replyPrivacy === opt ? 'border-zinc-900 dark:border-white bg-zinc-900 dark:bg-white' : 'border-zinc-200 dark:border-zinc-800'}`}>
+                        {replyPrivacy === opt && <div className="w-2.5 h-2.5 rounded-full bg-white dark:bg-black" />}
                       </div>
                     </button>
                   ))}
@@ -359,26 +386,26 @@ export function CreatePost({
 
                  <div className="flex items-center justify-between py-6">
                   <div>
-                    <p className="font-bold text-white">Ghost Post</p>
+                    <p className="font-bold text-zinc-900 dark:text-white">Ghost Post</p>
                     <p className="text-xs text-zinc-500 font-medium">Anonymous, disappears in 24h</p>
                   </div>
-                  <div onClick={() => { setIsGhost(!isGhost); triggerHaptic() }} className={`w-12 h-7 rounded-full p-1 transition-all cursor-pointer ${isGhost ? 'bg-amber-500' : 'bg-zinc-800'}`}>
+                  <div onClick={() => { setIsGhost(!isGhost); triggerHaptic() }} className={`w-12 h-7 rounded-full p-1 transition-all cursor-pointer ${isGhost ? 'bg-amber-500' : 'bg-zinc-200 dark:bg-zinc-800'}`}>
                     <div className={`w-5 h-5 rounded-full bg-white transition-all shadow-md ${isGhost ? 'translate-x-5' : ''}`} />
                   </div>
                 </div>
 
                 <div className="flex items-center justify-between py-6">
                   <div>
-                    <p className="font-bold text-white">Review replies</p>
+                    <p className="font-bold text-zinc-900 dark:text-white">Review replies</p>
                     <p className="text-xs text-zinc-500 font-medium">Verify replies before they go public</p>
                   </div>
-                  <div onClick={() => { setReviewReplies(!reviewReplies); triggerHaptic() }} className={`w-12 h-7 rounded-full p-1 transition-all cursor-pointer ${reviewReplies ? 'bg-blue-600' : 'bg-zinc-800'}`}>
+                  <div onClick={() => { setReviewReplies(!reviewReplies); triggerHaptic() }} className={`w-12 h-7 rounded-full p-1 transition-colors cursor-pointer ${reviewReplies ? 'bg-blue-600' : 'bg-zinc-200 dark:bg-zinc-800'}`}>
                     <div className={`w-5 h-5 rounded-full bg-white transition-all shadow-md ${reviewReplies ? 'translate-x-5' : ''}`} />
                   </div>
                 </div>
               </div>
 
-              <button onClick={() => setShowOptions(false)} className="w-full bg-zinc-900 text-white font-black py-4 mt-8 rounded-[24px]">Done</button>
+              <button onClick={() => setShowOptions(false)} className="w-full bg-zinc-100 dark:bg-zinc-900 text-zinc-900 dark:text-white font-black py-4 mt-8 rounded-[24px]">Done</button>
             </motion.div>
           </>
         )}
@@ -388,22 +415,22 @@ export function CreatePost({
         {showDrafts && (
           <>
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 bg-black/80 z-[60]" onClick={() => setShowDrafts(false)} />
-            <motion.div initial={{ x: '100%' }} animate={{ x: 0 }} exit={{ x: '100%' }} className="fixed inset-y-0 right-0 w-full bg-zinc-950 z-[70] flex flex-col p-8 pt-[calc(env(safe-area-inset-top)+20px)]">
+            <motion.div initial={{ x: '100%' }} animate={{ x: 0 }} exit={{ x: '100%' }} className="fixed inset-y-0 right-0 w-full bg-white dark:bg-zinc-950 z-[70] flex flex-col p-8 pt-[calc(env(safe-area-inset-top)+20px)]">
               <div className="flex items-center justify-between mb-10">
-                <h3 className="text-2xl font-black text-white">Recent Drafts</h3>
-                <button onClick={() => setShowDrafts(false)} className="p-2 bg-zinc-900 rounded-full"><XMarkIcon className="w-6 h-6" /></button>
+                <h3 className="text-2xl font-black text-zinc-900 dark:text-white">Recent Drafts</h3>
+                <button onClick={() => setShowDrafts(false)} className="p-2 bg-zinc-100 dark:bg-zinc-900 rounded-full hover:bg-zinc-200 dark:hover:bg-zinc-800 transition-colors"><XMarkIcon className="w-6 h-6 text-zinc-900 dark:text-white" /></button>
               </div>
               
               <div className="flex-1 space-y-4">
                 {drafts.length === 0 ? (
                   <div className="h-full flex flex-col items-center justify-center text-center px-10">
-                    <DocumentDuplicateIcon className="w-12 h-12 text-zinc-800 mb-4" />
-                    <p className="text-zinc-600 font-bold">No drafts yet. Start writing to see them here.</p>
+                    <DocumentDuplicateIcon className="w-12 h-12 text-zinc-300 dark:text-zinc-800 mb-4" />
+                    <p className="text-zinc-600 dark:text-zinc-400 font-bold">No drafts yet. Start writing to see them here.</p>
                   </div>
                 ) : (
                   drafts.map((d, i) => (
-                    <div key={i} onClick={() => { setThread(d.thread); setShowDrafts(false); triggerHaptic() }} className="p-6 bg-zinc-900 rounded-[24px] border border-zinc-800 group active:scale-[0.98] transition-all">
-                      <p className="text-white font-bold line-clamp-2 mb-2">{d.thread[0].content || 'Empty post'}</p>
+                    <div key={i} onClick={() => { setThread(d.thread); setShowDrafts(false); triggerHaptic() }} className="p-6 bg-zinc-50 dark:bg-zinc-900 rounded-[24px] border border-zinc-200 dark:border-zinc-800 group active:scale-[0.98] transition-transform cursor-pointer">
+                      <p className="text-zinc-900 dark:text-white font-bold line-clamp-2 mb-2">{d.thread[0].content || 'Empty post'}</p>
                       <p className="text-[10px] text-zinc-500 font-bold uppercase">{new Date(d.date).toLocaleDateString()}</p>
                     </div>
                   ))

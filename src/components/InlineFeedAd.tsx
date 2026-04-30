@@ -59,9 +59,9 @@ export function InlineFeedAd({ adId = 'ca-app-pub-8166782428171770/3966636178' }
 
   if (!Capacitor.isNativePlatform()) {
     return (
-      <div className="w-full flex justify-center py-6 border-b border-zinc-100 dark:border-zinc-900">
-        <div className="w-[320px] h-[250px] bg-zinc-100 dark:bg-zinc-800 rounded-xl flex flex-col items-center justify-center gap-3 text-zinc-400 text-xs font-medium border border-zinc-200 dark:border-zinc-800">
-          <div className="w-10 h-10 bg-zinc-200 dark:bg-zinc-900 rounded-full flex items-center justify-center text-lg">📢</div>
+      <div className="w-full flex justify-center py-6 border-b border-zinc-100 dark:border-zinc-800">
+        <div className="w-[320px] h-[250px] bg-zinc-50 dark:bg-zinc-900 rounded-xl flex flex-col items-center justify-center gap-3 text-zinc-400 text-xs font-medium border border-zinc-100 dark:border-zinc-800">
+          <div className="w-10 h-10 bg-zinc-100 dark:bg-zinc-800 rounded-full flex items-center justify-center text-lg">📢</div>
           Advertisement
         </div>
       </div>
@@ -73,7 +73,7 @@ export function InlineFeedAd({ adId = 'ca-app-pub-8166782428171770/3966636178' }
   return (
     <div 
       id={containerId} 
-      className="w-full h-[320px] bg-zinc-50 dark:bg-zinc-900/40 border-b border-zinc-100 dark:border-zinc-900 relative overflow-hidden"
+      className="w-full h-[320px] bg-zinc-50 dark:bg-zinc-900/40 border-b border-zinc-100 dark:border-zinc-800 relative overflow-hidden"
     >
       {!isReady && (
         <div className="absolute inset-0 flex items-center justify-center animate-pulse">

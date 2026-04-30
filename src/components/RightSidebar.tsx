@@ -353,7 +353,7 @@ export function RightSidebar({ mobile = false }: { mobile?: boolean }) {
   return (
     <aside className={mobile 
       ? "flex flex-col gap-4 w-full flex-none pb-6"
-      : "hidden lg:flex flex-col gap-4 w-[300px] xl:w-[340px] flex-none pt-6 sticky top-0 pb-6 transition-all duration-300"
+      : "hidden lg:flex flex-col gap-4 w-[300px] xl:w-[340px] flex-none pt-6 sticky top-0 pb-6"
     }>
 
       {/* Auth Card */}

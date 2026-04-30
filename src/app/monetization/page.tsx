@@ -10,57 +10,58 @@ import { WalletIcon, ChartBarSquareIcon, MegaphoneIcon } from '@heroicons/react/
 export default function MonetizationPage() {
   const { user, loading } = useAuth()
 
-  if (loading) return <AppLayout><div className="p-8 text-center animate-pulse text-zinc-400 font-bold">Loading dashboard...</div></AppLayout>
-  if (!user) return <AppLayout><div className="p-8 text-center text-zinc-500 font-bold">Please login to access monetization.</div></AppLayout>
+  if (loading) return (
+    <AppLayout>
+      <div className="p-8 text-center animate-pulse text-zinc-400 font-bold">Loading dashboard...</div>
+    </AppLayout>
+  )
+  if (!user) return (
+    <AppLayout>
+      <div className="p-8 text-center text-zinc-500 font-bold">Please login to access monetization.</div>
+    </AppLayout>
+  )
 
   return (
     <AppLayout>
       <div className="max-w-2xl mx-auto px-4 pt-8 pb-32">
-        {/* Hero Section */}
-        <div className="bg-gradient-to-br from-violet-600 to-indigo-700 rounded-[40px] p-8 text-white mb-8 relative overflow-hidden shadow-2xl shadow-indigo-500/20">
-          <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full blur-3xl -mr-32 -mt-32" />
+
+        {/* Hero — black card */}
+        <div className="bg-black text-white rounded-[32px] p-8 mb-8 relative overflow-hidden">
+          <div className="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full blur-3xl -mr-32 -mt-32 pointer-events-none" />
           <div className="relative z-10 flex flex-col gap-4">
             <div className="flex items-center gap-2">
-              <div className="p-2 bg-white/20 rounded-xl backdrop-blur-md">
-                <SparklesIcon className="w-6 h-6" />
+              <div className="p-2 bg-white/10 rounded-xl">
+                <SparklesIcon className="w-5 h-5 text-white" />
               </div>
-              <span className="text-sm font-black uppercase tracking-[0.2em] opacity-80">Creator Program</span>
+              <span className="text-xs font-black uppercase tracking-[0.2em] text-white/60">Creator Program</span>
             </div>
-            <h1 className="text-4xl font-black tracking-tight leading-none">Turn your memes <br/> into money.</h1>
-            <p className="text-indigo-100 text-sm font-medium max-w-[280px] leading-relaxed opacity-90">
-              Earn from every unique view on your posts through our direct ad revenue sharing.
+            <h1 className="text-4xl font-black tracking-tight leading-none">
+              Turn your memes<br />into money.
+            </h1>
+            <p className="text-white/60 text-sm font-medium max-w-[280px] leading-relaxed">
+              Earn from every unique view on your posts through direct ad revenue sharing.
             </p>
           </div>
         </div>
 
-        {/* Features Row */}
-        <div className="flex gap-4 mb-8 overflow-x-auto hide-scrollbar pb-2">
+        {/* Feature pills — zinc */}
+        <div className="flex gap-3 mb-8 overflow-x-auto pb-1" style={{ scrollbarWidth: 'none' }}>
           {[
-            { icon: <WalletIcon className="w-5 h-5"/>, label: 'Fast Payouts' },
-            { icon: <ChartBarSquareIcon className="w-5 h-5"/>, label: 'Analytics' },
-            { icon: <MegaphoneIcon className="w-5 h-5"/>, label: 'Ad Revenue' },
+            { icon: <WalletIcon className="w-4 h-4" />, label: 'Fast Payouts' },
+            { icon: <ChartBarSquareIcon className="w-4 h-4" />, label: 'Analytics' },
+            { icon: <MegaphoneIcon className="w-4 h-4" />, label: 'Ad Revenue' },
           ].map((item, i) => (
-            <div key={i} className="flex-none flex items-center gap-2.5 px-5 py-3.5 bg-white dark:bg-zinc-900 border border-zinc-100 dark:border-zinc-800 rounded-2xl shadow-sm">
-              <div className="text-violet-500">{item.icon}</div>
+            <div key={i} className="flex-none flex items-center gap-2 px-4 py-2.5 bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl">
+              <div className="text-zinc-600 dark:text-zinc-400">{item.icon}</div>
               <span className="text-[13px] font-bold text-zinc-700 dark:text-zinc-300 whitespace-nowrap">{item.label}</span>
             </div>
           ))}
         </div>
 
-        {/* Stats Component */}
+        {/* Stats / dashboard */}
         <CreatorEarnings userId={user.id} />
 
-        {/* Info Section */}
-        <div className="mt-10 p-6 bg-blue-50 dark:bg-blue-900/10 border border-blue-100 dark:border-blue-800/30 rounded-3xl flex gap-4">
-          <InformationCircleIcon className="w-6 h-6 text-blue-500 flex-none" />
-          <div className="space-y-1.5">
-            <p className="text-[14px] font-bold text-blue-900 dark:text-blue-300">How it works</p>
-            <p className="text-[13px] text-blue-600 dark:text-blue-400/80 leading-relaxed font-medium">
-              We share 30% of all ad revenue generated from views on your posts. Earnings are calculated automatically and updated daily. 
-              Minimum withdrawal is $10.00.
-            </p>
-          </div>
-        </div>
+
       </div>
     </AppLayout>
   )

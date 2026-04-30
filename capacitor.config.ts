@@ -9,17 +9,14 @@ const config: CapacitorConfig = {
     SplashScreen: {
       launchShowDuration: 0,
       launchAutoHide: true,
-      backgroundColor: '#000000',
+      backgroundColor: '#FFFFFF',
       androidSplashResourceName: 'splash',
       androidScaleType: 'CENTER_INSIDE',
       splashFullScreen: true,
       splashImmersive: true,
     },
     StatusBar: {
-      style: 'DARK',
-      backgroundColor: '#000000',
       overlaysWebView: true,
-      hidden: true,
     },
     PushNotifications: {
       presentationOptions: ['badge', 'sound', 'alert'],
@@ -32,6 +29,9 @@ const config: CapacitorConfig = {
     Keyboard: {
       resize: KeyboardResize.Native,
       resizeOnFullScreen: true,
+    },
+    AdMob: {
+      appId: 'ca-app-pub-8166782428171770~2422181294',
     },
   },
 }

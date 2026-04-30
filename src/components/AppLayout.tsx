@@ -17,7 +17,7 @@ import {
   XMarkIcon,
   EnvelopeIcon as EnvelopeOutline,
   HeartIcon,
-  BookmarkIcon,
+  ArchiveBoxIcon as BookmarkIcon,
   UserPlusIcon as FollowerIcon,
   ChevronRightIcon as RightIcon,
 } from '@heroicons/react/24/outline'
@@ -42,6 +42,7 @@ import { App } from '@capacitor/app'
 import { PushNotifications } from '@capacitor/push-notifications'
 import { FirebaseMessaging } from '@capacitor-firebase/messaging'
 import { Haptics, ImpactStyle } from '@capacitor/haptics'
+import { StatusBar, Style } from '@capacitor/status-bar'
 
 // ── Pull-to-refresh threshold (px) ─────────────────────────────────────────
 const PTR_THRESHOLD = 72
@@ -363,7 +364,7 @@ export function AppLayout({ children, fullBleed = false, wide = false, hideSideb
                 ? pathname === tab.href || (pathname.startsWith('/profile') && tab.name === 'Profile')
                 : isPostModalOpen
               const Icon = isActive ? tab.iconSolid : tab.iconOutline
-              const btnClass = `relative w-12 h-12 flex items-center justify-center rounded-2xl transition-all ${
+              const btnClass = `relative w-12 h-12 flex items-center justify-center rounded-2xl ${
                 isActive
                   ? 'text-black dark:text-white bg-zinc-100 dark:bg-zinc-900'
                   : 'text-zinc-400 hover:bg-zinc-50 dark:hover:bg-zinc-900/50'
@@ -458,7 +459,7 @@ export function AppLayout({ children, fullBleed = false, wide = false, hideSideb
             }
 
             const iconEl = (
-              <div className={`relative flex items-center justify-center h-full w-full transition-colors ${
+              <div className={`relative flex items-center justify-center h-full w-full ${
                 isActive ? 'text-black dark:text-white' : 'text-zinc-400 dark:text-zinc-500'
               }`}>
                 <Icon className="w-[26px] h-[26px]" />
@@ -493,12 +494,12 @@ export function AppLayout({ children, fullBleed = false, wide = false, hideSideb
                   
                   {/* Top quick actions */}
                   <div className="flex gap-4 mb-10">
-                    <button className="flex-1 h-14 bg-zinc-50 dark:bg-zinc-900 rounded-2xl flex items-center justify-center border border-zinc-100 dark:border-zinc-800 shadow-sm active:scale-95 transition-transform">
+                    <Link href="/notifications" onClick={() => setIsMobileMenuOpen(false)} className="flex-1 h-14 bg-zinc-50 dark:bg-zinc-900 rounded-2xl flex items-center justify-center border border-zinc-100 dark:border-zinc-800 shadow-sm active:scale-95 transition-transform">
                       <HeartIcon className="w-6 h-6 text-zinc-900 dark:text-zinc-100" />
-                    </button>
-                    <button className="flex-1 h-14 bg-zinc-50 dark:bg-zinc-900 rounded-2xl flex items-center justify-center border border-zinc-100 dark:border-zinc-800 shadow-sm active:scale-95 transition-transform">
+                    </Link>
+                    <Link href="/bookmarks" onClick={() => setIsMobileMenuOpen(false)} className="flex-1 h-14 bg-zinc-50 dark:bg-zinc-900 rounded-2xl flex items-center justify-center border border-zinc-100 dark:border-zinc-800 shadow-sm active:scale-95 transition-transform">
                       <BookmarkIcon className="w-6 h-6 text-zinc-900 dark:text-zinc-100" />
-                    </button>
+                    </Link>
                   </div>
 
                   {/* Feed List */}

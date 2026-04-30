@@ -6,6 +6,7 @@ import { Post } from '@/components/Post'
 import { useAuth } from './AuthProvider'
 import Link from 'next/link'
 import { UserPlusIcon, ArrowUpIcon } from '@heroicons/react/24/outline'
+import { StoriesBar } from './StoriesBar'
 import { SparklesIcon } from '@heroicons/react/24/solid'
 import Image from 'next/image'
 import { Virtuoso, VirtuosoHandle } from 'react-virtuoso'
@@ -182,7 +183,7 @@ function buildRecommendedFeed(postsData: any[] | null, myReposts: string[], myLi
 
 // ── Select strings — only existing columns ────────────────────────────────────
 
-const POST_SEL = `id, content, image_url, image_urls, video_url, title, created_at, creator_id, view_count, hide_counts, is_archived, settings, quoted_post_id, is_ghost, expires_at, quoted_post:quoted_post_id(id, content, profiles:creator_id(id, username, full_name, avatar_url)), profiles:creator_id(id, full_name, username, avatar_url, is_verified, last_seen, settings), likes(count), comments(count), reposts(count)`
+const POST_SEL = `id, content, image_url, image_urls, video_url, title, created_at, creator_id, view_count, hide_counts, is_archived, settings, quoted_post_id, is_ghost, expires_at, quoted_post:quoted_post_id(id, content, profiles:creator_id(id, username, full_name, avatar_url)), profiles:creator_id(id, full_name, username, avatar_url, is_verified, last_seen, settings, fcm_token), likes(count), comments(count), reposts(count)`
 
 // Use simple join (no FK alias) to avoid PostgREST join resolution errors
 const REPOST_SEL = `created_at, user_id, profiles:user_id(id, full_name, username, avatar_url, is_verified), post:posts(id, content, image_url, image_urls, video_url, title, created_at, creator_id, view_count, hide_counts, is_archived, settings, quoted_post_id, is_ghost, expires_at, quoted_post:quoted_post_id(id, content, profiles:creator_id(id, username, full_name, avatar_url)), profiles:creator_id(id, full_name, username, avatar_url, is_verified, last_seen, settings), likes(count), comments(count), reposts(count))`
@@ -436,6 +437,7 @@ export function Feed() {
 
   return (
     <div className="flex flex-col w-full">
+      <StoriesBar />
       <TabBar />
 
       {/* "What's new?" User Bar (Mobile Only) */}
@@ -498,8 +500,8 @@ export function Feed() {
                 if (hasMore && !loadingMore) fetchFeed(true)
               }}
               itemContent={(index, post) => {
-                const adIndex = Math.floor(index / 10)
-                const showAd = index > 0 && index % 10 === 4
+                const adIndex = Math.floor(index / 3)
+                const showAd = index > 0 && index % 3 === 2
                 const directAd = directAds.length > 0 ? directAds[adIndex % directAds.length] : null
 
                 return (

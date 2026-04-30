@@ -11,7 +11,12 @@ import {
   TrashIcon,
   PhotoIcon,
   LockClosedIcon,
+  FlagIcon,
+  BookmarkIcon,
+  ArrowUpTrayIcon,
+  ShareIcon
 } from '@heroicons/react/24/outline'
+import { Share } from '@capacitor/share'
 import { useI18n } from '@/lib/i18n'
 import Image from 'next/image'
 import Link from 'next/link'
@@ -83,12 +88,16 @@ const CommentItem = React.memo(({
   const handleReplySubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!replyText.trim() || !currentUser) return
+    const isReviewRequired = post.settings?.review_replies || post.settings?.reviewReplies
+    const isApproved = isReviewRequired ? (currentUser.id === post.creator_id) : true
+
     setIsSubmitting(true)
     const { error } = await supabase.from('comments').insert({
       post_id: post.id,
       user_id: currentUser.id,
       content: replyText,
-      parent_id: comment.id
+      parent_id: comment.id,
+      is_approved: isApproved
     })
     if (!error) {
       setReplyText('')
@@ -132,6 +141,19 @@ const CommentItem = React.memo(({
         <div className="text-sm mt-0.5 text-zinc-900 dark:text-zinc-100 whitespace-pre-wrap leading-relaxed break-words">
           {comment.content}
         </div>
+        
+        {comment.is_approved === false && (
+          <div className="mt-2 flex items-center gap-2">
+            {currentUser?.id === post.creator_id ? (
+              <>
+                <button onClick={async () => { await supabase.from('comments').update({ is_approved: true }).eq('id', comment.id); fetchComments() }} className="bg-green-500 hover:bg-green-600 text-white text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-wider transition-colors shadow-sm">Approve</button>
+                <button onClick={async () => { await supabase.from('comments').delete().eq('id', comment.id); fetchComments() }} className="bg-red-500 hover:bg-red-600 text-white text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-wider transition-colors shadow-sm">Reject</button>
+              </>
+            ) : (
+              <span className="text-amber-500 bg-amber-500/10 px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider border border-amber-500/20">Pending Approval</span>
+            )}
+          </div>
+        )}
         
         <div className="mt-1.5 flex items-center gap-4 text-zinc-500">
           <div className="flex items-center gap-1 bg-zinc-100 dark:bg-zinc-900/80 rounded-full p-0.5 px-1">
@@ -233,7 +255,21 @@ export const Post = React.memo(({ post, onObserve }: { post: any; onObserve?: (p
   const [activeReaction, setActiveReaction] = useState<string | null>(post.my_reaction || null)
   const [hideCounts, setHideCounts] = useState(post.hide_counts || false)
   const [isArchived, setIsArchived] = useState(post.is_archived || false)
+  const [isBookmarked, setIsBookmarked] = useState(false)
   const viewIncremented = useRef(false)
+
+  // ── Push notification helper ──────────────────────────────────────────────
+  const sendPush = async (fcm_token: string, title: string, body: string) => {
+    try {
+      const PUSH_URL = `${process.env.NEXT_PUBLIC_INSFORGE_URL}/functions/send-push`
+      const ANON_KEY = process.env.NEXT_PUBLIC_INSFORGE_ANON_KEY
+      await fetch(PUSH_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${ANON_KEY}` },
+        body: JSON.stringify({ fcm_token, title, body, type: 'notification', data: { url: `/p?id=${post.id}` } }),
+      })
+    } catch {}
+  }
 
   // View increment logic moved to useFeedTelemetry
   
@@ -268,6 +304,19 @@ export const Post = React.memo(({ post, onObserve }: { post: any; onObserve?: (p
     e.stopPropagation()
     triggerHaptic(ImpactStyle.Light)
     setImageIndex((prev) => (prev - 1 + images.length) % images.length)
+  }
+
+  const handleShare = async (e: React.MouseEvent) => {
+    e.stopPropagation()
+    try {
+      await Share.share({
+        title: 'Check out this post',
+        text: post.content,
+        url: `${process.env.NEXT_PUBLIC_SITE_URL || (typeof window !== 'undefined' ? window.location.origin : '')}/p?id=${post.id}`,
+      })
+    } catch (err) {
+      console.error('Error sharing:', err)
+    }
   }
 
   useEffect(() => {
@@ -311,8 +360,8 @@ export const Post = React.memo(({ post, onObserve }: { post: any; onObserve?: (p
 
   useEffect(() => {
     async function checkReplyPrivacy() {
-      const privacy = post.settings?.replyPrivacy || 'Everyone'
-      if (privacy === 'Everyone') return setCanReply(true)
+      const privacy = post.settings?.reply_privacy || post.settings?.replyPrivacy || 'Anyone'
+      if (privacy === 'Anyone' || privacy === 'Everyone') return setCanReply(true)
       
       if (!currentUser) {
         setCanReply(false)
@@ -331,8 +380,9 @@ export const Post = React.memo(({ post, onObserve }: { post: any; onObserve?: (p
         return
       }
 
-      if (privacy === 'Followers') {
-        // "People the author follows"
+      if (privacy === 'Followed') {
+        // "People the author follows" -> The creator of the post is following the current user.
+        // Therefore, we check if there is a follows record where follower_id = post.creator_id AND following_id = currentUser.id
         const { data: isFollowing, error } = await supabase
           .from('follows')
           .select('id')
@@ -340,7 +390,7 @@ export const Post = React.memo(({ post, onObserve }: { post: any; onObserve?: (p
           .eq('following_id', currentUser.id)
           .maybeSingle()
         
-        if (error) {
+        if (error && error.code !== 'PGRST116') {
            console.error('Error checking follows:', error)
            setCanReply(false)
            return
@@ -348,6 +398,28 @@ export const Post = React.memo(({ post, onObserve }: { post: any; onObserve?: (p
 
         setCanReply(!!isFollowing)
         if (!isFollowing) setReplyRestrictionReason('Only profiles the author follows can reply')
+        return
+      }
+
+      if (privacy === 'Followers') {
+        // "Followers of the author" -> The current user is following the creator of the post.
+        // Therefore, we check if there is a follows record where follower_id = currentUser.id AND following_id = post.creator_id
+        const { data: isFollower, error } = await supabase
+          .from('follows')
+          .select('id')
+          .eq('follower_id', currentUser.id)
+          .eq('following_id', post.creator_id)
+          .maybeSingle()
+        
+        if (error && error.code !== 'PGRST116') {
+           console.error('Error checking follows:', error)
+           setCanReply(false)
+           return
+        }
+
+        setCanReply(!!isFollower)
+        if (!isFollower) setReplyRestrictionReason('Only followers can reply')
+        return
       }
     }
     checkReplyPrivacy()
@@ -404,6 +476,13 @@ export const Post = React.memo(({ post, onObserve }: { post: any; onObserve?: (p
     checkUserInteractions()
   }, [post.id, currentUser])
 
+  // Check bookmark state on mount
+  useEffect(() => {
+    if (!currentUser) return
+    supabase.from('bookmarks').select('id').eq('user_id', currentUser.id).eq('post_id', post.id).maybeSingle()
+      .then(({ data }: { data: any }) => setIsBookmarked(!!data))
+  }, [post.id, currentUser?.id])
+
   const handleReaction = async (type: string, e?: React.MouseEvent) => {
     if (e) e.stopPropagation()
     if (!currentUser) return alert('Please login to react')
@@ -430,6 +509,12 @@ export const Post = React.memo(({ post, onObserve }: { post: any; onObserve?: (p
               type: 'like',
               post_id: post.id
             })
+            // Push notification for like
+            const creatorFcm = profile?.fcm_token
+            if (creatorFcm) {
+              const senderName = currentUser.user_metadata?.full_name || 'Someone'
+              sendPush(creatorFcm, `${senderName} liked your post`, post.content?.slice(0, 60) || 'your post')
+            }
           }
         }
         setIsLiked(true)
@@ -529,11 +614,19 @@ export const Post = React.memo(({ post, onObserve }: { post: any; onObserve?: (p
   const [isSubmittingComment, setIsSubmittingComment] = useState(false)
 
   const fetchComments = async () => {
-    const { data } = await supabase
+    let query = supabase
       .from('comments')
       .select('*, profiles(*), comment_likes(*)')
       .eq('post_id', post.id)
       .order('created_at', { ascending: true })
+      
+    if (!currentUser) {
+      query = query.eq('is_approved', true)
+    } else if (currentUser.id !== post.creator_id) {
+      query = query.or(`is_approved.eq.true,user_id.eq.${currentUser.id}`)
+    }
+
+    const { data } = await query
       
     if (data) {
       const commentMap = new Map()
@@ -560,11 +653,15 @@ export const Post = React.memo(({ post, onObserve }: { post: any; onObserve?: (p
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) return alert('Please login to reply')
 
+    const isReviewRequired = post.settings?.review_replies || post.settings?.reviewReplies
+    const isApproved = isReviewRequired ? (user.id === post.creator_id) : true
+
     setIsSubmittingComment(true)
     const { error, data: commentData } = await supabase.from('comments').insert({
       post_id: post.id,
       user_id: user.id,
-      content: newComment
+      content: newComment,
+      is_approved: isApproved
     }).select()
 
     if (!error) {
@@ -576,6 +673,12 @@ export const Post = React.memo(({ post, onObserve }: { post: any; onObserve?: (p
           post_id: post.id,
           comment_id: commentData[0].id
         })
+        // Push notification for comment
+        const creatorFcm = profile?.fcm_token
+        if (creatorFcm) {
+          const senderName = user.user_metadata?.full_name || 'Someone'
+          sendPush(creatorFcm, `${senderName} commented on your post`, newComment.slice(0, 80))
+        }
       }
       setNewComment('')
       setComments((prev: number) => prev + 1)
@@ -616,22 +719,28 @@ export const Post = React.memo(({ post, onObserve }: { post: any; onObserve?: (p
           {/* Avatar */}
           <div className="flex-none" onClick={(e) => e.stopPropagation()}>
             <div className="relative">
-              <Link href={`/profile?id=${profile.id}`}>
-                {profile.avatar_url ? (
-                  <Image
-                    src={profile.avatar_url}
-                    alt={profile.full_name}
-                    width={44}
-                    height={44}
-                    className="rounded-full w-11 h-11 object-cover hover:opacity-80 transition-opacity"
-                  />
-                ) : (
-                  <div className="w-11 h-11 bg-zinc-200 dark:bg-zinc-800 rounded-full flex items-center justify-center text-zinc-500 font-bold hover:bg-zinc-300 dark:hover:bg-zinc-700 transition-colors">
-                    {profile.full_name?.[0]?.toUpperCase() || 'A'}
-                  </div>
-                )}
-              </Link>
-              {(() => {
+              {post.is_ghost ? (
+                <div className="w-11 h-11 bg-gradient-to-br from-amber-500/20 to-zinc-900 rounded-full flex items-center justify-center border border-amber-500/50 cursor-default">
+                  <span className="text-[10px] font-black text-amber-500 tracking-tighter">GHOST</span>
+                </div>
+              ) : (
+                <Link href={`/profile?id=${profile.id}`}>
+                  {profile.avatar_url ? (
+                    <Image
+                      src={profile.avatar_url}
+                      alt={profile.full_name}
+                      width={44}
+                      height={44}
+                      className="rounded-full w-11 h-11 object-cover hover:opacity-80 transition-opacity"
+                    />
+                  ) : (
+                    <div className="w-11 h-11 bg-zinc-200 dark:bg-zinc-800 rounded-full flex items-center justify-center text-zinc-500 font-bold hover:bg-zinc-300 dark:hover:bg-zinc-700 transition-colors">
+                      {profile.full_name?.[0]?.toUpperCase() || 'A'}
+                    </div>
+                  )}
+                </Link>
+              )}
+              {!post.is_ghost && (() => {
                 const lastSeen = profile.last_seen ? new Date(profile.last_seen) : null
                 const isOnline = lastSeen && (new Date().getTime() - lastSeen.getTime() < 5 * 60 * 1000)
                 const onlinePref = profile.settings?.online || 'Anyone'
@@ -645,17 +754,28 @@ export const Post = React.memo(({ post, onObserve }: { post: any; onObserve?: (p
           {/* Author info + caption */}
           <div className="flex-grow min-w-0">
             <div className="flex items-center justify-between mb-0.5">
+              {post.category && (
+                  <span className="inline-block px-2 py-0.5 rounded-full bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 text-zinc-600 dark:text-zinc-400 text-[10px] font-bold uppercase tracking-wider mb-2">
+                    #{post.category}
+                  </span>
+                )}
               <div className="flex items-center gap-1.5 flex-wrap min-w-0">
-                <Link
-                  href={`/profile?id=${profile.id}`}
-                  className="flex items-center gap-1 group/author"
-                  onClick={(e) => e.stopPropagation()}
-                >
-                  <span className="font-bold text-[15px] leading-snug group-hover/author:underline truncate max-w-[130px] sm:max-w-none">{profile.full_name}</span>
-                  {profile.is_verified && <VerifiedBadge className="w-4 h-4 flex-none" />}
-                  {profile.is_staff && <VerifiedBadge className="w-auto h-3.5 flex-none" type="staff" />}
-                </Link>
-                <span className="text-zinc-400 dark:text-zinc-500 text-sm truncate max-w-[100px] sm:max-w-none">@{profile.username}</span>
+                {post.is_ghost ? (
+                  <span className="font-black text-[15px] leading-snug text-amber-500 truncate max-w-[130px] sm:max-w-none cursor-default">Anonymous Ghost</span>
+                ) : (
+                  <>
+                    <Link
+                      href={`/profile?id=${profile.id}`}
+                      className="flex items-center gap-1 group/author"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      <span className="font-bold text-[15px] leading-snug group-hover/author:underline truncate max-w-[130px] sm:max-w-none">{profile.full_name}</span>
+                      {profile.is_verified && <VerifiedBadge className="w-4 h-4 flex-none" />}
+                      {profile.is_staff && <VerifiedBadge className="w-auto h-3.5 flex-none" type="staff" />}
+                    </Link>
+                    <span className="text-zinc-400 dark:text-zinc-500 text-sm truncate max-w-[100px] sm:max-w-none">@{profile.username}</span>
+                  </>
+                )}
                 <span className="text-zinc-400 text-sm">·</span>
                 <span className="text-zinc-400 text-sm flex-none" title={new Date(post.created_at).toLocaleString()}>{formatRelativeTime(post.created_at)}</span>
               </div>
@@ -811,7 +931,7 @@ export const Post = React.memo(({ post, onObserve }: { post: any; onObserve?: (p
             className="w-full relative rounded-2xl overflow-hidden group/video mb-3"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="flex items-center justify-center w-full min-h-[200px] bg-zinc-900 dark:bg-zinc-950 rounded-2xl overflow-hidden relative shadow-2xl">
+            <div className="flex items-center justify-center w-full min-h-[200px] bg-zinc-100 dark:bg-zinc-900 rounded-2xl overflow-hidden relative shadow-2xl">
               {/* Blurred background for a premium "no-space" fill */}
               {(post.image_url || images[0]) && (
                 <div 
@@ -840,7 +960,7 @@ export const Post = React.memo(({ post, onObserve }: { post: any; onObserve?: (p
             onClick={(e) => e.stopPropagation()}
           >
             {/* Image — flex+justify-center ensures perfect horizontal center */}
-            <div className="flex items-center justify-center w-full min-h-[100px] bg-zinc-900 dark:bg-zinc-950 rounded-2xl overflow-hidden relative transition-all duration-500">
+            <div className="flex items-center justify-center w-full min-h-[100px] bg-zinc-100 dark:bg-zinc-900 rounded-2xl overflow-hidden relative transition-all duration-500">
               {/* Blurred background for a premium "no-space" fill */}
               {imageLoaded && (
                 <div 
@@ -965,6 +1085,45 @@ export const Post = React.memo(({ post, onObserve }: { post: any; onObserve?: (p
                 </div>
               )}
             </div>
+
+            {/* Bookmark */}
+            <button
+              onClick={async (e) => {
+                e.stopPropagation()
+                if (!currentUser) return
+                triggerHaptic(ImpactStyle.Light)
+                if (isBookmarked) {
+                  setIsBookmarked(false)
+                  await supabase.from('bookmarks').delete().eq('user_id', currentUser.id).eq('post_id', post.id)
+                } else {
+                  setIsBookmarked(true)
+                  await supabase.from('bookmarks').upsert({ user_id: currentUser.id, post_id: post.id }, { onConflict: 'user_id,post_id' })
+                }
+              }}
+              className={`flex items-center gap-1 group transition-colors ml-auto ${
+                isBookmarked
+                  ? 'text-black dark:text-white'
+                  : 'text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200'
+              }`}
+              title="Archive post"
+            >
+              <div className={`p-2 rounded-full group-hover:bg-zinc-100 dark:group-hover:bg-zinc-800 ${
+                isBookmarked ? 'bg-zinc-100 dark:bg-zinc-800' : ''
+              }`}>
+                <ArchiveBoxIcon className={`w-[18px] h-[18px] ${isBookmarked ? 'fill-current' : ''}`} />
+              </div>
+            </button>
+
+            {/* Share */}
+            <button
+              onClick={handleShare}
+              className="flex items-center gap-1 group hover:text-indigo-500 transition-colors"
+              title="Share this post"
+            >
+              <div className="p-2 rounded-full group-hover:bg-indigo-50 dark:group-hover:bg-indigo-950/30">
+                <ShareIcon className="w-[18px] h-[18px]" />
+              </div>
+            </button>
 
             {/* Analytics (views) - Only for creator */}
             {currentUser?.id === post.creator_id && (

@@ -23,15 +23,15 @@ export function SplashScreen() {
 
   return (
     <div
-      className={`fixed inset-0 z-[9999] flex items-center justify-center bg-black transition-opacity duration-500 pointer-events-none ${
+      className={`fixed inset-0 z-[9999] flex items-center justify-center bg-white dark:bg-black transition-opacity duration-500 pointer-events-none ${
         fadeOut ? 'opacity-0' : 'opacity-100'
       }`}
     >
       <div className="flex flex-col items-center animate-pulse">
-        <h1 className="text-5xl font-black text-white tracking-[0.2em] uppercase mb-4">
+        <h1 className="text-5xl font-black text-black dark:text-white tracking-[0.2em] uppercase mb-4">
           JPM
         </h1>
-        <p className="text-[13px] text-zinc-400 font-medium tracking-widest uppercase">
+        <p className="text-[13px] text-zinc-500 dark:text-zinc-400 font-medium tracking-widest uppercase">
           always in our heart
         </p>
       </div>

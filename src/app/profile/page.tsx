@@ -5,13 +5,15 @@ import Link from 'next/link'
 import { AppLayout } from '@/components/AppLayout'
 import { createClient } from '@/lib/supabase/client'
 import { Post } from '@/components/Post'
+import { InlineFeedAd } from '@/components/InlineFeedAd'
 import { useSearchParams, useRouter } from 'next/navigation'
 import { useI18n } from '@/lib/i18n'
 import Cropper from 'react-easy-crop'
 import { getCroppedImg } from '@/lib/cropImage'
 import { VerifiedBadge } from '@/components/VerifiedBadge'
 import { useAuth } from '@/components/AuthProvider'
-import { LockClosedIcon, Bars3Icon, ChartBarIcon, ChevronRightIcon, XMarkIcon, UserIcon, GlobeAltIcon, UserPlusIcon, BellIcon, BookmarkIcon, HeartIcon, ClockIcon, AdjustmentsVerticalIcon, UserCircleIcon, QuestionMarkCircleIcon, InformationCircleIcon, ChevronLeftIcon } from '@heroicons/react/24/outline'
+import { LockClosedIcon, Bars3Icon, ChartBarIcon, ChevronRightIcon, XMarkIcon, UserIcon, GlobeAltIcon, UserPlusIcon, BellIcon, BookmarkIcon, HeartIcon, ClockIcon, AdjustmentsVerticalIcon, UserCircleIcon, QuestionMarkCircleIcon, InformationCircleIcon, ChevronLeftIcon, QrCodeIcon } from '@heroicons/react/24/outline'
+import { QRCodeSVG } from 'qrcode.react'
 import { Switch } from '@headlessui/react'
 
 function ProfileContent() {
@@ -27,7 +29,11 @@ function ProfileContent() {
   const supabase = createClient()
   const { t } = useI18n()
   const [isEditing, setIsEditing] = useState(false)
+  const [showSocialLinks, setShowSocialLinks] = useState(false)
+  const [socialData, setSocialData] = useState({ tiktok_url: '', instagram_url: '', facebook_url: '', website_url: '' })
+  const [savingSocial, setSavingSocial] = useState(false)
   const [uploading, setUploading] = useState(false)
+  const [showQRCode, setShowQRCode] = useState(false)
   
   const [selectedImage, setSelectedImage] = useState<string | null>(null)
   const [crop, setCrop] = useState({ x: 0, y: 0 })
@@ -44,9 +50,10 @@ function ProfileContent() {
   const [editData, setEditData] = useState<any>({
     full_name: '',
     bio: '',
-    interests: '',
-    links: '',
-    podcast: '',
+    tiktok_url: '',
+    instagram_url: '',
+    facebook_url: '',
+    website_url: '',
     settings: {
       isPrivate: false,
       showOnlineStatus: true,
@@ -72,7 +79,7 @@ function ProfileContent() {
       const postSel = '*, quoted_post:quoted_post_id(id, content, profiles:creator_id(id, username, full_name, avatar_url)), profiles:creator_id(id, full_name, username, avatar_url, is_verified, last_seen, settings), likes(count), comments(count), reposts(count)'
 
       // Phase 1: Everything in Parallel
-      const [profileRes, followersRes, followingRes, followCheckRes, postsRes, repostsRes, likesRes] = await Promise.all([
+      const [profileRes, followersRes, followingRes, followCheckRes, postsRes, repostsRes, likesRes, bookmarksRes] = await Promise.all([
         supabase.from('profiles').select('*, settings, last_seen').eq('id', id).single(),
         supabase.from('follows').select('*', { count: 'exact', head: true }).eq('following_id', id),
         supabase.from('follows').select('*', { count: 'exact', head: true }).eq('follower_id', id),
@@ -81,7 +88,8 @@ function ProfileContent() {
           : Promise.resolve({ data: null }),
         supabase.from('posts').select(postSel).eq('creator_id', id).order('is_pinned', { ascending: false }).order('created_at', { ascending: false }).limit(20),
         supabase.from('reposts').select(`created_at, user_id, profiles:user_id(id, full_name, username, avatar_url, is_verified, last_seen, settings), post:posts(${postSel})`).eq('user_id', id).order('created_at', { ascending: false }).limit(20),
-        supabase.from('likes').select(`created_at, post:posts(${postSel})`).eq('user_id', id).order('created_at', { ascending: false }).limit(20)
+        supabase.from('likes').select(`created_at, post:posts(${postSel})`).eq('user_id', id).order('created_at', { ascending: false }).limit(20),
+        supabase.from('bookmarks').select(`created_at, post:posts(${postSel})`).eq('user_id', id).order('created_at', { ascending: false }).limit(20)
       ])
       
       if (profileRes.data) {
@@ -90,9 +98,10 @@ function ProfileContent() {
         setEditData({
           full_name: pd.full_name || '',
           bio: pd.bio || '',
-          interests: pd.settings?.interests || '',
-          links: pd.settings?.links || '',
-          podcast: pd.settings?.podcast || '',
+          tiktok_url: pd.tiktok_url || '',
+          instagram_url: pd.instagram_url || '',
+          facebook_url: pd.facebook_url || '',
+          website_url: pd.website_url || '',
           settings: {
             isPrivate: !!pd.settings?.isPrivate,
             showOnlineStatus: pd.settings?.showOnlineStatus !== false,
@@ -156,13 +165,31 @@ function ProfileContent() {
         combinedFeed = [...combinedFeed, ...formattedLikes]
       }
 
+      if (bookmarksRes.data) {
+        const formattedBookmarks = bookmarksRes.data
+          .map((b: any) => {
+            const originalPost = Array.isArray(b.post) ? b.post[0] : b.post
+            if (!originalPost) return null
+            return {
+              ...originalPost,
+              feed_created_at: b.created_at,
+              is_bookmarked_tab: true,
+              likes_count: originalPost.likes?.[0]?.count || 0,
+              comments_count: originalPost.comments?.[0]?.count || 0,
+              reposts_count: originalPost.reposts?.[0]?.count || 0
+            }
+          })
+          .filter(Boolean)
+        combinedFeed = [...combinedFeed, ...formattedBookmarks]
+      }
+
       combinedFeed.sort((a: any, b: any) => {
         const dateA = new Date(a.feed_created_at || a.created_at).getTime()
         const dateB = new Date(b.feed_created_at || b.created_at).getTime()
         return dateB - dateA
       })
 
-      const uniqueFeed = combinedFeed.filter((v: any, i: number, a: any[]) => a.findIndex(t => (t.id === v.id && t.is_repost === v.is_repost && t.is_liked_tab === v.is_liked_tab)) === i)
+      const uniqueFeed = combinedFeed.filter((v: any, i: number, a: any[]) => a.findIndex(t => (t.id === v.id && t.is_repost === v.is_repost && t.is_liked_tab === v.is_liked_tab && t.is_bookmarked_tab === v.is_bookmarked_tab)) === i)
 
       setPosts(uniqueFeed)
       setLoading(false)
@@ -393,14 +420,54 @@ function ProfileContent() {
               {profile?.is_verified && <VerifiedBadge className="w-5 h-5" />}
             </h1>
             <p className="text-zinc-500 text-[14px] mt-0.5">@{profile?.username}</p>
-            {profile?.bio && <p className="mt-2.5 text-[14px] whitespace-pre-wrap text-zinc-800 dark:text-zinc-200 leading-snug">{profile.bio}</p>}
+            {profile?.bio && <p className="mt-2 text-[14px] whitespace-pre-wrap text-zinc-800 dark:text-zinc-200 leading-snug">{profile.bio}</p>}
             
-            {/* Display Interests/Links if they exist */}
-            <div className="flex flex-wrap gap-2 mt-2">
-              {profile?.settings?.links && (
-                <a href={profile.settings.links} target="_blank" rel="noopener noreferrer" className="text-blue-500 text-[13px] hover:underline flex items-center gap-1">
-                   {profile.settings.links.replace(/^https?:\/\/(www\.)?/, '')}
+            {/* Social Icons Row */}
+            <div className="flex items-center gap-4 mt-4 min-h-[40px]">
+              {(profile?.tiktok_url || profile?.instagram_url || profile?.facebook_url || profile?.website_url) ? (
+                <>
+              {profile?.tiktok_url && (
+                <a href={profile.tiktok_url} target="_blank" rel="noopener noreferrer" 
+                  className="w-12 h-12 flex items-center justify-center rounded-full bg-zinc-100 dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 hover:bg-zinc-200 dark:hover:bg-zinc-800 transition-transform hover:scale-105 border border-zinc-200 dark:border-zinc-700 shadow-sm" title="TikTok">
+                  <svg className="w-6 h-6 fill-current" viewBox="0 0 24 24"><path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-5.2 1.74 2.89 2.89 0 0 1 2.31-4.64 2.93 2.93 0 0 1 .88.13V9.4a6.84 6.84 0 0 0-1-.05A6.33 6.33 0 0 0 5 20.1a6.34 6.34 0 0 0 10.86-4.43v-7a8.16 8.16 0 0 0 4.77 1.52v-3.4a4.85 4.85 0 0 1-1.04-.1z"/></svg>
                 </a>
+              )}
+              {profile?.instagram_url && (
+                <a href={profile.instagram_url} target="_blank" rel="noopener noreferrer" 
+                  className="w-12 h-12 flex items-center justify-center rounded-full bg-zinc-100 dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 hover:text-pink-600 hover:bg-zinc-200 dark:hover:bg-zinc-800 transition-transform hover:scale-105 border border-zinc-200 dark:border-zinc-700 shadow-sm" title="Instagram">
+                  <svg className="w-6 h-6 fill-current" viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.981 1.28.058 1.688.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.058-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z"/></svg>
+                </a>
+              )}
+              {profile?.facebook_url && (
+                <a href={profile.facebook_url} target="_blank" rel="noopener noreferrer" 
+                  className="w-12 h-12 flex items-center justify-center rounded-full bg-zinc-100 dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 hover:text-blue-600 hover:bg-zinc-200 dark:hover:bg-zinc-800 transition-transform hover:scale-105 border border-zinc-200 dark:border-zinc-700 shadow-sm" title="Facebook">
+                  <svg className="w-6 h-6 fill-current" viewBox="0 0 24 24"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
+                </a>
+              )}
+                  {profile?.website_url && (
+                    <a href={profile.website_url} target="_blank" rel="noopener noreferrer" 
+                      className="w-12 h-12 flex items-center justify-center rounded-full bg-zinc-100 dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 hover:text-blue-400 hover:bg-zinc-200 dark:hover:bg-zinc-800 transition-transform hover:scale-105 border border-zinc-200 dark:border-zinc-700 shadow-sm" title="Website">
+                      <GlobeAltIcon className="w-6 h-6" />
+                    </a>
+                  )}
+                </>
+              ) : null}
+              {isOwner && (
+                <button 
+                  onClick={() => {
+                    setSocialData({
+                      tiktok_url: profile?.tiktok_url || '',
+                      instagram_url: profile?.instagram_url || '',
+                      facebook_url: profile?.facebook_url || '',
+                      website_url: profile?.website_url || ''
+                    })
+                    setShowSocialLinks(true)
+                  }}
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-zinc-50 dark:bg-zinc-900 text-zinc-500 text-[12px] font-bold border border-dashed border-zinc-200 dark:border-zinc-800 hover:border-zinc-300 dark:hover:border-zinc-700 transition-all"
+                >
+                  <UserPlusIcon className="w-4 h-4" />
+                  Add social links
+                </button>
               )}
             </div>
 
@@ -431,17 +498,37 @@ function ProfileContent() {
         </div>
 
         {/* Action buttons row */}
-        {!isEditing && (
-          <div className="flex gap-2 mb-1">
+        <div className="flex gap-2 mb-1">
             {isOwner ? (
               <>
                 <button
-                  onClick={() => setIsEditing(true)}
+                  onClick={() => router.push('/settings?tab=status')}
                   className="flex-1 py-2 border border-zinc-200 dark:border-zinc-700 rounded-xl text-[14px] font-bold text-zinc-900 dark:text-zinc-100 hover:bg-zinc-50 dark:hover:bg-zinc-900 transition-colors"
                 >
                   Edit profile
                 </button>
                 <button
+                  onClick={() => setShowQRCode(true)}
+                  className="px-3 py-2 border border-zinc-200 dark:border-zinc-700 rounded-xl text-zinc-900 dark:text-zinc-100 hover:bg-zinc-50 dark:hover:bg-zinc-900 transition-colors"
+                  title="Show QR Code"
+                >
+                  <QrCodeIcon className="w-5 h-5" />
+                </button>
+                <button
+                  onClick={async () => {
+                    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://jpmjpm-official.vercel.app';
+                    const url = `${siteUrl}/profile?id=${profile.id}`;
+                    if (navigator.share) {
+                      await navigator.share({
+                        title: `${profile.full_name}'s Profile`,
+                        text: `Check out @${profile.username} on JPM`,
+                        url
+                      });
+                    } else {
+                      await navigator.clipboard.writeText(url);
+                      alert('Link copied to clipboard!');
+                    }
+                  }}
                   className="flex-1 py-2 border border-zinc-200 dark:border-zinc-700 rounded-xl text-[14px] font-bold text-zinc-900 dark:text-zinc-100 hover:bg-zinc-50 dark:hover:bg-zinc-900 transition-colors"
                 >
                   Share profile
@@ -456,6 +543,13 @@ function ProfileContent() {
                     {profile?.is_verified ? 'Unverify' : 'Verify'}
                   </button>
                 )}
+                <button
+                  onClick={() => setShowQRCode(true)}
+                  className="px-3 py-2 border border-zinc-200 dark:border-zinc-700 rounded-xl text-zinc-900 dark:text-zinc-100 hover:bg-zinc-50 dark:hover:bg-zinc-900 transition-colors"
+                  title="Show QR Code"
+                >
+                  <QrCodeIcon className="w-5 h-5" />
+                </button>
                 <button
                   onClick={handleFollow}
                   className={`flex-1 py-2 rounded-xl text-[14px] font-bold transition-all ${
@@ -477,151 +571,83 @@ function ProfileContent() {
               </>
             )}
           </div>
-        )}
-      </div>
+        </div>
 
-      {/* ── Professional Profile Settings Modal (Mockup Redesign) ── */}
-      {isEditing && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/40 backdrop-blur-sm animate-in fade-in duration-300">
-          <div className="bg-white dark:bg-zinc-900 w-[92%] max-w-[400px] rounded-[32px] overflow-hidden flex flex-col shadow-2xl animate-in zoom-in-95 duration-200">
-            {/* Header */}
-            <div className="relative px-6 py-6 border-b border-zinc-50 dark:border-zinc-800/50">
-              <h2 className="text-[22px] font-bold text-zinc-900 dark:text-zinc-100">Profile Settings</h2>
-              <button 
-                onClick={() => setIsEditing(false)} 
-                className="absolute right-6 top-7 text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200"
-              >
-                <XMarkIcon className="w-6 h-6" />
-              </button>
+      {/* ── Social Links Modal ── */}
+      {showSocialLinks && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/40 backdrop-blur-sm animate-in fade-in duration-200">
+          <div className="bg-white dark:bg-zinc-900 w-[92%] max-w-[400px] rounded-[28px] overflow-hidden flex flex-col shadow-2xl animate-in zoom-in-95 duration-200">
+            <div className="relative px-6 py-5 border-b border-zinc-100 dark:border-zinc-800">
+              <h2 className="text-[20px] font-bold">Social Links</h2>
+              <button onClick={() => setShowSocialLinks(false)} className="absolute right-5 top-5 text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200"><XMarkIcon className="w-6 h-6" /></button>
             </div>
-
-            <div className="flex-1 overflow-y-auto px-6 py-6 space-y-6">
-              {/* Display Name Section */}
-              <div className="space-y-2">
-                <p className="text-[14px] font-bold text-zinc-900 dark:text-zinc-100 ml-1">Display Name</p>
-                <div className="relative group">
-                  <div className="absolute left-4 top-1/2 -translate-y-1/2">
-                    <UserIcon className="w-5 h-5 text-zinc-400 group-focus-within:text-blue-500 transition-colors" />
-                  </div>
-                  <input 
-                    type="text"
-                    value={editData.full_name}
-                    onChange={e => setEditData({...editData, full_name: e.target.value})}
-                    className="w-full bg-white dark:bg-zinc-800/50 border border-zinc-200 dark:border-zinc-700 rounded-2xl py-4 pl-12 pr-4 text-[16px] font-medium focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all"
-                    placeholder="Enter name"
-                  />
+            <div className="px-6 py-5 space-y-4">
+              {/* TikTok */}
+              <div className="relative">
+                <div className="absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none">
+                  <svg className="w-5 h-5 text-zinc-400 fill-current" viewBox="0 0 24 24"><path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-5.2 1.74 2.89 2.89 0 0 1 2.31-4.64 2.93 2.93 0 0 1 .88.13V9.4a6.84 6.84 0 0 0-1-.05A6.33 6.33 0 0 0 5 20.1a6.34 6.34 0 0 0 10.86-4.43v-7a8.16 8.16 0 0 0 4.77 1.52v-3.4a4.85 4.85 0 0 1-1.04-.1z"/></svg>
                 </div>
+                <input type="url" value={socialData.tiktok_url} onChange={e => setSocialData({...socialData, tiktok_url: e.target.value})}
+                  className="w-full pl-12 pr-4 py-3 bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-2xl outline-none text-[15px] focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
+                  placeholder="https://tiktok.com/@username" />
               </div>
-
-              {/* Bio Section */}
-              <div className="space-y-2">
-                <p className="text-[14px] font-bold text-zinc-900 dark:text-zinc-100 ml-1">Bio</p>
-                <textarea 
-                  value={editData.bio} 
-                  onChange={e => setEditData({...editData, bio: e.target.value})}
-                  className="w-full bg-white dark:bg-zinc-800/50 border border-zinc-200 dark:border-zinc-700 rounded-2xl p-4 text-[15px] font-medium focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all resize-none leading-relaxed min-h-[120px]"
-                  placeholder="Tell us about yourself..."
-                />
+              {/* Instagram */}
+              <div className="relative">
+                <div className="absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none">
+                  <svg className="w-5 h-5 text-zinc-400 fill-current" viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.981 1.28.058 1.688.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.058-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z"/></svg>
+                </div>
+                <input type="url" value={socialData.instagram_url} onChange={e => setSocialData({...socialData, instagram_url: e.target.value})}
+                  className="w-full pl-12 pr-4 py-3 bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-2xl outline-none text-[15px] focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
+                  placeholder="https://instagram.com/username" />
               </div>
-
-              <div className="h-[1px] bg-zinc-100 dark:bg-zinc-800 w-full" />
-
-              {/* Preferences Section */}
-              <div className="space-y-5">
-                <h3 className="text-[18px] font-bold text-zinc-900 dark:text-zinc-100">Preferences</h3>
-                
-                {/* Account Privacy - Segmented Control */}
-                <div className="space-y-3">
-                  <p className="text-[14px] font-bold text-zinc-900 dark:text-zinc-100 ml-1">Account Privacy</p>
-                  <div className="flex gap-3">
-                    <button 
-                      onClick={() => setEditData({ ...editData, settings: { ...editData.settings, isPrivate: false }})}
-                      className={`flex-1 py-3.5 rounded-2xl flex items-center justify-center gap-2 text-[15px] font-bold transition-all border-2 ${
-                        !editData.settings.isPrivate 
-                        ? 'bg-blue-50/50 border-blue-500 text-blue-600 dark:bg-blue-500/10 dark:border-blue-500 dark:text-blue-400' 
-                        : 'bg-white border-zinc-100 text-zinc-500 dark:bg-zinc-800 dark:border-zinc-700'
-                      }`}
-                    >
-                      <GlobeAltIcon className="w-5 h-5" />
-                      Public
-                    </button>
-                    <button 
-                      onClick={() => setEditData({ ...editData, settings: { ...editData.settings, isPrivate: true }})}
-                      className={`flex-1 py-3.5 rounded-2xl flex items-center justify-center gap-2 text-[15px] font-bold transition-all border-2 ${
-                        editData.settings.isPrivate 
-                        ? 'bg-blue-50/50 border-blue-500 text-blue-600 dark:bg-blue-500/10 dark:border-blue-500 dark:text-blue-400' 
-                        : 'bg-white border-zinc-100 text-zinc-500 dark:bg-zinc-800 dark:border-zinc-700'
-                      }`}
-                    >
-                      <LockClosedIcon className="w-5 h-5" />
-                      Private
-                    </button>
-                  </div>
+              {/* Facebook */}
+              <div className="relative">
+                <div className="absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none">
+                  <svg className="w-5 h-5 text-zinc-400 fill-current" viewBox="0 0 24 24"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
                 </div>
-
-                {/* Show Online Status */}
-                <div className="flex items-center justify-between py-2 group">
-                  <div className="flex-1 pr-4">
-                    <p className="text-[15px] font-bold text-zinc-900 dark:text-zinc-100">Show Online Status</p>
-                    <p className="text-[13px] text-zinc-400 mt-1">Allow others to see when you're active</p>
-                  </div>
-                  <Switch
-                    checked={editData.settings.showOnlineStatus}
-                    onChange={(val: boolean) => setEditData({ ...editData, settings: { ...editData.settings, showOnlineStatus: val }})}
-                    className={`${editData.settings.showOnlineStatus ? 'bg-blue-600' : 'bg-zinc-200 dark:bg-zinc-800'} relative inline-flex h-7 w-12 items-center rounded-full transition-colors focus:outline-none ring-2 ring-transparent group-active:ring-blue-500/20`}
-                  >
-                    <span className={`${editData.settings.showOnlineStatus ? 'translate-x-6' : 'translate-x-1'} inline-block h-5 w-5 transform rounded-full bg-white transition-transform shadow-sm`} />
-                  </Switch>
+                <input type="url" value={socialData.facebook_url} onChange={e => setSocialData({...socialData, facebook_url: e.target.value})}
+                  className="w-full pl-12 pr-4 py-3 bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-2xl outline-none text-[15px] focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
+                  placeholder="https://facebook.com/username" />
+              </div>
+              {/* Website */}
+              <div className="relative">
+                <div className="absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none">
+                  <GlobeAltIcon className="w-5 h-5 text-zinc-400" />
                 </div>
+                <input type="url" value={socialData.website_url} onChange={e => setSocialData({...socialData, website_url: e.target.value})}
+                  className="w-full pl-12 pr-4 py-3 bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-2xl outline-none text-[15px] focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
+                  placeholder="https://yourwebsite.com" />
               </div>
             </div>
-
-            {/* Footer Actions */}
-            <div className="p-6 pt-0 flex gap-4 mt-auto">
-              <button 
-                onClick={() => setIsEditing(false)} 
-                className="flex-1 py-4 border border-zinc-200 dark:border-zinc-700 rounded-2xl text-[16px] font-bold text-zinc-600 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors"
-              >
-                Cancel
-              </button>
-              <button 
+            <div className="px-6 pb-6 flex gap-3">
+              <button onClick={() => setShowSocialLinks(false)} className="flex-1 py-3.5 border border-zinc-200 dark:border-zinc-700 rounded-2xl text-[15px] font-bold text-zinc-600 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors">Cancel</button>
+              <button
+                disabled={savingSocial}
                 onClick={async () => {
-                  setUploading(true)
-                  const { error } = await supabase
-                    .from('profiles')
-                    .update({ 
-                      full_name: editData.full_name,
-                      bio: editData.bio,
-                      settings: {
-                        ...profile?.settings,
-                        ...editData.settings
-                      }
-                    })
-                    .eq('id', id)
-                  
+                  if (!id) return
+                  setSavingSocial(true)
+                  const { error } = await supabase.from('profiles').update({
+                    tiktok_url: socialData.tiktok_url.trim(),
+                    instagram_url: socialData.instagram_url.trim(),
+                    facebook_url: socialData.facebook_url.trim(),
+                    website_url: socialData.website_url.trim()
+                  }).eq('id', id)
                   if (!error) {
-                    setProfile({ 
-                      ...profile, 
-                      full_name: editData.full_name, 
-                      bio: editData.bio,
-                      settings: {
-                        ...profile?.settings,
-                        ...editData.settings
-                      }
-                    })
-                    setIsEditing(false)
+                    setProfile({ ...profile, ...socialData })
+                    setShowSocialLinks(false)
                   }
-                  setUploading(false)
-                }} 
-                disabled={uploading}
-                className="flex-1 py-4 bg-blue-600 hover:bg-blue-700 text-white rounded-2xl text-[16px] font-bold shadow-lg shadow-blue-500/20 transition-all disabled:opacity-50"
+                  setSavingSocial(false)
+                }}
+                className="flex-1 py-3.5 bg-blue-600 hover:bg-blue-700 text-white rounded-2xl text-[15px] font-bold shadow-lg shadow-blue-500/20 transition-all disabled:opacity-50"
               >
-                {uploading ? 'Saving...' : 'Save Changes'}
+                {savingSocial ? 'Saving...' : 'Save Links'}
               </button>
             </div>
           </div>
         </div>
       )}
+
+      {/* Profile editing moved to Settings page */}
 
 
       {/* ── Content Tabs — Echo style ── */}
@@ -663,15 +689,23 @@ function ProfileContent() {
             const filteredPosts = posts.filter((post: any) => {
               if (activeTab === 'reposts') return post.is_repost && !post.is_archived
               if (activeTab === 'likes')   return post.is_liked_tab && !post.is_archived
-              if (activeTab === 'archive') return post.is_archived && !post.is_repost && !post.is_liked_tab
-              if (activeTab === 'media')   return !post.is_repost && !post.is_liked_tab && !post.is_archived && (post.image_url || (post.image_urls && post.image_urls.length > 0))
-              if (activeTab === 'replies') return !post.is_repost && !post.is_liked_tab && !post.is_archived && post.parent_id
-              return !post.is_repost && !post.is_archived && !post.is_liked_tab // 'posts' (Echo) tab
+              if (activeTab === 'archive') return post.is_bookmarked_tab
+              if (activeTab === 'media')   return !post.is_repost && !post.is_liked_tab && !post.is_bookmarked_tab && !post.is_archived && (post.image_url || (post.image_urls && post.image_urls.length > 0))
+              if (activeTab === 'replies') return !post.is_repost && !post.is_liked_tab && !post.is_bookmarked_tab && !post.is_archived && post.parent_id
+              return !post.is_repost && !post.is_archived && !post.is_liked_tab && !post.is_bookmarked_tab // 'posts' (Echo) tab
             })
 
             return (
               <>
-                {filteredPosts.map((post: any) => <Post key={`${post.id}-${post.is_repost}`} post={post} />)}
+                {filteredPosts.map((post: any, index: number) => {
+                  const showAd = index > 0 && index % 3 === 2;
+                  return (
+                    <div key={`${post.id}-${post.is_repost}`}>
+                      <Post post={post} />
+                      {showAd && <InlineFeedAd adId="ca-app-pub-8166782428171770/3966636178" />}
+                    </div>
+                  )
+                })}
                 {filteredPosts.length === 0 && <div className="p-8 text-center text-zinc-400 text-sm">No {activeTab === 'posts' ? 'thread' : activeTab} yet.</div>}
               </>
             )
@@ -680,6 +714,98 @@ function ProfileContent() {
       </div>
       {/* Bottom spacer for mobile nav */}
       <div className="h-28 sm:h-8" style={{ paddingBottom: 'env(safe-area-inset-bottom)' }} />
+      {/* QR Code Modal */}
+      {(() => {
+        const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://jpmjpm-official.vercel.app';
+        const profileUrl = `${siteUrl}/profile?id=${profile.id}`;
+        
+        return showQRCode && (
+          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
+            <div className="bg-white dark:bg-zinc-900 w-full max-w-sm rounded-[32px] overflow-hidden shadow-2xl border border-zinc-100 dark:border-zinc-800 animate-in zoom-in-95 duration-200">
+              <div className="p-6">
+                <div className="flex items-center justify-between mb-6">
+                  <h3 className="text-xl font-black tracking-tight">Profile QR Code</h3>
+                  <button 
+                    onClick={() => setShowQRCode(false)}
+                    className="p-2 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-full transition-colors"
+                  >
+                    <XMarkIcon className="w-6 h-6" />
+                  </button>
+                </div>
+
+                <div className="flex flex-col items-center">
+                  <div className="p-6 bg-white rounded-[24px] shadow-inner mb-6 ring-1 ring-zinc-100">
+                    <QRCodeSVG 
+                      value={profileUrl}
+                      size={200}
+                      level="H"
+                      includeMargin={false}
+                      imageSettings={profile?.avatar_url ? {
+                        src: profile.avatar_url,
+                        x: undefined,
+                        y: undefined,
+                        height: 40,
+                        width: 40,
+                        excavate: true,
+                      } : undefined}
+                    />
+                  </div>
+                  
+                  <div className="text-center mb-8">
+                    <p className="font-bold text-lg">@{profile?.username}</p>
+                    <p className="text-zinc-500 text-sm">Scan to visit my profile</p>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-3 w-full">
+                    <button
+                      onClick={() => {
+                        const svg = document.querySelector('svg');
+                        if (svg) {
+                          const svgData = new XMLSerializer().serializeToString(svg);
+                          const canvas = document.createElement('canvas');
+                          const ctx = canvas.getContext('2d');
+                          const img = new Image();
+                          img.onload = () => {
+                            canvas.width = img.width;
+                            canvas.height = img.height;
+                            ctx?.drawImage(img, 0, 0);
+                            const pngFile = canvas.toDataURL('image/png');
+                            const downloadLink = document.createElement('a');
+                            downloadLink.download = `qr-code-${profile.username}.png`;
+                            downloadLink.href = pngFile;
+                            downloadLink.click();
+                          };
+                          img.src = 'data:image/svg+xml;base64,' + btoa(svgData);
+                        }
+                      }}
+                      className="flex items-center justify-center gap-2 py-3 bg-zinc-100 dark:bg-zinc-800 rounded-2xl font-bold text-sm hover:bg-zinc-200 dark:hover:bg-zinc-700 transition-all active:scale-95"
+                    >
+                      Download
+                    </button>
+                    <button
+                      onClick={async () => {
+                        if (navigator.share) {
+                          await navigator.share({
+                            title: `${profile.full_name}'s Profile`,
+                            text: `Check out @${profile.username} on JPM`,
+                            url: profileUrl
+                          });
+                        } else {
+                          await navigator.clipboard.writeText(profileUrl);
+                          alert('Link copied to clipboard!');
+                        }
+                      }}
+                      className="flex items-center justify-center gap-2 py-3 bg-black dark:bg-white text-white dark:text-black rounded-2xl font-bold text-sm hover:opacity-90 transition-all active:scale-95"
+                    >
+                      Share Link
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        );
+      })()}
     </AppLayout>
   )
 }

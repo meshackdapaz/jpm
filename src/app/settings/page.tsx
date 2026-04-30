@@ -17,7 +17,10 @@ import {
   ChevronRightIcon,
   ChevronLeftIcon,
   SunIcon,
-  PhotoIcon
+  PhotoIcon,
+  GlobeAltIcon,
+  EyeIcon,
+  EyeSlashIcon
 } from '@heroicons/react/24/outline'
 
 import { useI18n } from '@/lib/i18n'
@@ -33,13 +36,33 @@ import { AdminAdManager } from '@/components/AdminAdManager'
 function AccountEditor({ profile, userId, supabase, onSaved }: { profile: any; userId?: string; supabase: any; onSaved: (p: any) => void }) {
   const [fullName, setFullName] = useState(profile?.full_name || '')
   const [username, setUsername] = useState(profile?.username || '')
+  const [bio, setBio]           = useState(profile?.bio || '')
+  const [tiktokUrl, setTiktokUrl] = useState(profile?.tiktok_url || '')
+  const [instagramUrl, setInstagramUrl] = useState(profile?.instagram_url || '')
+  const [facebookUrl, setFacebookUrl] = useState(profile?.facebook_url || '')
+  const [websiteUrl, setWebsiteUrl] = useState(profile?.website_url || '')
   const [saving, setSaving]     = useState(false)
   const [error,  setError]      = useState<string | null>(null)
   const [success, setSuccess]   = useState(false)
+  const [mounted, setMounted] = useState(false)
+
+  // 14-day name/username change restriction
+  const daysSinceCreation = profile?.created_at
+    ? Math.floor((Date.now() - new Date(profile.created_at).getTime()) / (1000 * 60 * 60 * 24))
+    : 999
+  const canChangeName = daysSinceCreation >= 14
+  const daysRemaining = Math.max(0, 14 - daysSinceCreation)
+  
+
 
   useEffect(() => {
     setFullName(profile?.full_name || '')
     setUsername(profile?.username || '')
+    setBio(profile?.bio || '')
+    setTiktokUrl(profile?.tiktok_url || '')
+    setInstagramUrl(profile?.instagram_url || '')
+    setFacebookUrl(profile?.facebook_url || '')
+    setWebsiteUrl(profile?.website_url || '')
   }, [profile])
 
   const handleSave = async (e: React.FormEvent) => {
@@ -63,7 +86,15 @@ function AccountEditor({ profile, userId, supabase, onSaved }: { profile: any; u
     }
 
     const { data: updated, error: saveErr } = await supabase
-      .from('profiles').update({ full_name: fullName.trim(), username: clean })
+      .from('profiles').update({ 
+        full_name: fullName.trim(), 
+        username: clean,
+        bio: bio.trim(),
+        tiktok_url: tiktokUrl.trim(),
+        instagram_url: instagramUrl.trim(),
+        facebook_url: facebookUrl.trim(),
+        website_url: websiteUrl.trim()
+      })
       .eq('id', userId).select().single()
 
     if (saveErr) { setError(saveErr.message) } else {
@@ -80,26 +111,84 @@ function AccountEditor({ profile, userId, supabase, onSaved }: { profile: any; u
   return (
     <div className="p-4 sm:p-8 animate-in fade-in duration-200 max-w-xl">
       <h3 className="font-bold text-[18px] mb-1">Edit Profile</h3>
-      <p className="text-zinc-500 text-[15px] mb-6 leading-relaxed">Update your display name and username. Usernames must be unique.</p>
+      <p className="text-zinc-500 text-[15px] mb-6 leading-relaxed">Update your display name and username. <b>Note:</b> To prevent abuse, names and usernames can only be changed after your account has been active for 14 days. Usernames must be unique.</p>
       <form onSubmit={handleSave} className="space-y-4">
         {error   && <div className="bg-red-50   dark:bg-red-950/30   text-red-600   dark:text-red-400   p-3 rounded-xl text-sm border border-red-100   dark:border-red-900">{error}</div>}
         {success && <div className="bg-green-50 dark:bg-green-950/30 text-green-600 dark:text-green-400 p-3 rounded-xl text-sm border border-green-100 dark:border-green-900">✅ Profile saved!</div>}
         <div>
-          <label className="block text-[13px] font-semibold text-zinc-500 mb-1.5">Full Name</label>
+          <div className="flex items-center justify-between mb-1.5">
+            <label className="block text-[13px] font-semibold text-zinc-500">Full Name</label>
+            {!canChangeName && (
+              <span className="text-[11px] font-bold text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-900/30 px-2 py-0.5 rounded-full flex items-center gap-1">
+                🔒 Locked · {daysRemaining}d remaining
+              </span>
+            )}
+          </div>
           <input type="text" value={fullName} onChange={e => setFullName(e.target.value)}
-            className="w-full px-4 py-3 bg-zinc-100 dark:bg-zinc-900 rounded-xl outline-none text-[15px] focus:ring-1 focus:ring-zinc-300 dark:focus:ring-zinc-700 transition"
+            disabled={!canChangeName}
+            className="w-full px-4 py-3 bg-zinc-100 dark:bg-zinc-900 rounded-xl outline-none text-[15px] focus:ring-1 focus:ring-zinc-300 dark:focus:ring-zinc-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
             placeholder="Your full name" />
+          {!canChangeName && <p className="text-[12px] text-zinc-400 mt-1.5">You can change your name after {daysRemaining} more day{daysRemaining !== 1 ? 's' : ''}.</p>}
         </div>
         <div>
-          <label className="block text-[13px] font-semibold text-zinc-500 mb-1.5">Username</label>
+          <div className="flex items-center justify-between mb-1.5">
+            <label className="block text-[13px] font-semibold text-zinc-500">Username</label>
+            {!canChangeName && (
+              <span className="text-[11px] font-bold text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-900/30 px-2 py-0.5 rounded-full">🔒 Locked</span>
+            )}
+          </div>
           <div className="relative">
             <span className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-400 pointer-events-none">@</span>
             <input type="text" value={username}
-              onChange={e => { setUsername(e.target.value.replace(/[^a-zA-Z0-9_]/g, '').toLowerCase()); setError(null) }}
-              className="w-full pl-8 pr-4 py-3 bg-zinc-100 dark:bg-zinc-900 rounded-xl outline-none text-[15px] focus:ring-1 focus:ring-zinc-300 dark:focus:ring-zinc-700 transition"
+              onChange={e => { if (canChangeName) { setUsername(e.target.value.replace(/[^a-zA-Z0-9_]/g, '').toLowerCase()); setError(null) } }}
+              disabled={!canChangeName}
+              className="w-full pl-8 pr-4 py-3 bg-zinc-100 dark:bg-zinc-900 rounded-xl outline-none text-[15px] focus:ring-1 focus:ring-zinc-300 dark:focus:ring-zinc-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
               placeholder="username" />
           </div>
           <p className="text-xs text-zinc-400 mt-1.5">Only letters, numbers and underscores. Must be unique.</p>
+        </div>
+        <div>
+          <label className="block text-[13px] font-semibold text-zinc-500 mb-1.5">Bio</label>
+          <textarea value={bio} onChange={e => setBio(e.target.value)}
+            className="w-full px-4 py-3 bg-zinc-100 dark:bg-zinc-900 rounded-xl outline-none text-[15px] focus:ring-1 focus:ring-zinc-300 dark:focus:ring-zinc-700 transition resize-none"
+            placeholder="Tell us about yourself..." rows={3} />
+        </div>
+        <div className="pt-2">
+          <h4 className="text-[14px] font-bold mb-4">Social Links</h4>
+          <div className="space-y-4">
+            <div className="relative">
+              <div className="absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none">
+                <svg className="w-5 h-5 text-zinc-400 fill-current" viewBox="0 0 24 24"><path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-5.2 1.74 2.89 2.89 0 0 1 2.31-4.64 2.93 2.93 0 0 1 .88.13V9.4a6.84 6.84 0 0 0-1-.05A6.33 6.33 0 0 0 5 20.1a6.34 6.34 0 0 0 10.86-4.43v-7a8.16 8.16 0 0 0 4.77 1.52v-3.4a4.85 4.85 0 0 1-1.04-.1z"/></svg>
+              </div>
+              <input type="url" value={tiktokUrl} onChange={e => setTiktokUrl(e.target.value)}
+                className="w-full pl-12 pr-4 py-3 bg-zinc-100 dark:bg-zinc-900 rounded-xl outline-none text-[15px] focus:ring-1 focus:ring-zinc-300 dark:focus:ring-zinc-700 transition"
+                placeholder="https://tiktok.com/@username" />
+            </div>
+            <div className="relative">
+              <div className="absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none">
+                <svg className="w-5 h-5 text-zinc-400 fill-current" viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.981 1.28.058 1.688.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.058-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z"/></svg>
+              </div>
+              <input type="url" value={instagramUrl} onChange={e => setInstagramUrl(e.target.value)}
+                className="w-full pl-12 pr-4 py-3 bg-zinc-100 dark:bg-zinc-900 rounded-xl outline-none text-[15px] focus:ring-1 focus:ring-zinc-300 dark:focus:ring-zinc-700 transition"
+                placeholder="https://instagram.com/username" />
+            </div>
+            <div className="relative">
+              <div className="absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none">
+                <svg className="w-5 h-5 text-zinc-400 fill-current" viewBox="0 0 24 24"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
+              </div>
+              <input type="url" value={facebookUrl} onChange={e => setFacebookUrl(e.target.value)}
+                className="w-full pl-12 pr-4 py-3 bg-zinc-100 dark:bg-zinc-900 rounded-xl outline-none text-[15px] focus:ring-1 focus:ring-zinc-300 dark:focus:ring-zinc-700 transition"
+                placeholder="https://facebook.com/username" />
+            </div>
+            <div className="relative">
+              <div className="absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none">
+                <GlobeAltIcon className="w-5 h-5 text-zinc-400" />
+              </div>
+              <input type="url" value={websiteUrl} onChange={e => setWebsiteUrl(e.target.value)}
+                className="w-full pl-12 pr-4 py-3 bg-zinc-100 dark:bg-zinc-900 rounded-xl outline-none text-[15px] focus:ring-1 focus:ring-zinc-300 dark:focus:ring-zinc-700 transition"
+                placeholder="https://yourwebsite.com" />
+            </div>
+          </div>
         </div>
         <button type="submit" disabled={saving}
           className="w-full bg-black dark:bg-white text-white dark:text-black py-3 rounded-xl font-bold text-[15px] hover:opacity-90 active:scale-[0.98] disabled:opacity-50 transition-all mt-2">
@@ -143,6 +232,13 @@ function SettingsContent() {
   const [isEligible, setIsEligible] = useState(false)
   const [applicationStatus, setApplicationStatus] = useState<string | null>(null)
   const [applying, setApplying] = useState(false)
+
+  // Security Tab state
+  const [currentPassword, setCurrentPassword] = useState('')
+  const [newPassword, setNewPassword] = useState('')
+  const [showCurrentPassword, setShowCurrentPassword] = useState(false)
+  const [showNewPassword, setShowNewPassword] = useState(false)
+  const [isChangingPassword, setIsChangingPassword] = useState(false)
 
   useEffect(() => {
     if (user) {
@@ -213,10 +309,11 @@ function SettingsContent() {
   const leftMenu = [
     { id: 'privacy',     label: 'Privacy',         icon: LockClosedIcon },
     { id: 'status',      label: 'Edit Profile',     icon: UserIcon },
-    { id: 'account',     label: 'Account',          icon: InformationCircleIcon },
+    { id: 'account',     label: 'Account Info',    icon: InformationCircleIcon },
     { id: 'monetization',label: 'Monetization',    icon: BanknotesIcon },
     ...(currentProfile?.is_admin ? [{ id: 'ads', label: 'Ads Management', icon: MegaphoneIcon }] : []),
     { id: 'appearance',  label: 'Appearance',       icon: SunIcon },
+    { id: 'security',    label: 'Security',         icon: LockClosedIcon },
     { id: 'help',        label: 'Help',             icon: QuestionMarkCircleIcon },
     { id: 'about',       label: 'About App',        icon: InformationCircleIcon },
   ]
@@ -382,7 +479,7 @@ function SettingsContent() {
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div className="bg-zinc-50 dark:bg-zinc-900/50 p-6 rounded-[24px] border border-zinc-100 dark:border-zinc-800">
+                  <div className="bg-zinc-50 dark:bg-zinc-900 p-6 rounded-[24px] border border-zinc-100 dark:border-zinc-800">
                     <p className="text-zinc-500 text-sm font-bold mb-1">Estimated Revenue</p>
                     <h4 className="text-3xl font-black">${currentProfile?.monetization_earnings?.toFixed(2) || '0.00'}</h4>
                     <div className="mt-4 flex items-center gap-2 text-zinc-400 text-xs">
@@ -390,33 +487,33 @@ function SettingsContent() {
                       Updated every 24 hours
                     </div>
                   </div>
-                  <div className="bg-zinc-50 dark:bg-zinc-900/50 p-6 rounded-[24px] border border-zinc-100 dark:border-zinc-800">
+                  <div className="bg-zinc-50 dark:bg-zinc-900 p-6 rounded-[24px] border border-zinc-100 dark:border-zinc-800">
                     <p className="text-zinc-500 text-sm font-bold mb-1">Status</p>
                     <h4 className={`text-xl font-bold flex items-center gap-2 ${
-                      applicationStatus === 'approved' ? 'text-green-600 dark:text-green-400' :
-                      applicationStatus === 'pending' ? 'text-amber-600 dark:text-amber-500' :
-                      applicationStatus === 'declined' ? 'text-red-500' :
-                      'text-yellow-600 dark:text-yellow-500'
+                      applicationStatus === 'approved' ? 'text-black dark:text-white' :
+                      applicationStatus === 'pending' ? 'text-zinc-500' :
+                      applicationStatus === 'declined' ? 'text-zinc-400 line-through' :
+                      'text-zinc-400'
                     }`}>
                       {applicationStatus === 'approved' ? 'Active Creator' :
                        applicationStatus === 'pending' ? 'Pending Review' :
                        applicationStatus === 'declined' ? 'Declined' :
                        'Not Eligible'}
                     </h4>
-                    <p className="mt-2 text-xs text-zinc-400">
+                    <p className="mt-2 text-xs text-zinc-500">
                       {applicationStatus === 'approved' ? 'Congratulations! You are earning from your memes.' :
                        applicationStatus === 'pending' ? 'Our team is reviewing your application.' :
                        'Keep posting high-quality memes to unlock monetization!'}
                     </p>
                     {applicationStatus === 'approved' && (
-                      <Link href="/monetization" className="mt-4 inline-flex items-center gap-2 text-violet-500 font-bold text-sm hover:underline">
+                      <Link href="/monetization" className="mt-4 inline-flex items-center gap-2 text-black dark:text-white font-bold text-sm hover:underline">
                         View Detailed Earnings <ChevronRightIcon className="w-4 h-4" />
                       </Link>
                     )}
                   </div>
                 </div>
 
-                <div className="bg-white dark:bg-zinc-900 border border-zinc-100 dark:border-zinc-800 rounded-[28px] overflow-hidden">
+                <div className="bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-[28px] overflow-hidden">
                   <div className="p-6 border-b border-zinc-100 dark:border-zinc-800">
                     <h4 className="font-bold">Eligibility Checklist</h4>
                   </div>
@@ -434,7 +531,7 @@ function SettingsContent() {
                             <span className="text-[11px] text-zinc-400">{item.current.toLocaleString()} / {item.required.toLocaleString()}</span>
                           )}
                         </div>
-                        <div className={`w-6 h-6 rounded-full flex items-center justify-center ${item.done ? 'bg-green-100 dark:bg-green-900/40 text-green-600' : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-400'}`}>
+                        <div className={`w-6 h-6 rounded-full flex items-center justify-center font-bold text-sm ${item.done ? 'bg-black dark:bg-white text-white dark:text-black' : 'bg-zinc-100 dark:bg-zinc-900 text-zinc-300 dark:text-zinc-700'}`}>
                           {item.done ? '✓' : ''}
                         </div>
                       </div>
@@ -442,11 +539,11 @@ function SettingsContent() {
                   </div>
                   
                   {isEligible && !applicationStatus && (
-                    <div className="p-6 bg-amber-50 dark:bg-amber-950/20 border-t border-amber-100 dark:border-amber-900/40">
+                    <div className="p-6 bg-zinc-50 dark:bg-zinc-900 border-t border-zinc-200 dark:border-zinc-800">
                       <button 
                         onClick={handleApply}
                         disabled={applying}
-                        className="w-full py-4 bg-amber-500 text-black font-black rounded-2xl hover:bg-amber-400 transition-all shadow-lg shadow-amber-500/20 active:scale-95 disabled:opacity-50"
+                        className="w-full py-4 bg-black dark:bg-white text-white dark:text-black font-black rounded-2xl transition-all active:scale-95 disabled:opacity-50"
                       >
                         {applying ? 'Submitting...' : 'Apply for Creator Program'}
                       </button>
@@ -468,54 +565,143 @@ function SettingsContent() {
               <AccountEditor profile={currentProfile} userId={user?.id} supabase={supabase} onSaved={(p: any) => setCurrentProfile(p)} />
             )}
 
-            {/* ACCOUNT TAB / DELETE ACCOUNT */}
+            {/* ACCOUNT TAB */}
             {activeTab === 'account' && (
               <div className="p-4 sm:p-8 animate-in fade-in duration-200">
-                <h3 className="font-bold text-[18px] mb-1">Account Settings</h3>
-                <p className="text-zinc-500 text-[15px] mb-8 leading-relaxed">Manage your account information and privacy.</p>
+                <h3 className="font-bold text-[22px] mb-1">Account Details</h3>
+                <p className="text-zinc-500 text-[15px] mb-8 leading-relaxed">Here are your private account details.</p>
                 
                 <div className="space-y-6">
                   <div className="p-6 bg-zinc-50 dark:bg-zinc-900 rounded-2xl border border-zinc-100 dark:border-zinc-800">
-                    <h4 className="font-bold mb-2">Account Information</h4>
-                    <div className="space-y-4 text-[15px]">
-                      <div className="flex justify-between">
-                        <span className="text-zinc-500">Email</span>
-                        <span className="font-medium">{user?.email}</span>
+                    <h4 className="font-bold mb-4">Account Information</h4>
+                    <div className="space-y-4">
+                      <div className="flex flex-col gap-1">
+                        <span className="text-[12px] font-bold text-zinc-400 uppercase tracking-wider">Email Address</span>
+                        <span className="text-[16px] font-medium">{user?.email}</span>
                       </div>
-                      <div className="flex justify-between">
-                        <span className="text-zinc-500">Joined</span>
-                        <span className="font-medium">{currentProfile?.date_joined || 'N/A'}</span>
+                      <div className="h-px bg-zinc-100 dark:bg-zinc-800" />
+                      <div className="flex flex-col gap-1">
+                        <span className="text-[12px] font-bold text-zinc-400 uppercase tracking-wider">Username</span>
+                        <span className="text-[16px] font-medium">@{currentProfile?.username}</span>
+                      </div>
+                      <div className="h-px bg-zinc-100 dark:bg-zinc-800" />
+                      <div className="flex flex-col gap-1">
+                        <span className="text-[12px] font-bold text-zinc-400 uppercase tracking-wider">Member Since</span>
+                        <span className="text-[16px] font-medium">{currentProfile?.created_at ? new Date(currentProfile.created_at).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }) : 'N/A'}</span>
                       </div>
                     </div>
                   </div>
+                </div>
+              </div>
+            )}
 
-                  <div className="p-6 bg-red-50 dark:bg-red-950/20 rounded-2xl border border-red-100 dark:border-red-900/40">
-                    <h4 className="font-bold text-red-600 dark:text-red-400 mb-2 flex items-center gap-2">
-                       <ExclamationTriangleIcon className="w-5 h-5" />
-                       Danger Zone
-                    </h4>
-                    <p className="text-zinc-600 dark:text-zinc-400 text-[14px] mb-6 leading-relaxed">
-                      Deleting your account is permanent. All your posts, likes, followers, and earnings will be erased forever. This action cannot be undone.
-                    </p>
+            {/* SECURITY TAB */}
+            {activeTab === 'security' && (
+              <div className="p-4 sm:p-8 animate-in fade-in duration-200 space-y-6">
+                <h3 className="font-bold text-[22px] mb-1">Security</h3>
+                <p className="text-zinc-500 text-[15px] mb-8">Manage your password and account protection.</p>
+                
+                <div className="bg-zinc-50 dark:bg-zinc-900 p-6 rounded-2xl border border-zinc-100 dark:border-zinc-800">
+                  <h4 className="font-bold mb-2">Change Password</h4>
+                  <p className="text-sm text-zinc-500 mb-6">Update your account password.</p>
+                  
+                  <div className="space-y-4 mb-6">
+                    <div className="relative">
+                      <input 
+                        type={showCurrentPassword ? "text" : "password"}
+                        value={currentPassword}
+                        onChange={(e) => setCurrentPassword(e.target.value)}
+                        placeholder="Current password (not required if logged in via OAuth)"
+                        className="w-full bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-xl px-4 py-3 pr-12 outline-none focus:border-black dark:focus:border-white transition-colors"
+                      />
+                      <button 
+                        type="button"
+                        onClick={() => setShowCurrentPassword(!showCurrentPassword)}
+                        className="absolute right-4 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200"
+                      >
+                        {showCurrentPassword ? <EyeSlashIcon className="w-5 h-5" /> : <EyeIcon className="w-5 h-5" />}
+                      </button>
+                    </div>
+                    
+                    <div className="relative">
+                      <input 
+                        type={showNewPassword ? "text" : "password"}
+                        value={newPassword}
+                        onChange={(e) => setNewPassword(e.target.value)}
+                        placeholder="New password"
+                        className="w-full bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-xl px-4 py-3 pr-12 outline-none focus:border-black dark:focus:border-white transition-colors"
+                      />
+                      <button 
+                        type="button"
+                        onClick={() => setShowNewPassword(!showNewPassword)}
+                        className="absolute right-4 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200"
+                      >
+                        {showNewPassword ? <EyeSlashIcon className="w-5 h-5" /> : <EyeIcon className="w-5 h-5" />}
+                      </button>
+                    </div>
+                  </div>
+
+                  <div className="flex flex-col sm:flex-row gap-3">
                     <button 
                       onClick={async () => {
-                        if (confirm('ARE YOU ABSOLUTELY SURE? \n\nThis will delete your account forever. This is non-reversible.')) {
-                          if (confirm('FINAL WARNING: Do you really want to delete EVERYTHING?')) {
-                             const { error } = await supabase.rpc('delete_user_permanently')
-                             if (error) {
-                               alert('Error deleting account: ' + error.message)
-                             } else {
-                               await supabase.auth.signOut()
-                               window.location.href = '/'
-                             }
-                          }
+                        if (!newPassword) return alert('Please enter a new password.')
+                        setIsChangingPassword(true)
+                        const { error } = await supabase.auth.updateUser({ password: newPassword })
+                        setIsChangingPassword(false)
+                        if (error) {
+                          alert(error.message)
+                        } else {
+                          alert('Password updated successfully!')
+                          setCurrentPassword('')
+                          setNewPassword('')
                         }
                       }}
-                      className="px-6 py-3 bg-red-600 text-white font-bold rounded-xl hover:bg-red-700 transition-colors shadow-lg shadow-red-600/10 active:scale-95 text-[15px]"
+                      disabled={isChangingPassword || !newPassword}
+                      className="px-6 py-3 bg-black dark:bg-white text-white dark:text-black font-bold rounded-xl hover:opacity-90 transition-all active:scale-95 disabled:opacity-50"
                     >
-                      Delete Account Forever
+                      {isChangingPassword ? 'Updating...' : 'Update Password'}
+                    </button>
+                    
+                    <button 
+                      onClick={async () => {
+                        if (user?.email) {
+                          const { error } = await supabase.auth.resetPasswordForEmail(user.email, {
+                            redirectTo: `${window.location.origin}/reset-password`,
+                          })
+                          if (error) alert(error.message)
+                          else alert('Password reset link sent to ' + user.email)
+                        }
+                      }}
+                      className="px-6 py-3 bg-white dark:bg-zinc-800 text-black dark:text-white border border-zinc-200 dark:border-zinc-700 font-bold rounded-xl hover:bg-zinc-50 dark:hover:bg-zinc-700 transition-all active:scale-95"
+                    >
+                      Send Reset Link
                     </button>
                   </div>
+                </div>
+
+                <div className="p-6 bg-zinc-50 dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800">
+                  <h4 className="font-bold text-black dark:text-white mb-2 flex items-center gap-2">
+                     <ExclamationTriangleIcon className="w-5 h-5" />
+                     Danger Zone
+                  </h4>
+                  <p className="text-zinc-600 dark:text-zinc-400 text-[14px] mb-6 leading-relaxed">
+                    Deleting your account is permanent. This cannot be undone.
+                  </p>
+                  <button 
+                    onClick={async () => {
+                      if (confirm('ARE YOU ABSOLUTELY SURE? \n\nThis will delete your account forever.')) {
+                         const { error } = await supabase.rpc('delete_user_permanently')
+                         if (error) alert('Error: ' + error.message)
+                         else {
+                           await supabase.auth.signOut()
+                           window.location.href = '/'
+                         }
+                      }
+                    }}
+                    className="px-6 py-3 bg-black dark:bg-white text-white dark:text-black font-bold rounded-xl hover:opacity-90 transition-opacity active:scale-95 text-[15px]"
+                  >
+                    Delete Account
+                  </button>
                 </div>
               </div>
             )}

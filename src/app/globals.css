@@ -88,6 +88,7 @@ body {
 
 /* ── Safe area ─────────────────────────────────────────────────────────────── */
 .pb-safe { padding-bottom: env(safe-area-inset-bottom); }
+.pt-safe { padding-top: env(safe-area-inset-top); }
 
 /* ── Typography ────────────────────────────────────────────────────────────── */
 .font-display { font-variation-settings: 'wght' 800; letter-spacing: -0.04em; }
