@@ -45,7 +45,7 @@ export function StoryViewer({ stories, startIndex = 0, onClose }: {
       
       // Fire and forget view recording
       supabase.from('story_views').insert({ story_id: current.id, viewer_id: user.id })
-        .then(({ error }) => {
+        .then(({ error }: { error: any }) => {
           if (!error) {
             // Only update total count if insert succeeded (was actually a new view)
             supabase.from('stories')
