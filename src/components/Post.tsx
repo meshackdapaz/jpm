@@ -22,6 +22,7 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import { VerifiedBadge } from './VerifiedBadge'
+import { InArticleAd } from './InArticleAd'
 import { motion, AnimatePresence } from 'framer-motion'
 
 import { useState, useEffect, useRef } from 'react'
@@ -1188,6 +1189,9 @@ export const Post = React.memo(({ post, onObserve }: { post: any; onObserve?: (p
           </div>
         )}
       </div>
+
+      {/* In-Article Ad when comments are open */}
+      {showComments && <InArticleAd />}
 
       {/* Comments section */}
       {showComments && (
