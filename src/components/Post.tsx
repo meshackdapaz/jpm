@@ -28,6 +28,7 @@ import { useState, useEffect, useRef } from 'react'
 import { createPortal } from 'react-dom'
 import { createClient } from '@/lib/supabase/client'
 import { useAuth } from './AuthProvider'
+import { LoginPromptModal } from './LoginPromptModal'
 import { Haptics, ImpactStyle } from '@capacitor/haptics'
 import { Capacitor } from '@capacitor/core'
 
@@ -68,7 +69,7 @@ const CommentItem = React.memo(({
   const userVote = currentUser ? comment.comment_likes?.find((l: any) => l.user_id === currentUser.id) : null
 
   const handleCommentLike = async (isLike: boolean) => {
-    if (!currentUser) return alert('Please login to vote')
+    if (!currentUser) return alert('Join JPM to vote on comments')
     if (userVote) {
       if (userVote.is_like === isLike) {
         await supabase.from('comment_likes').delete().eq('id', userVote.id)
@@ -233,6 +234,8 @@ export const Post = React.memo(({ post, onObserve }: { post: any; onObserve?: (p
   const [isDeletedLocally, setIsDeletedLocally] = useState(false)
   const [showOptions, setShowOptions] = useState(false)
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
+  const [showLoginPrompt, setShowLoginPrompt] = useState(false)
+  const [loginPromptMessage, setLoginPromptMessage] = useState('')
   const [mounted, setMounted] = useState(false)
 
   useEffect(() => {
@@ -485,7 +488,11 @@ export const Post = React.memo(({ post, onObserve }: { post: any; onObserve?: (p
 
   const handleReaction = async (type: string, e?: React.MouseEvent) => {
     if (e) e.stopPropagation()
-    if (!currentUser) return alert('Please login to react')
+    if (!currentUser) {
+      setLoginPromptMessage('Join JPM to react to this post')
+      setShowLoginPrompt(true)
+      return
+    }
 
     if (isLiked && activeReaction === type) {
       await supabase.from('likes').delete().eq('post_id', post.id).eq('user_id', currentUser.id)
@@ -541,7 +548,11 @@ export const Post = React.memo(({ post, onObserve }: { post: any; onObserve?: (p
 
   const handleRepost = async (e: React.MouseEvent) => {
     e.stopPropagation()
-    if (!currentUser) return alert('Please login to repost')
+    if (!currentUser) {
+      setLoginPromptMessage('Join JPM to repost this to your followers')
+      setShowLoginPrompt(true)
+      return
+    }
     triggerHaptic(isReposted ? ImpactStyle.Light : ImpactStyle.Medium)
 
     try {
@@ -651,7 +662,11 @@ export const Post = React.memo(({ post, onObserve }: { post: any; onObserve?: (p
     if (!newComment.trim()) return
 
     const { data: { user } } = await supabase.auth.getUser()
-    if (!user) return alert('Please login to reply')
+    if (!user) {
+      setLoginPromptMessage('Join JPM to join the conversation')
+      setShowLoginPrompt(true)
+      return
+    }
 
     const isReviewRequired = post.settings?.review_replies || post.settings?.reviewReplies
     const isApproved = isReviewRequired ? (user.id === post.creator_id) : true
@@ -881,8 +896,13 @@ export const Post = React.memo(({ post, onObserve }: { post: any; onObserve?: (p
                     <button
                       key={opt.id}
                       disabled={!!votedOptionId || isExpired}
-                      onClick={async () => {
-                        if (!currentUser) return alert('Login to vote')
+                      onClick={async (e) => {
+                        e.stopPropagation()
+                        if (!currentUser) {
+                          setLoginPromptMessage('Join JPM to vote on polls')
+                          setShowLoginPrompt(true)
+                          return
+                        }
                         setVotedOptionId(opt.id)
                         setTotalVotes(prev => prev + 1)
                         await supabase.from('poll_votes').insert({
@@ -1055,6 +1075,11 @@ export const Post = React.memo(({ post, onObserve }: { post: any; onObserve?: (p
             <button
               onClick={(e) => { 
                 e.stopPropagation(); 
+                if (!currentUser) {
+                  setLoginPromptMessage('Join JPM to quote this post')
+                  setShowLoginPrompt(true)
+                  return
+                }
                 triggerHaptic(ImpactStyle.Medium);
                 window.dispatchEvent(new CustomEvent('open-post-modal', { detail: post }))
               }}
@@ -1090,7 +1115,11 @@ export const Post = React.memo(({ post, onObserve }: { post: any; onObserve?: (p
             <button
               onClick={async (e) => {
                 e.stopPropagation()
-                if (!currentUser) return
+                if (!currentUser) {
+                  setLoginPromptMessage('Join JPM to save this post')
+                  setShowLoginPrompt(true)
+                  return
+                }
                 triggerHaptic(ImpactStyle.Light)
                 if (isBookmarked) {
                   setIsBookmarked(false)
@@ -1261,6 +1290,13 @@ export const Post = React.memo(({ post, onObserve }: { post: any; onObserve?: (p
           )}
         </AnimatePresence>,
         document.body
+      )}
+
+      {showLoginPrompt && (
+        <LoginPromptModal 
+          message={loginPromptMessage}
+          onClose={() => setShowLoginPrompt(false)} 
+        />
       )}
     </div>
   )

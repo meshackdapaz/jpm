@@ -283,10 +283,10 @@ function ProfileContent() {
     }
   }
 
-  if (!id) return <AppLayout><div className="p-8 text-center text-zinc-500">Profile not found</div></AppLayout>
+  if (!id) return <AppLayout isPublic><div className="p-8 text-center text-zinc-500">Profile not found</div></AppLayout>
 
   if (loading) return (
-    <AppLayout>
+    <AppLayout isPublic>
       <div className="px-4 pt-8 animate-pulse">
         {/* Skeleton Header: Info Left, Avatar Right */}
         <div className="flex items-start justify-between mb-8">
@@ -330,7 +330,7 @@ function ProfileContent() {
   const isOwner = currentUser?.id === id
 
   return (
-    <AppLayout>
+    <AppLayout isPublic>
       {/* Image Cropper Modal */}
       {selectedImage && (
         <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
@@ -551,7 +551,13 @@ function ProfileContent() {
                   <QrCodeIcon className="w-5 h-5" />
                 </button>
                 <button
-                  onClick={handleFollow}
+                  onClick={() => {
+                    if (!currentUser) {
+                      window.dispatchEvent(new CustomEvent('show-login-prompt', { detail: { message: `Join JPM to follow ${profile?.full_name}` } }))
+                      return
+                    }
+                    handleFollow()
+                  }}
                   className={`flex-1 py-2 rounded-xl text-[14px] font-bold transition-all ${
                     isFollowing
                       ? 'border border-zinc-200 dark:border-zinc-700 text-zinc-700 dark:text-zinc-300'
@@ -812,7 +818,7 @@ function ProfileContent() {
 
 export default function ProfilePage() {
   return (
-    <Suspense fallback={<AppLayout><div className="p-8 text-center text-zinc-500 font-bold italic">Loading profile...</div></AppLayout>}>
+    <Suspense fallback={<AppLayout isPublic><div className="p-8 text-center text-zinc-500 font-bold italic">Loading profile...</div></AppLayout>}>
       <ProfileContent />
     </Suspense>
   )

@@ -1,0 +1,11 @@
+*.log
+*.txt
+*.zip
+*.apk
+*.aab
+android/
+ios/
+tmp/
+node_modules/
+.next/
+out/
