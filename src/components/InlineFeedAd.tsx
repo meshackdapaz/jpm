@@ -58,14 +58,7 @@ export function InlineFeedAd({ adId = 'ca-app-pub-8166782428171770/3966636178' }
   }, [adId, containerId])
 
   if (!Capacitor.isNativePlatform()) {
-    return (
-      <div className="w-full flex justify-center py-6 border-b border-zinc-100 dark:border-zinc-800">
-        <div className="w-[320px] h-[250px] bg-zinc-50 dark:bg-zinc-900 rounded-xl flex flex-col items-center justify-center gap-3 text-zinc-400 text-xs font-medium border border-zinc-100 dark:border-zinc-800">
-          <div className="w-10 h-10 bg-zinc-100 dark:bg-zinc-800 rounded-full flex items-center justify-center text-lg">📢</div>
-          Advertisement
-        </div>
-      </div>
-    )
+    return <WebFeedAd />
   }
 
   // On Native, we provide the container that the plugin will draw over.
@@ -80,6 +73,30 @@ export function InlineFeedAd({ adId = 'ca-app-pub-8166782428171770/3966636178' }
           <div className="w-8 h-8 rounded-full border-2 border-zinc-200 border-t-violet-500 animate-spin" />
         </div>
       )}
+    </div>
+  )
+}
+
+function WebFeedAd() {
+  useEffect(() => {
+    try {
+      // @ts-ignore
+      ;(window.adsbygoogle = window.adsbygoogle || []).push({})
+    } catch (err) {
+      console.error('AdSense error:', err)
+    }
+  }, [])
+
+  return (
+    <div className="w-full py-4 border-b border-zinc-100 dark:border-zinc-800 overflow-hidden flex justify-center">
+      <ins 
+        className="adsbygoogle"
+        style={{ display: 'block', minWidth: '300px', width: '100%' }}
+        data-ad-format="fluid"
+        data-ad-layout-key="-6t+ed+2i-1n-4w"
+        data-ad-client="ca-pub-8166782428171770"
+        data-ad-slot="2820538405"
+      />
     </div>
   )
 }
