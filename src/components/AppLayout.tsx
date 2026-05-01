@@ -414,8 +414,8 @@ export function AppLayout({ children, fullBleed = false, wide = false, hideSideb
         {fullBleed ? (
           children
         ) : (
-          <div className={`flex w-full ${(wide || hideSidebar || !showNav) ? 'max-w-6xl' : 'max-w-4xl'} gap-0 lg:gap-8 lg:px-4 justify-center`}>
-            <div className={`flex-1 min-w-0 ${(wide || hideSidebar || !showNav) ? 'max-w-4xl' : 'max-w-xl'} w-full min-h-screen bg-white dark:bg-black ${showNav ? 'sm:ml-[72px]' : 'sm:ml-0'}`}>
+          <div className={`flex w-full ${(wide || hideSidebar || isPublicRoute) ? 'max-w-6xl' : 'max-w-4xl'} gap-0 lg:gap-8 lg:px-4 justify-center`}>
+            <div className={`flex-1 min-w-0 ${(wide || hideSidebar || isPublicRoute) ? 'max-w-4xl' : 'max-w-xl'} w-full min-h-screen bg-white dark:bg-black ${showNav ? 'sm:ml-[72px]' : 'sm:ml-0'}`}>
               {children}
             </div>
             {!isNative && !hideSidebar && showNav && <RightSidebar />}
