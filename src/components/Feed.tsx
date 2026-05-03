@@ -217,8 +217,9 @@ export function Feed() {
     }
     
     // Fetch active Direct Ads
-    supabase.from('direct_ads').select('*').eq('is_active', true).then(({ data }: { data: any }) => {
-      if (data) setDirectAds(data)
+    supabase.from('direct_ads').select('*').eq('active', true).then(({ data, error }: { data: any, error: any }) => {
+      if (error) console.error('Error fetching direct ads:', error)
+      if (data && data.length > 0) setDirectAds(data)
     })
   }, [user])
 
@@ -512,7 +513,10 @@ export function Feed() {
                       directAd ? (
                         <DirectAd ad={directAd} />
                       ) : (
-                        <InlineFeedAd adId="ca-app-pub-3940256099942544/6300978111" />
+                        // If no direct ad is available, fallback to AdSense (but only on web, because AdSense iframes fail natively)
+                        !Capacitor.isNativePlatform() ? (
+                          <InlineFeedAd adId="ca-app-pub-8166782428171770/3966636178" />
+                        ) : null
                       )
                     )}
                   </div>
