@@ -15,6 +15,7 @@ import { InlineFeedAd } from './InlineFeedAd'
 import { DirectAd } from './DirectAd'
 import { motion } from 'framer-motion'
 import { useFeedTelemetry } from '@/hooks/useFeedTelemetry'
+import { Capacitor } from '@capacitor/core'
 
 // ── Skeleton ──────────────────────────────────────────────────────────────────
 
@@ -511,7 +512,7 @@ export function Feed() {
                       directAd ? (
                         <DirectAd ad={directAd} />
                       ) : (
-                        <InlineFeedAd adId="ca-app-pub-8166782428171770/3966636178" />
+                        <InlineFeedAd adId="ca-app-pub-3940256099942544/6300978111" />
                       )
                     )}
                   </div>

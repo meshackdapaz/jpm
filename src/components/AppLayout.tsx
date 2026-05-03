@@ -61,6 +61,9 @@ export function AppLayout({ children, fullBleed = false, wide = false, hideSideb
   const [mounted, setMounted] = useState(false)
   const [isNative, setIsNative] = useState(false)
 
+  const publicRoutes = ['/login', '/signup', '/terms', '/privacy', '/about', '/contact', '/forgot-password', '/reset-password']
+  const isPublicRoute = publicRoutes.includes(pathname)
+
   // ── Pull-to-refresh state ──────────────────────────────────────────────────
   const [ptrPull, setPtrPull] = useState(0)          // px pulled so far
   const [ptrRefreshing, setPtrRefreshing] = useState(false)
@@ -161,6 +164,7 @@ export function AppLayout({ children, fullBleed = false, wide = false, hideSideb
       supabase.removeChannel(globalSync)
     }
   }, [currentUser, isNative])
+
 
   // ── Scroll-hide bottom nav listener ───────────────────────────────────
   useEffect(() => {
@@ -287,10 +291,13 @@ export function AppLayout({ children, fullBleed = false, wide = false, hideSideb
 
   // ── Protection logic — only redirect on native (mobile app). Web allows public browsing. ──
   useEffect(() => {
-    if (!isPublic && !authLoading && !currentUser && isNative) {
+    // On native, ALWAYS force login unless it's explicitly a public auth route like /login
+    if (isNative && !isPublicRoute && !authLoading && !currentUser) {
+      router.push('/login')
+    } else if (!isNative && !isPublic && !authLoading && !currentUser) {
       router.push('/login')
     }
-  }, [authLoading, currentUser, router, isPublic, isNative])
+  }, [authLoading, currentUser, router, isPublic, isNative, isPublicRoute])
 
   // Listen for custom event to open post modal from Feed
   useEffect(() => {
@@ -332,8 +339,7 @@ export function AppLayout({ children, fullBleed = false, wide = false, hideSideb
   ]
 
 
-  const publicRoutes = ['/login', '/signup', '/terms', '/privacy', '/forgot-password', '/reset-password']
-  const isPublicRoute = publicRoutes.includes(pathname)
+  // isPublicRoute and publicRoutes are declared near the top of the component
   const showNav = !isPublicRoute && currentUser
   // For web guests: show a minimal public top bar instead of the full nav
   const showGuestBar = !isPublicRoute && !currentUser && !isNative && mounted
@@ -639,12 +645,20 @@ function MobileTopNav({ onMenuClick }: { onMenuClick: () => void }) {
 function GuestTopBar() {
   return (
     <div className="fixed top-0 left-0 right-0 z-40 h-14 bg-white/90 dark:bg-black/90 backdrop-blur-md border-b border-zinc-100 dark:border-zinc-900 px-4 flex items-center justify-between">
-      {/* Logo */}
-      <div className="flex items-center gap-2">
-        <svg className="w-7 h-7 text-black dark:text-white" viewBox="0 0 24 24" fill="currentColor">
-          <path d="M12.001 2C6.475 2 2 6.476 2 12s4.475 10 10.001 10C17.522 22 22 17.524 22 12S17.522 2 12.001 2zM12 20c-4.41 0-8-3.589-8-8s3.59-8 8-8 8 3.589 8 8-3.59 8-8 8zm4.5-8c0 2.485-2.015 4.5-4.5 4.5S7.5 14.485 7.5 12s2.015-4.5 4.5-4.5 4.5 2.015 4.5 4.5zm1.5 0c0-3.313-2.687-6-6-6S6 8.687 6 12s2.687 6 6 6c1.293 0 2.49-.409 3.471-1.103l-.985-1.459A4.468 4.468 0 0112 16.5c-2.485 0-4.5-2.015-4.5-4.5S9.515 7.5 12 7.5s4.5 2.015 4.5 4.5v1.125c0 .621-.503 1.125-1.125 1.125S14.25 13.746 14.25 13.125V12c0-1.24-1.01-2.25-2.25-2.25S9.75 10.76 9.75 12s1.01 2.25 2.25 2.25c.655 0 1.24-.28 1.657-.726A2.614 2.614 0 0016.5 13.125V12z"/>
-        </svg>
-        <span className="font-black text-[17px] tracking-tight text-black dark:text-white hidden sm:block">JPM</span>
+      {/* Logo & Links */}
+      <div className="flex items-center gap-4">
+        <Link href="/" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
+          <svg className="w-7 h-7 text-black dark:text-white" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M12.001 2C6.475 2 2 6.476 2 12s4.475 10 10.001 10C17.522 22 22 17.524 22 12S17.522 2 12.001 2zM12 20c-4.41 0-8-3.589-8-8s3.59-8 8-8 8 3.589 8 8-3.59 8-8 8zm4.5-8c0 2.485-2.015 4.5-4.5 4.5S7.5 14.485 7.5 12s2.015-4.5 4.5-4.5 4.5 2.015 4.5 4.5zm1.5 0c0-3.313-2.687-6-6-6S6 8.687 6 12s2.687 6 6 6c1.293 0 2.49-.409 3.471-1.103l-.985-1.459A4.468 4.468 0 0112 16.5c-2.485 0-4.5-2.015-4.5-4.5S9.515 7.5 12 7.5s4.5 2.015 4.5 4.5v1.125c0 .621-.503 1.125-1.125 1.125S14.25 13.746 14.25 13.125V12c0-1.24-1.01-2.25-2.25-2.25S9.75 10.76 9.75 12s1.01 2.25 2.25 2.25c.655 0 1.24-.28 1.657-.726A2.614 2.614 0 0016.5 13.125V12z"/>
+          </svg>
+          <span className="font-black text-[17px] tracking-tight text-black dark:text-white hidden sm:block">JPM</span>
+        </Link>
+        <div className="hidden md:flex items-center gap-4 ml-4">
+          <Link href="/about" className="text-sm font-semibold text-zinc-600 dark:text-zinc-400 hover:text-black dark:hover:text-white">About</Link>
+          <Link href="/contact" className="text-sm font-semibold text-zinc-600 dark:text-zinc-400 hover:text-black dark:hover:text-white">Contact</Link>
+          <Link href="/privacy" className="text-sm font-semibold text-zinc-600 dark:text-zinc-400 hover:text-black dark:hover:text-white">Privacy</Link>
+          <Link href="/terms" className="text-sm font-semibold text-zinc-600 dark:text-zinc-400 hover:text-black dark:hover:text-white">Terms</Link>
+        </div>
       </div>
 
       {/* Auth buttons */}

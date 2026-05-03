@@ -341,9 +341,11 @@ export function RightSidebar({ mobile = false }: { mobile?: boolean }) {
       {/* Footer */}
       <div className="px-1">
         <p className="text-zinc-400 text-[11px] leading-relaxed">
-          © {new Date().getFullYear()} <span className="font-black text-zinc-600 dark:text-zinc-400">dapazcm</span> ·{' '}
-          <Link href="/settings" className="hover:underline hover:text-zinc-600 dark:hover:text-zinc-300 transition-colors">Privacy</Link> ·{' '}
-          <Link href="/settings" className="hover:underline hover:text-zinc-600 dark:hover:text-zinc-300 transition-colors">Terms</Link>
+          © {new Date().getFullYear()} <span className="font-black text-zinc-600 dark:text-zinc-400">JPM</span> ·{' '}
+          <Link href="/about" className="hover:underline hover:text-zinc-600 dark:hover:text-zinc-300 transition-colors">About</Link> ·{' '}
+          <Link href="/privacy" className="hover:underline hover:text-zinc-600 dark:hover:text-zinc-300 transition-colors">Privacy</Link> ·{' '}
+          <Link href="/terms" className="hover:underline hover:text-zinc-600 dark:hover:text-zinc-300 transition-colors">Terms</Link> ·{' '}
+          <Link href="/contact" className="hover:underline hover:text-zinc-600 dark:hover:text-zinc-300 transition-colors">Contact</Link>
         </p>
       </div>
     </aside>
@@ -433,9 +435,11 @@ export function RightSidebar({ mobile = false }: { mobile?: boolean }) {
       {/* Footer */}
       <div className="px-1">
         <p className="text-zinc-400 text-[11px] leading-relaxed">
-          © {new Date().getFullYear()} dapazcm ·{' '}
-          <Link href="/login" className="hover:underline">Privacy</Link> ·{' '}
-          <Link href="/login" className="hover:underline">Terms</Link>
+          © {new Date().getFullYear()} <span className="font-black text-zinc-600 dark:text-zinc-400">JPM</span> ·{' '}
+          <Link href="/about" className="hover:underline hover:text-zinc-600 dark:hover:text-zinc-300 transition-colors">About</Link> ·{' '}
+          <Link href="/privacy" className="hover:underline hover:text-zinc-600 dark:hover:text-zinc-300 transition-colors">Privacy</Link> ·{' '}
+          <Link href="/terms" className="hover:underline hover:text-zinc-600 dark:hover:text-zinc-300 transition-colors">Terms</Link> ·{' '}
+          <Link href="/contact" className="hover:underline hover:text-zinc-600 dark:hover:text-zinc-300 transition-colors">Contact</Link>
         </p>
       </div>
     </aside>

@@ -58,10 +58,19 @@ export default function PrivacyPolicy() {
           </section>
 
           <section>
-            <h2 className="text-xl font-bold text-black dark:text-white mb-4">4. Data Sharing</h2>
-            <p>
+            <h2 className="text-xl font-bold text-black dark:text-white mb-4">4. Data Sharing and Advertising</h2>
+            <p className="mb-4">
               We do not sell your personal data. We may share information with service providers who perform functions on our behalf, or when required by law to protect our rights or the safety of others.
             </p>
+            <h3 className="text-lg font-bold text-black dark:text-white mb-2 mt-6">Third-Party Advertisers and Cookies</h3>
+            <p className="mb-4">
+              We use third-party advertising companies, including Google AdSense, to serve ads when you visit our website. These companies may use information (not including your name, address, email address, or telephone number) about your visits to this and other websites in order to provide advertisements about goods and services of interest to you.
+            </p>
+            <ul className="list-disc pl-5 space-y-2 mt-4">
+              <li><strong>Google DoubleClick DART Cookie:</strong> Google, as a third-party vendor, uses cookies to serve ads on our site. Google's use of the DART cookie enables it to serve ads to our users based on their visit to our site and other sites on the Internet.</li>
+              <li><strong>Opt-Out:</strong> Users may opt out of the use of the DART cookie by visiting the Google ad and content network privacy policy or by visiting <a href="https://www.aboutads.info" target="_blank" rel="noopener noreferrer" className="text-blue-500 hover:underline">www.aboutads.info</a>.</li>
+              <li><strong>Personalized Advertising:</strong> You can opt out of personalized advertising by visiting your <a href="https://myadcenter.google.com/" target="_blank" rel="noopener noreferrer" className="text-blue-500 hover:underline">Google Ads Settings</a>.</li>
+            </ul>
           </section>
 
           <section>
@@ -88,7 +97,7 @@ export default function PrivacyPolicy() {
         </div>
 
         <footer className="mt-20 pt-8 border-t border-zinc-100 dark:border-zinc-800 text-center text-zinc-500 text-sm">
-          &copy; 2026. All rights reserved.
+          &copy; {new Date().getFullYear()} JPM. All rights reserved.
         </footer>
       </div>
     </AppLayout>

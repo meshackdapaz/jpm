@@ -40,15 +40,18 @@ export default function TermsOfService() {
           </section>
 
           <section>
-            <h2 className="text-xl font-bold text-black dark:text-white mb-4">3. User Conduct</h2>
-            <p>You agree not to engage in any of the following prohibited activities:</p>
+            <h2 className="text-xl font-bold text-black dark:text-white mb-4">3. User Conduct and User-Generated Content (UGC)</h2>
+            <p>We maintain strict guidelines for content published on our platform. You agree not to engage in any of the following prohibited activities or post content that involves:</p>
             <ul className="list-disc pl-5 space-y-2 mt-4">
-              <li>Posting content that is illegal, harmful, or violates the rights of others.</li>
-              <li>Harassing or bullying other users.</li>
-              <li>Attempting to interfere with the security or operation of the platform.</li>
-              <li>Using automated systems (bots) to access or scrape data.</li>
-              <li>Spamming or sending unsolicited advertisements.</li>
+              <li><strong>Illegal or Harmful Content:</strong> Posting content that is illegal, harmful, or violates the rights of others, including copyright infringement.</li>
+              <li><strong>Adult Content:</strong> Publishing sexually explicit material, pornography, or suggestive content.</li>
+              <li><strong>Hate Speech & Harassment:</strong> Harassing, bullying, or promoting discrimination/violence against any individual or group.</li>
+              <li><strong>Misleading Information:</strong> Spreading spam, false information, or unsolicited advertisements.</li>
+              <li><strong>Platform Abuse:</strong> Attempting to interfere with the security or operation of the platform, or using automated systems (bots) to access or scrape data.</li>
             </ul>
+            <p className="mt-4">
+              <strong>Moderation:</strong> We reserve the right to review, flag, and remove any User-Generated Content that violates these Terms or our community standards. Accounts repeatedly violating these guidelines will be permanently suspended.
+            </p>
           </section>
 
           <section>
@@ -81,7 +84,7 @@ export default function TermsOfService() {
         </div>
 
         <footer className="mt-20 pt-8 border-t border-zinc-100 dark:border-zinc-800 text-center text-zinc-500 text-sm">
-          &copy; 2026. All rights reserved.
+          &copy; {new Date().getFullYear()} JPM. All rights reserved.
         </footer>
       </div>
     </AppLayout>

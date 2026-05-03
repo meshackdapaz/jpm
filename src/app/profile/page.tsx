@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useEffect, useState, Suspense } from 'react'
+import { createPortal } from 'react-dom'
 import Link from 'next/link'
 import { AppLayout } from '@/components/AppLayout'
 import { createClient } from '@/lib/supabase/client'
@@ -722,12 +723,19 @@ function ProfileContent() {
       <div className="h-28 sm:h-8" style={{ paddingBottom: 'env(safe-area-inset-bottom)' }} />
       {/* QR Code Modal */}
       {(() => {
-        const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://jpmjpm-official.vercel.app';
-        const profileUrl = `${siteUrl}/profile?id=${profile.id}`;
+        // QR code points to Play Store so scanning downloads the app
+        const playStoreUrl = 'https://play.google.com/store/apps/details?id=com.jpm.app';
+        const profileUrl = `https://jpmtz.online/profile?id=${profile.id}`;
+        const qrValue = playStoreUrl; // Scan = download the app
         
-        return showQRCode && (
-          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
-            <div className="bg-white dark:bg-zinc-900 w-full max-w-sm rounded-[32px] overflow-hidden shadow-2xl border border-zinc-100 dark:border-zinc-800 animate-in zoom-in-95 duration-200">
+        if (!showQRCode || typeof document === 'undefined') return null;
+        
+        return createPortal(
+          <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200" onClick={() => setShowQRCode(false)}>
+            <div 
+              className="bg-white dark:bg-zinc-900 w-full max-w-sm rounded-[32px] overflow-hidden shadow-2xl border border-zinc-100 dark:border-zinc-800 animate-in zoom-in-95 duration-200"
+              onClick={e => e.stopPropagation()}
+            >
               <div className="p-6">
                 <div className="flex items-center justify-between mb-6">
                   <h3 className="text-xl font-black tracking-tight">Profile QR Code</h3>
@@ -742,7 +750,7 @@ function ProfileContent() {
                 <div className="flex flex-col items-center">
                   <div className="p-6 bg-white rounded-[24px] shadow-inner mb-6 ring-1 ring-zinc-100">
                     <QRCodeSVG 
-                      value={profileUrl}
+                      value={qrValue}
                       size={200}
                       level="H"
                       includeMargin={false}
@@ -759,7 +767,7 @@ function ProfileContent() {
                   
                   <div className="text-center mb-8">
                     <p className="font-bold text-lg">@{profile?.username}</p>
-                    <p className="text-zinc-500 text-sm">Scan to visit my profile</p>
+                    <p className="text-zinc-500 text-sm">Scan to download JPM app</p>
                   </div>
 
                   <div className="grid grid-cols-2 gap-3 w-full">
@@ -792,24 +800,25 @@ function ProfileContent() {
                       onClick={async () => {
                         if (navigator.share) {
                           await navigator.share({
-                            title: `${profile.full_name}'s Profile`,
-                            text: `Check out @${profile.username} on JPM`,
-                            url: profileUrl
+                            title: 'Download JPM App',
+                            text: 'Download the JPM app on Google Play',
+                            url: playStoreUrl
                           });
                         } else {
-                          await navigator.clipboard.writeText(profileUrl);
-                          alert('Link copied to clipboard!');
+                          await navigator.clipboard.writeText(playStoreUrl);
+                          alert('Play Store link copied!');
                         }
                       }}
                       className="flex items-center justify-center gap-2 py-3 bg-black dark:bg-white text-white dark:text-black rounded-2xl font-bold text-sm hover:opacity-90 transition-all active:scale-95"
                     >
-                      Share Link
+                      Share App
                     </button>
                   </div>
                 </div>
               </div>
             </div>
-          </div>
+          </div>,
+          document.body
         );
       })()}
     </AppLayout>
