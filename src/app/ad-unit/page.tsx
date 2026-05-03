@@ -16,9 +16,7 @@ export default function AdUnitPage() {
     <div style={{ width: '100vw', height: '100vh', overflow: 'hidden', display: 'flex', justifyContent: 'center', alignItems: 'center', backgroundColor: 'transparent' }}>
       <ins
         className="adsbygoogle"
-        style={{ display: 'block', minWidth: '300px', width: '100%' }}
-        data-ad-format="fluid"
-        data-ad-layout-key="-6t+ed+2i-1n-4w"
+        style={{ display: 'inline-block', width: '300px', height: '250px' }}
         data-ad-client="ca-pub-8166782428171770"
         data-ad-slot="2820538405"
       />

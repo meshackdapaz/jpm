@@ -20,6 +20,7 @@ export function SplashScreen() {
   }, [])
 
   if (!visible) return null
+  if (typeof window !== 'undefined' && window.location.pathname === '/ad-unit') return null
 
   return (
     <div
