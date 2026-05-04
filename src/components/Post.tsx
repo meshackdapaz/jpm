@@ -854,31 +854,35 @@ export const Post = React.memo(({ post, onObserve }: { post: any; onObserve?: (p
                   </div>
                 </div>
               ) : (
-                <p className="text-[16px] leading-relaxed text-zinc-900 dark:text-zinc-100 whitespace-pre-wrap break-words">
-                  {post.content}
-                </p>
+                <div className="relative group/caption">
+                  <p className={`text-[15px] leading-relaxed text-zinc-900 dark:text-zinc-100 whitespace-pre-wrap break-words transition-all duration-300 ${!showAnalytics && post.content?.length > 180 ? 'line-clamp-3' : ''}`}>
+                    {post.content}
+                  </p>
+                  {post.content?.length > 180 && !showAnalytics && (
+                    <button className="text-zinc-500 text-[13px] font-bold mt-1 hover:text-blue-500 transition-colors">...more</button>
+                  )}
+                </div>
               )}
             </div>
 
             {/* Quoted Post Preview */}
             {post.quoted_post && (
               <div 
-                className="mt-3 mb-1 rounded-3xl border border-zinc-100 dark:border-zinc-800 p-4 bg-zinc-50/50 dark:bg-zinc-900/50 hover:bg-zinc-100/50 dark:hover:bg-zinc-800/50 transition-colors cursor-pointer"
+                className="mt-3 mb-1 rounded-2xl border border-zinc-100 dark:border-zinc-800 p-3 bg-zinc-50/50 dark:bg-zinc-900/50 hover:bg-zinc-100/50 dark:hover:bg-zinc-800/50 transition-colors cursor-pointer"
                 onClick={(e) => {
                   e.stopPropagation()
                   router.push(`/post?id=${post.quoted_post.id}`)
                 }}
               >
-                <div className="flex items-center gap-2 mb-2">
+                <div className="flex items-center gap-2 mb-1.5">
                   <div className="w-5 h-5 rounded-full bg-zinc-200 dark:bg-zinc-800 overflow-hidden">
                     {post.quoted_post.profiles?.avatar_url && (
                       <Image src={post.quoted_post.profiles.avatar_url} alt="" width={20} height={20} className="w-full h-full object-cover" unoptimized />
                     )}
                   </div>
-                  <span className="font-bold text-xs tracking-tight">{post.quoted_post.profiles?.full_name}</span>
-                  <span className="text-zinc-500 text-[10px]">@{post.quoted_post.profiles?.username}</span>
+                  <span className="font-bold text-[11px] tracking-tight">{post.quoted_post.profiles?.full_name}</span>
                 </div>
-                <p className="text-[13px] text-zinc-600 dark:text-zinc-400 line-clamp-3">
+                <p className="text-[12px] text-zinc-600 dark:text-zinc-400 line-clamp-2">
                   {post.quoted_post.content}
                 </p>
               </div>
@@ -946,69 +950,63 @@ export const Post = React.memo(({ post, onObserve }: { post: any; onObserve?: (p
           </div>
         </div>
 
-        {/* Row 2: Full-width Media — outside the avatar row so it spans 100% and centers */}
+        {/* Row 2: Full-width Media — Fixed 4:5 Aspect Ratio like IG */}
         {post.video_url ? (
           <div
-            className="w-full relative rounded-2xl overflow-hidden group/video mb-3"
+            className="w-full relative rounded-[20px] overflow-hidden group/video mb-2 aspect-[4/5] bg-zinc-100 dark:bg-zinc-900 shadow-xl"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="flex items-center justify-center w-full min-h-[200px] bg-zinc-100 dark:bg-zinc-900 rounded-2xl overflow-hidden relative shadow-2xl">
-              {/* Blurred background for a premium "no-space" fill */}
-              {(post.image_url || images[0]) && (
-                <div 
-                  className="absolute inset-0 z-0 bg-cover bg-center blur-3xl scale-150 opacity-100 select-none pointer-events-none transition-opacity duration-1000"
-                  style={{ backgroundImage: `url(${post.image_url || images[0]})` }} 
-                />
-              )}
-              {/* We'll use a hack to get a blurred frame: an invisible video on top of a blurred one is expensive, 
-                  so we'll just use a subtle gradient/color for now or try to use the pulse animation until loaded */}
-              
-              <video
-                src={post.video_url}
-                className="w-full h-auto max-h-[70vh] object-contain relative z-10 drop-shadow-2xl"
-                controls
-                autoPlay
-                loop
-                muted
-                playsInline
-                poster={post.image_url || undefined}
+            {/* Blurred background frame */}
+            {(post.image_url || images[0]) && (
+              <div 
+                className="absolute inset-0 z-0 bg-cover bg-center blur-3xl scale-125 opacity-40 select-none pointer-events-none"
+                style={{ backgroundImage: `url(${post.image_url || images[0]})` }} 
               />
-            </div>
+            )}
+            
+            <video
+              src={post.video_url}
+              className="w-full h-full object-cover relative z-10 drop-shadow-2xl"
+              controls
+              autoPlay
+              loop
+              muted
+              playsInline
+              poster={post.image_url || undefined}
+            />
           </div>
         ) : images.length > 0 && (
           <div
-            className="w-full relative rounded-2xl overflow-hidden group/carousel"
+            className="w-full relative rounded-[20px] overflow-hidden group/carousel aspect-[4/5] bg-zinc-100 dark:bg-zinc-900 shadow-xl"
             onClick={(e) => e.stopPropagation()}
           >
-            {/* Image — flex+justify-center ensures perfect horizontal center */}
-            <div className="flex items-center justify-center w-full min-h-[100px] bg-zinc-100 dark:bg-zinc-900 rounded-2xl overflow-hidden relative transition-all duration-500">
-              {/* Blurred background for a premium "no-space" fill */}
-              {imageLoaded && (
-                <div 
-                  className="absolute inset-0 z-0 bg-cover bg-center blur-3xl scale-150 opacity-100 select-none pointer-events-none transition-opacity duration-1000"
-                  style={{ backgroundImage: `url(${images[imageIndex]})` }}
-                />
-              )}
+            {/* Blurred background frame */}
+            {imageLoaded && (
+              <div 
+                className="absolute inset-0 z-0 bg-cover bg-center blur-3xl scale-125 opacity-40 select-none pointer-events-none"
+                style={{ backgroundImage: `url(${images[imageIndex]})` }}
+              />
+            )}
 
-              {dataSaver && !imageLoaded ? (
-                <button 
-                  onClick={(e) => { e.stopPropagation(); setImageLoaded(true) }}
-                  className="w-full h-48 flex flex-col items-center justify-center gap-2 hover:bg-zinc-200 dark:hover:bg-zinc-800 transition-colors relative z-10"
-                >
-                  <PhotoIcon className="w-8 h-8 text-zinc-400" />
-                  <span className="text-xs font-bold text-zinc-500">Data saver is on. Click to load image.</span>
-                </button>
-              ) : (
-                <Image
-                  src={images[imageIndex]}
-                  alt={post.title || `Post image ${imageIndex + 1}`}
-                  width={1200}
-                  height={1200}
-                  className="w-full h-auto object-contain relative z-10 drop-shadow-2xl transition-all duration-500"
-                  unoptimized
-                  onLoad={() => setImageLoaded(true)}
-                />
-              )}
+            {dataSaver && !imageLoaded ? (
+              <button 
+                onClick={(e) => { e.stopPropagation(); setImageLoaded(true) }}
+                className="w-full h-full flex flex-col items-center justify-center gap-2 hover:bg-zinc-200 dark:hover:bg-zinc-800 transition-colors relative z-10"
+              >
+                <PhotoIcon className="w-8 h-8 text-zinc-400" />
+                <span className="text-[11px] font-black uppercase tracking-tighter text-zinc-500">Data saver: Click to load</span>
+              </button>
+            ) : (
+              <Image
+                src={images[imageIndex]}
+                alt={post.title || `Post image ${imageIndex + 1}`}
+                width={1080}
+                height={1350}
+                className="w-full h-full object-cover relative z-10 drop-shadow-2xl transition-all duration-700"
+                unoptimized
+                onLoad={() => setImageLoaded(true)}
+              />
+            )}
             </div>
 
             {/* Carousel controls (multi-image only) */}
