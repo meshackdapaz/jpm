@@ -187,10 +187,12 @@ export function CreatePost({
       }
       
       localStorage.removeItem('echo_post_draft')
+      
+      // Always dispatch post-created so the feed knows to refresh
+      window.dispatchEvent(new CustomEvent('post-created'))
+      
       if (onSuccess) {
         onSuccess()
-      } else {
-        window.dispatchEvent(new CustomEvent('post-created'))
       }
     } catch (err: any) {
       alert('Post failed: ' + err.message)

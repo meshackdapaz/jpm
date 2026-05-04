@@ -237,6 +237,8 @@ export function Feed() {
       setRefreshing(true)
       await doRefresh.current()
       setRefreshing(false)
+      // Smoothly scroll to top after posting or refreshing
+      virtuosoRef.current?.scrollToIndex({ index: 0, align: 'start', behavior: 'smooth' })
     }
     window.addEventListener('ptr-refresh', handler)
     window.addEventListener('post-created', handler)
