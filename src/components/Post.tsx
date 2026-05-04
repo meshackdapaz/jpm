@@ -298,14 +298,18 @@ export const Post = React.memo(({ post, onObserve }: { post: any; onObserve?: (p
     ? post.image_urls 
     : (post.image_url ? [post.image_url] : [])
 
+  const [direction, setDirection] = useState(0)
+
   const handleNextImage = (e: React.MouseEvent) => {
     e.stopPropagation()
+    setDirection(1)
     triggerHaptic(ImpactStyle.Light)
     setImageIndex((prev) => (prev + 1) % images.length)
   }
 
   const handlePrevImage = (e: React.MouseEvent) => {
     e.stopPropagation()
+    setDirection(-1)
     triggerHaptic(ImpactStyle.Light)
     setImageIndex((prev) => (prev - 1 + images.length) % images.length)
   }
@@ -997,38 +1001,81 @@ export const Post = React.memo(({ post, onObserve }: { post: any; onObserve?: (p
                 <span className="text-[11px] font-black uppercase tracking-tighter text-zinc-500">Data saver: Click to load</span>
               </button>
             ) : (
-              <Image
-                src={images[imageIndex]}
-                alt={post.title || `Post image ${imageIndex + 1}`}
-                width={1080}
-                height={1350}
-                className="w-full h-full object-cover relative z-10 drop-shadow-2xl transition-all duration-700"
-                unoptimized
-                onLoad={() => setImageLoaded(true)}
-              />
+              <div className="w-full h-full relative z-10">
+                <AnimatePresence initial={false} custom={direction}>
+                  <motion.div
+                    key={imageIndex}
+                    custom={direction}
+                    variants={{
+                      enter: (direction: number) => ({
+                        x: direction > 0 ? '100%' : '-100%',
+                        opacity: 0,
+                        scale: 1.1
+                      }),
+                      center: {
+                        x: 0,
+                        opacity: 1,
+                        scale: 1,
+                        transition: {
+                          x: { type: "spring", stiffness: 300, damping: 30 },
+                          opacity: { duration: 0.2 },
+                          scale: { duration: 0.4 }
+                        }
+                      },
+                      exit: (direction: number) => ({
+                        x: direction < 0 ? '100%' : '-100%',
+                        opacity: 0,
+                        scale: 0.9,
+                        transition: {
+                          x: { type: "spring", stiffness: 300, damping: 30 },
+                          opacity: { duration: 0.2 }
+                        }
+                      })
+                    }}
+                    initial="enter"
+                    animate="center"
+                    exit="exit"
+                    className="absolute inset-0 w-full h-full"
+                  >
+                    <Image
+                      src={images[imageIndex]}
+                      alt={post.title || `Post image ${imageIndex + 1}`}
+                      width={1080}
+                      height={1350}
+                      className="w-full h-full object-cover drop-shadow-2xl"
+                      unoptimized
+                      onLoad={() => setImageLoaded(true)}
+                    />
+                  </motion.div>
+                </AnimatePresence>
+              </div>
             )}
 
             {/* Carousel controls (multi-image only) */}
             {images.length > 1 && (
               <>
-                <button
-                  onClick={handlePrevImage}
-                  className="absolute left-2 top-1/2 -translate-y-1/2 p-2 rounded-full bg-black/50 text-white opacity-0 group-hover/carousel:opacity-100 transition-opacity hover:bg-black/70 z-10 active:scale-95"
-                  aria-label="Previous image"
-                >
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-                  </svg>
-                </button>
-                <button
-                  onClick={handleNextImage}
-                  className="absolute right-2 top-1/2 -translate-y-1/2 p-2 rounded-full bg-black/50 text-white opacity-0 group-hover/carousel:opacity-100 transition-opacity hover:bg-black/70 z-10 active:scale-95"
-                  aria-label="Next image"
-                >
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                  </svg>
-                </button>
+                 <motion.button
+                   whileHover={{ scale: 1.1 }}
+                   whileTap={{ scale: 0.9 }}
+                   onClick={handlePrevImage}
+                   className="absolute left-2 top-1/2 -translate-y-1/2 p-2 rounded-full bg-black/40 text-white backdrop-blur-md opacity-0 group-hover/carousel:opacity-100 transition-opacity hover:bg-black/60 z-20"
+                   aria-label="Previous image"
+                 >
+                   <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+                     <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
+                   </svg>
+                 </motion.button>
+                 <motion.button
+                   whileHover={{ scale: 1.1 }}
+                   whileTap={{ scale: 0.9 }}
+                   onClick={handleNextImage}
+                   className="absolute right-2 top-1/2 -translate-y-1/2 p-2 rounded-full bg-black/40 text-white backdrop-blur-md opacity-0 group-hover/carousel:opacity-100 transition-opacity hover:bg-black/60 z-20"
+                   aria-label="Next image"
+                 >
+                   <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+                     <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+                   </svg>
+                 </motion.button>
                 {/* Dot indicators */}
                 <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1.5 px-2 py-1 rounded-full bg-black/30 backdrop-blur-sm z-10">
                   {images.map((_: any, i: number) => (
