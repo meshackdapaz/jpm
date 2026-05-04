@@ -1007,7 +1007,6 @@ export const Post = React.memo(({ post, onObserve }: { post: any; onObserve?: (p
                 onLoad={() => setImageLoaded(true)}
               />
             )}
-            </div>
 
             {/* Carousel controls (multi-image only) */}
             {images.length > 1 && (
