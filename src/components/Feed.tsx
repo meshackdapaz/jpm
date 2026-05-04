@@ -163,8 +163,26 @@ function buildRecommendedFeed(postsData: any[] | null, myReposts: string[], myLi
     if (isVerified) score += 50
     
     // Recency boost: newer posts get a boost that decays over time
-    // Roughly +100 for brand new, decaying to 0 over 48 hours
-    const recencyBoost = Math.max(0, 100 - (hoursOld * 2))
+    // NEW: "Trend or Flop" logic: 
+    // New posts get a massive initial push, but if they don't get interaction 
+    // after 15 minutes, they "flop" (boost is slashed).
+    const totalInteraction = likes + comments + reposts
+    let recencyBoost = 0
+    
+    if (hoursOld < 1) {
+      const baseBoost = 2000 * (1 - hoursOld)
+      // 15-minute grace period (0.25 hours)
+      if (hoursOld > 0.25 && totalInteraction === 0) {
+        // No interaction -> Flop (slash boost by 80%)
+        recencyBoost = baseBoost * 0.2
+      } else {
+        // Active interaction or within grace period -> Trend
+        recencyBoost = baseBoost
+      }
+    } else {
+      // Normal decay after 1 hour
+      recencyBoost = Math.max(0, 100 - (hoursOld * 2))
+    }
     score += recencyBoost
 
     return {
@@ -260,7 +278,10 @@ export function Feed() {
     const currentCursor = isLoadMore ? cursor : null
     
     if (!isLoadMore) {
-      setInitialLoad(true)
+      // Only show initial loader if we don't have posts yet
+      if (posts.length === 0) {
+        setInitialLoad(true)
+      }
       setHasMore(true)
     } else {
       if (!hasMore || loadingMore) return

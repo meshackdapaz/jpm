@@ -18,7 +18,7 @@ export default function ForgotPasswordPage() {
     setLoading(true)
     setError(null)
 
-    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://jpmjpm-official.vercel.app'
+    const siteUrl = 'https://jpmtz.online'
     const { error: resetError } = await supabase.auth.resetPasswordForEmail(email, {
       redirectTo: `${siteUrl}/auth/callback?next=/reset-password`,
     })

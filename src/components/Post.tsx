@@ -320,7 +320,7 @@ export const Post = React.memo(({ post, onObserve }: { post: any; onObserve?: (p
       await Share.share({
         title: 'Check out this post',
         text: post.content,
-        url: `${process.env.NEXT_PUBLIC_SITE_URL || (typeof window !== 'undefined' ? window.location.origin : '')}/p?id=${post.id}`,
+        url: `https://jpmtz.online/p?id=${post.id}`,
       })
     } catch (err) {
       console.error('Error sharing:', err)

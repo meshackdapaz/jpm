@@ -517,7 +517,7 @@ function ProfileContent() {
                 </button>
                 <button
                   onClick={async () => {
-                    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://jpmjpm-official.vercel.app';
+                    const siteUrl = 'https://jpmtz.online';
                     const url = `${siteUrl}/profile?id=${profile.id}`;
                     if (navigator.share) {
                       await navigator.share({
