@@ -43,12 +43,12 @@ subprojects {
                     sourceCompatibility JavaVersion.VERSION_17
                     targetCompatibility JavaVersion.VERSION_17
                 }
-                tasks.matching { it.class.name.contains("KotlinCompile") }.configureEach {
-                    kotlinOptions {
-                        jvmTarget = "17"
-                    }
-                }
             }
+        }
+        // Force ALL Kotlin compile tasks in every subproject to target JVM 17.
+        // This fixes the capacitor-community-admob Kotlin 21 vs Java 17 mismatch.
+        project.tasks.matching { it.class.name.contains('KotlinCompile') }.configureEach {
+            it.kotlinOptions.jvmTarget = "17"
         }
     }
 }

@@ -152,6 +152,12 @@ export function AdminAdManager() {
           Creator Program
           {pendingCreators.length > 0 && <span className="ml-2 bg-red-500 text-white text-[10px] px-1.5 py-0.5 rounded-full">{pendingCreators.length}</span>}
         </button>
+        <a 
+          href="/admin/withdrawals"
+          className="px-6 py-2 rounded-xl text-sm font-bold transition-all text-zinc-500 hover:bg-white dark:hover:bg-black hover:text-emerald-500"
+        >
+          Withdrawals
+        </a>
       </div>
 
       {activeAdminTab === 'ads' ? (

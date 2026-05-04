@@ -45,6 +45,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     refresh()
 
+    if (Capacitor.isNativePlatform()) {
+      // AdMob Native initialization removed due to plugin removal
+    }
+
     const checkForUpdates = async () => {
       // 1. Try Native Store Update (Google Play / App Store)
       if (Capacitor.isNativePlatform()) {

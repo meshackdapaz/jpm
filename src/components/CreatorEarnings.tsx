@@ -40,8 +40,11 @@ export function CreatorEarnings({ userId }: { userId: string }) {
   const [weeklyData, setWeeklyData] = useState<{ day: string; views: number }[]>([])
   const [withdrawals, setWithdrawals] = useState<any[]>([])
   const [withdrawOpen, setWithdrawOpen] = useState(false)
+  const [wMethod, setWMethod] = useState('mpesa')
   const [wAmount, setWAmount] = useState('')
-  const [wPhone, setWPhone] = useState('')
+  const [wPhone, setWPhone] = useState('') // Used for mobile numbers OR bank account number
+  const [wBankName, setWBankName] = useState('')
+  const [wAccountName, setWAccountName] = useState('')
   const [wSubmitting, setWSubmitting] = useState(false)
   const [wSuccess, setWSuccess] = useState(false)
   const [isMonetized, setIsMonetized] = useState<boolean | null>(null)
@@ -115,15 +118,26 @@ export function CreatorEarnings({ userId }: { userId: string }) {
   const handleWithdraw = async () => {
     const amount = parseFloat(wAmount)
     if (!amount || amount < MIN_WITHDRAW) return alert(`Minimum withdrawal is $${MIN_WITHDRAW}.00`)
-    if (!wPhone.trim()) return alert('Please enter your M-Pesa phone number')
+    
+    let details = ''
+    if (wMethod === 'bank') {
+      if (!wBankName.trim() || !wAccountName.trim() || !wPhone.trim()) return alert('Please fill all bank details')
+      details = `Bank: ${wBankName.trim()}, Name: ${wAccountName.trim()}, Acct: ${wPhone.trim()}`
+    } else {
+      if (!wPhone.trim()) return alert('Please enter your mobile money number')
+      details = wPhone.trim()
+    }
+
     setWSubmitting(true)
     await supabase.from('withdrawal_requests').insert({
-      user_id: userId, amount, payment_method: 'mpesa', phone_number: wPhone.trim(), status: 'pending',
+      user_id: userId, amount, payment_method: wMethod, phone_number: details, status: 'pending',
     })
     setWSubmitting(false)
     setWithdrawOpen(false)
     setWAmount('')
     setWPhone('')
+    setWBankName('')
+    setWAccountName('')
     setWSuccess(true)
     setTimeout(() => setWSuccess(false), 5000)
     fetchAll()
@@ -185,14 +199,14 @@ export function CreatorEarnings({ userId }: { userId: string }) {
           <p className="text-5xl font-black font-mono mb-5">${stats.balance.toFixed(2)}</p>
 
           {!withdrawOpen ? (
-            <button
+              <button
               onClick={() => setWithdrawOpen(true)}
               disabled={stats.balance < MIN_WITHDRAW}
               className="w-full py-3.5 bg-white text-black rounded-xl font-black text-sm disabled:opacity-30 hover:opacity-90 active:scale-[0.98] transition-all"
             >
               {stats.balance < MIN_WITHDRAW
                 ? `Need $${(MIN_WITHDRAW - stats.balance).toFixed(2)} more to withdraw`
-                : 'Withdraw via M-Pesa'}
+                : 'Withdraw Funds'}
             </button>
           ) : (
             <div className="flex flex-col gap-2.5">
@@ -203,13 +217,51 @@ export function CreatorEarnings({ userId }: { userId: string }) {
                 onChange={e => setWAmount(e.target.value)}
                 className="w-full bg-white/10 border border-white/20 rounded-xl px-4 py-3 text-white placeholder-white/40 outline-none text-sm font-medium"
               />
-              <input
-                type="tel"
-                placeholder="M-Pesa number e.g. 0712345678"
-                value={wPhone}
-                onChange={e => setWPhone(e.target.value)}
-                className="w-full bg-white/10 border border-white/20 rounded-xl px-4 py-3 text-white placeholder-white/40 outline-none text-sm font-medium"
-              />
+              <select
+                value={wMethod}
+                onChange={e => setWMethod(e.target.value)}
+                className="w-full bg-white/10 border border-white/20 rounded-xl px-4 py-3 text-white outline-none text-sm font-medium appearance-none"
+              >
+                <option value="mpesa" className="text-black">M-Pesa</option>
+                <option value="airtel" className="text-black">Airtel Money</option>
+                <option value="tigo" className="text-black">Tigo Pesa</option>
+                <option value="vodafone" className="text-black">Vodafone Cash</option>
+                <option value="bank" className="text-black">Bank Transfer</option>
+              </select>
+
+              {wMethod === 'bank' ? (
+                <>
+                  <input
+                    type="text"
+                    placeholder="Bank Name (e.g. CRDB, NMB)"
+                    value={wBankName}
+                    onChange={e => setWBankName(e.target.value)}
+                    className="w-full bg-white/10 border border-white/20 rounded-xl px-4 py-3 text-white placeholder-white/40 outline-none text-sm font-medium"
+                  />
+                  <input
+                    type="text"
+                    placeholder="Account Name"
+                    value={wAccountName}
+                    onChange={e => setWAccountName(e.target.value)}
+                    className="w-full bg-white/10 border border-white/20 rounded-xl px-4 py-3 text-white placeholder-white/40 outline-none text-sm font-medium"
+                  />
+                  <input
+                    type="text"
+                    placeholder="Account Number"
+                    value={wPhone}
+                    onChange={e => setWPhone(e.target.value)}
+                    className="w-full bg-white/10 border border-white/20 rounded-xl px-4 py-3 text-white placeholder-white/40 outline-none text-sm font-medium"
+                  />
+                </>
+              ) : (
+                <input
+                  type="tel"
+                  placeholder={`${wMethod === 'mpesa' ? 'M-Pesa' : wMethod === 'airtel' ? 'Airtel' : wMethod === 'tigo' ? 'Tigo Pesa' : 'Vodafone'} number`}
+                  value={wPhone}
+                  onChange={e => setWPhone(e.target.value)}
+                  className="w-full bg-white/10 border border-white/20 rounded-xl px-4 py-3 text-white placeholder-white/40 outline-none text-sm font-medium"
+                />
+              )}
               <div className="flex gap-2">
                 <button
                   onClick={() => setWithdrawOpen(false)}
@@ -370,7 +422,7 @@ export function CreatorEarnings({ userId }: { userId: string }) {
         <ArrowTrendingUpIcon className="w-4 h-4 flex-none mt-0.5 text-zinc-400" />
         <p>
           <strong className="text-zinc-900 dark:text-white">How earnings work:</strong>{' '}
-          You earn $0.30 per 1,000 unique views (30% of $1.00 RPM). Minimum withdrawal is ${MIN_WITHDRAW}. Payments processed within 24 hours via M-Pesa.
+          You earn $0.30 per 1,000 unique views (30% of $1.00 RPM). Minimum withdrawal is ${MIN_WITHDRAW}. Payments processed within 24 hours via Mobile Money or Bank Transfer.
         </p>
       </div>
 
@@ -387,7 +439,7 @@ export function CreatorEarnings({ userId }: { userId: string }) {
               className={`flex items-center justify-between px-5 py-4 ${i > 0 ? 'border-t border-zinc-50 dark:border-zinc-800/60' : ''}`}
             >
               <div>
-                <p className="font-bold text-sm">M-Pesa · {w.phone_number}</p>
+                <p className="font-bold text-sm capitalize">{w.payment_method} · {w.payment_method === 'bank' ? 'Bank Acct' : w.phone_number}</p>
                 <p className="text-xs text-zinc-400 mt-0.5">{new Date(w.created_at).toLocaleDateString('en', { day: 'numeric', month: 'short', year: 'numeric' })}</p>
               </div>
               <div className="text-right">

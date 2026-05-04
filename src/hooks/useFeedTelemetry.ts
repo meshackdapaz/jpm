@@ -34,14 +34,7 @@ export function useFeedTelemetry(user: any) {
           if (stats && stats.startTime > 0) {
             const dwellTime = Date.now() - stats.startTime
             if (dwellTime > 1000) { // Only track if viewed for > 1s
-              await supabase.from('interactions').insert({
-                user_id: user.id,
-                post_id: postId,
-                type: 'dwell',
-                dwell_time_ms: dwellTime
-              })
-              
-              // Increment view count on post-dwell (unique view logic)
+              // Increment view count on post-dwell (atomic view logic)
               await supabase.rpc('increment_post_view', { 
                 p_post_id: postId, 
                 p_viewer_id: user.id 

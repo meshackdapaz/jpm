@@ -48,9 +48,7 @@ export function StoryViewer({ stories, startIndex = 0, onClose }: {
         .then(({ error }: { error: any }) => {
           if (!error) {
             // Only update total count if insert succeeded (was actually a new view)
-            supabase.from('stories')
-              .update({ view_count: (current.view_count || 0) + 1 })
-              .eq('id', current.id)
+            supabase.rpc('increment_story_view', { p_story_id: current.id })
               .then()
           }
         })

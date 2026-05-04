@@ -18,10 +18,29 @@ interface DirectAdProps {
 export function DirectAd({ ad }: DirectAdProps) {
   const supabase = createClient()
 
+  const [hasTracked, setHasTracked] = React.useState(false)
+  const adRef = React.useRef<HTMLDivElement>(null)
+
   useEffect(() => {
-    // Increment impression count
-    supabase.rpc('increment_ad_impression', { ad_id: ad.id })
-  }, [ad.id])
+    if (hasTracked || !adRef.current) return
+
+    const observer = new IntersectionObserver(
+      async (entries) => {
+        if (entries[0].isIntersecting) {
+          setHasTracked(true)
+          observer.disconnect()
+          
+          // Increment impression count
+          const { error } = await supabase.rpc('increment_ad_impression', { ad_id: ad.id })
+          if (error) console.error('Failed to record ad impression:', error)
+        }
+      },
+      { threshold: 0.5 } // Requires at least 50% of the ad to be visible
+    )
+
+    observer.observe(adRef.current)
+    return () => observer.disconnect()
+  }, [ad.id, hasTracked, supabase])
 
   const handleClick = () => {
     supabase.rpc('increment_ad_click', { ad_id: ad.id })
@@ -30,6 +49,7 @@ export function DirectAd({ ad }: DirectAdProps) {
 
   return (
     <div 
+      ref={adRef}
       onClick={handleClick}
       className="w-full bg-white dark:bg-black border-b border-zinc-100 dark:border-zinc-900 cursor-pointer overflow-hidden group"
     >

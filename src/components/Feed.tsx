@@ -13,6 +13,7 @@ import { Virtuoso, VirtuosoHandle } from 'react-virtuoso'
 import { RightSidebar } from './RightSidebar'
 import { InlineFeedAd } from './InlineFeedAd'
 import { DirectAd } from './DirectAd'
+import { NativeFeedAd } from './NativeFeedAd'
 import { motion } from 'framer-motion'
 import { useFeedTelemetry } from '@/hooks/useFeedTelemetry'
 import { Capacitor } from '@capacitor/core'
@@ -217,7 +218,7 @@ export function Feed() {
     }
     
     // Fetch active Direct Ads
-    supabase.from('direct_ads').select('*').eq('active', true).then(({ data, error }: { data: any, error: any }) => {
+    supabase.from('direct_ads').select('*').eq('is_active', true).then(({ data, error }: { data: any, error: any }) => {
       if (error) console.error('Error fetching direct ads:', error)
       if (data && data.length > 0) setDirectAds(data)
     })
@@ -513,10 +514,13 @@ export function Feed() {
                       directAd ? (
                         <DirectAd ad={directAd} />
                       ) : (
-                        // If no direct ad is available, fallback to AdSense (but only on web, because AdSense iframes fail natively)
-                        !Capacitor.isNativePlatform() ? (
+                        // If no direct ad is available, use Native AdMob on native platform
+                        Capacitor.isNativePlatform() ? (
+                          <NativeFeedAd adUnitId="ca-app-pub-8166782428171770/3141151608" />
+                        ) : (
+                          // Fallback to AdSense on web
                           <InlineFeedAd adId="ca-app-pub-8166782428171770/3966636178" />
-                        ) : null
+                        )
                       )
                     )}
                   </div>

@@ -22,6 +22,8 @@ import { AuthProvider } from "@/components/AuthProvider";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import { OfflineNotice } from "@/components/OfflineNotice";
 import { SplashScreen } from "@/components/SplashScreen";
+import { Analytics } from "@vercel/analytics/react";
+import { SpeedInsights } from "@vercel/speed-insights/next";
 
 export default function RootLayout({
   children,
@@ -51,6 +53,8 @@ export default function RootLayout({
             </I18nProvider>
           </AuthProvider>
         </ThemeProvider>
+        <Analytics />
+        <SpeedInsights />
       </body>
     </html>
   );
