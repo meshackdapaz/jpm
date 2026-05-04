@@ -6,7 +6,8 @@
 @tailwind utilities;
 
 html, body {
-  overscroll-behavior-y: none;
+  overscroll-behavior-y: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
 /* ── Design tokens ─────────────────────────────────────────────────────────── */
@@ -44,10 +45,11 @@ body {
   -moz-osx-font-smoothing: grayscale;
   color: var(--foreground);
   background: var(--background);
-  overscroll-behavior: none;
+  overscroll-behavior-y: auto;
   min-width: 320px;
   -webkit-tap-highlight-color: transparent;
   text-rendering: optimizeLegibility;
+  touch-action: pan-x pan-y;
 }
 
 /* ── Scrollbar — hidden on app/mobile ──────────────────────────────────────── */

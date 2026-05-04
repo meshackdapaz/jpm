@@ -74,6 +74,20 @@ export function AppLayout({ children, fullBleed = false, wide = false, hideSideb
   const touchStartY = useRef(0)
   const isPulling = useRef(false)
 
+  // ── Scroll Recovery & Force Unlock ────────────────────────────────────────
+  useEffect(() => {
+    const recoverScroll = () => {
+      document.body.style.overflow = 'auto'
+      document.body.style.height = 'auto'
+      document.documentElement.style.overflow = 'auto'
+    }
+    
+    recoverScroll()
+    // Run again after a short delay to catch any late-mounting modals
+    const timer = setTimeout(recoverScroll, 500)
+    return () => clearTimeout(timer)
+  }, [pathname])
+
   // ── Keyboard visibility → hide bottom nav ─────────────────────────────
   const [keyboardVisible, setKeyboardVisible] = useState(false)
 
