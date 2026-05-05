@@ -340,11 +340,11 @@ export function RightSidebar({ mobile = false }: { mobile?: boolean }) {
       )}
 
       {/* Advertisement */}
-      <div className="bg-white dark:bg-[#0a0a0a] rounded-[24px] border border-zinc-100 dark:border-zinc-800/80 overflow-hidden shadow-sm p-4">
+      <div className="bg-white dark:bg-[#0a0a0a] rounded-[24px] border border-zinc-100 dark:border-zinc-800/80 overflow-hidden shadow-sm p-4 min-h-[300px] flex flex-col">
         <div className="flex items-center justify-between mb-3 px-1">
           <span className="text-[10px] font-black uppercase tracking-widest text-zinc-400">Sponsored</span>
         </div>
-        <div className="w-full min-h-[250px] bg-zinc-50 dark:bg-zinc-900/50 rounded-xl overflow-hidden flex items-center justify-center">
+        <div className="w-full flex-1 bg-zinc-50 dark:bg-zinc-900/50 rounded-xl overflow-hidden flex items-center justify-center">
           <InArticleAd />
         </div>
       </div>
@@ -444,11 +444,11 @@ export function RightSidebar({ mobile = false }: { mobile?: boolean }) {
       </div>
 
       {/* Advertisement */}
-      <div className="bg-white dark:bg-[#0a0a0a] rounded-[24px] border border-zinc-100 dark:border-zinc-800/80 overflow-hidden shadow-sm p-4 mt-2">
+      <div className="bg-white dark:bg-[#0a0a0a] rounded-[24px] border border-zinc-100 dark:border-zinc-800/80 overflow-hidden shadow-sm p-4 mt-2 min-h-[300px] flex flex-col">
         <div className="flex items-center justify-between mb-3 px-1">
           <span className="text-[10px] font-black uppercase tracking-widest text-zinc-400">Sponsored</span>
         </div>
-        <div className="w-full min-h-[250px] bg-zinc-50 dark:bg-zinc-900/50 rounded-xl overflow-hidden flex items-center justify-center">
+        <div className="w-full flex-1 bg-zinc-50 dark:bg-zinc-900/50 rounded-xl overflow-hidden flex items-center justify-center">
           <InArticleAd />
         </div>
       </div>
