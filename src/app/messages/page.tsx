@@ -229,6 +229,19 @@ function MessagesContent() {
       return
     }
 
+    // Check if they follow each other (accepted follow = allowed to chat)
+    const { data: followData } = await supabase
+      .from('follows')
+      .select('status')
+      .or(`and(follower_id.eq.${user.id},following_id.eq.${otherId}),and(follower_id.eq.${otherId},following_id.eq.${user.id})`)
+      .eq('status', 'accepted')
+
+    if (followData && followData.length > 0) {
+      setRequestStatus('allowed')
+      setCheckingRequest(false)
+      return
+    }
+
     // Check request table
     const { data: req } = await supabase
       .from('message_requests')

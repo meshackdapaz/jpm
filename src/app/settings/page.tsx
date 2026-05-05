@@ -41,6 +41,7 @@ function AccountEditor({ profile, userId, supabase, onSaved }: { profile: any; u
   const [instagramUrl, setInstagramUrl] = useState(profile?.instagram_url || '')
   const [facebookUrl, setFacebookUrl] = useState(profile?.facebook_url || '')
   const [websiteUrl, setWebsiteUrl] = useState(profile?.website_url || '')
+  const [isPrivate, setIsPrivate]   = useState(profile?.is_private || false)
   const [saving, setSaving]     = useState(false)
   const [error,  setError]      = useState<string | null>(null)
   const [success, setSuccess]   = useState(false)
@@ -63,6 +64,7 @@ function AccountEditor({ profile, userId, supabase, onSaved }: { profile: any; u
     setInstagramUrl(profile?.instagram_url || '')
     setFacebookUrl(profile?.facebook_url || '')
     setWebsiteUrl(profile?.website_url || '')
+    setIsPrivate(profile?.is_private || false)
   }, [profile])
 
   const handleSave = async (e: React.FormEvent) => {
@@ -93,7 +95,8 @@ function AccountEditor({ profile, userId, supabase, onSaved }: { profile: any; u
         tiktok_url: tiktokUrl.trim(),
         instagram_url: instagramUrl.trim(),
         facebook_url: facebookUrl.trim(),
-        website_url: websiteUrl.trim()
+        website_url: websiteUrl.trim(),
+        is_private: isPrivate
       })
       .eq('id', userId).select().single()
 
@@ -190,6 +193,20 @@ function AccountEditor({ profile, userId, supabase, onSaved }: { profile: any; u
             </div>
           </div>
         </div>
+        <div className="flex items-center justify-between py-2 border-b border-zinc-50 dark:border-zinc-900 pb-4">
+          <div>
+            <p className="text-[14px] font-bold">Private Account</p>
+            <p className="text-[12px] text-zinc-500">When your account is private, only people you approve can see your photos and videos.</p>
+          </div>
+          <button 
+            type="button"
+            onClick={() => setIsPrivate(!isPrivate)}
+            className={`w-11 h-6 rounded-full relative transition-colors duration-200 ${isPrivate ? 'bg-blue-600' : 'bg-zinc-200 dark:bg-zinc-800'}`}
+          >
+            <div className={`absolute top-1 left-1 w-4 h-4 bg-white rounded-full transition-transform duration-200 ${isPrivate ? 'translate-x-5' : ''}`} />
+          </button>
+        </div>
+
         <button type="submit" disabled={saving}
           className="w-full bg-black dark:bg-white text-white dark:text-black py-3 rounded-xl font-bold text-[15px] hover:opacity-90 active:scale-[0.98] disabled:opacity-50 transition-all mt-2">
           {saving ? 'Saving...' : 'Save changes'}
@@ -291,7 +308,11 @@ function SettingsContent() {
     setSettings(prev => {
       const newSettings = { ...prev, [key]: value }
       if (user) {
-        supabase.from('profiles').update({ settings: newSettings }).eq('id', user.id).then(({ error }: { error: any }) => {
+        const updateData: any = { settings: newSettings }
+        if (key === 'isPrivate') {
+          updateData.is_private = value
+        }
+        supabase.from('profiles').update(updateData).eq('id', user.id).then(({ error }: { error: any }) => {
           if (error) console.error('Error updating setting:', error)
         })
       }

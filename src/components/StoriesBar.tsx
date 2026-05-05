@@ -19,10 +19,10 @@ export function StoriesBar() {
   const fetchStories = useCallback(async () => {
     const { data } = await supabase
       .from('stories')
-      .select('*, profiles:creator_id(id, full_name, username, avatar_url)')
+      .select('id, creator_id, image_url, bg_color, expires_at, created_at, view_count, text_content, profiles:creator_id(id, full_name, username, avatar_url)')
       .gt('expires_at', new Date().toISOString())
       .order('created_at', { ascending: false })
-      .limit(100)
+      .limit(60)
 
     if (!data) return
 
@@ -114,26 +114,30 @@ export function StoriesBar() {
             >
               <div className="relative w-[58px] h-[58px]">
                 {group.hasUnseen ? (
-                  /* Unseen — solid thick black ring */
-                  <div className="w-full h-full rounded-full ring-2 ring-black dark:ring-white ring-offset-2 ring-offset-white dark:ring-offset-black overflow-hidden">
-                    {group.profile?.avatar_url ? (
-                      <Image src={group.profile.avatar_url} alt="" width={58} height={58} className="object-cover w-full h-full" unoptimized />
-                    ) : (
-                      <div className="w-full h-full bg-zinc-200 dark:bg-zinc-800 flex items-center justify-center text-lg font-black text-zinc-600">
-                        {group.profile?.full_name?.[0]?.toUpperCase() || 'U'}
-                      </div>
-                    )}
+                  /* Unseen — Premium gradient ring */
+                  <div className="w-full h-full p-[2.5px] rounded-full bg-gradient-to-tr from-yellow-400 via-pink-500 to-purple-600">
+                    <div className="w-full h-full rounded-full ring-2 ring-white dark:ring-black overflow-hidden bg-white dark:bg-black p-[1px]">
+                      {group.profile?.avatar_url ? (
+                        <Image src={group.profile.avatar_url} alt="" width={58} height={58} className="object-cover w-full h-full rounded-full" unoptimized />
+                      ) : (
+                        <div className="w-full h-full bg-zinc-200 dark:bg-zinc-800 flex items-center justify-center text-lg font-black text-zinc-600">
+                          {group.profile?.full_name?.[0]?.toUpperCase() || 'U'}
+                        </div>
+                      )}
+                    </div>
                   </div>
                 ) : (
-                  /* Seen — thin gray ring */
-                  <div className="w-full h-full rounded-full ring-2 ring-zinc-200 dark:ring-zinc-700 overflow-hidden">
-                    {group.profile?.avatar_url ? (
-                      <Image src={group.profile.avatar_url} alt="" width={58} height={58} className="object-cover w-full h-full" unoptimized />
-                    ) : (
-                      <div className="w-full h-full bg-zinc-200 dark:bg-zinc-800 flex items-center justify-center text-lg font-black text-zinc-600">
-                        {group.profile?.full_name?.[0]?.toUpperCase() || 'U'}
-                      </div>
-                    )}
+                  /* Seen — thin subtle ring */
+                  <div className="w-full h-full rounded-full p-[2.5px]">
+                    <div className="w-full h-full rounded-full ring-1 ring-zinc-200 dark:ring-zinc-800 overflow-hidden opacity-60">
+                      {group.profile?.avatar_url ? (
+                        <Image src={group.profile.avatar_url} alt="" width={58} height={58} className="object-cover w-full h-full rounded-full grayscale-[0.3]" unoptimized />
+                      ) : (
+                        <div className="w-full h-full bg-zinc-200 dark:bg-zinc-800 flex items-center justify-center text-lg font-black text-zinc-600">
+                          {group.profile?.full_name?.[0]?.toUpperCase() || 'U'}
+                        </div>
+                      )}
+                    </div>
                   </div>
                 )}
               </div>

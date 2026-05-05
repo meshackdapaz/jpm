@@ -98,22 +98,21 @@ export function StoryCreator({ onClose, onCreated }: { onClose: () => void; onCr
         ) : null}
 
         {mode === 'text' && (
-          <textarea
-            ref={textInputRef}
-            value={text}
-            onChange={(e) => setText(e.target.value)}
-            placeholder="Type something..."
-            maxLength={160}
-            className="w-full h-full bg-transparent resize-none outline-none text-center px-6 flex items-center justify-center"
-            style={{
-              color: textColor,
-              fontSize: '2.5rem',
-              lineHeight: '1.2',
-              fontWeight: 900,
-              paddingTop: '40vh',
-              textShadow: currentBg === '#ffffff' ? 'none' : '0 4px 24px rgba(0,0,0,0.5)',
-            }}
-          />
+          <div className="absolute inset-0 flex items-center justify-center p-8">
+            <textarea
+              ref={textInputRef}
+              value={text}
+              onChange={(e) => setText(e.target.value)}
+              placeholder="Type something..."
+              maxLength={160}
+              className="w-full bg-transparent resize-none outline-none text-center leading-tight font-black"
+              style={{
+                color: textColor,
+                fontSize: '2.8rem',
+                textShadow: currentBg === '#ffffff' ? 'none' : '0 4px 32px rgba(0,0,0,0.6)',
+              }}
+            />
+          </div>
         )}
       </div>
 

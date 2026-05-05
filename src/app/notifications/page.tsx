@@ -100,29 +100,57 @@ export default function NotificationsPage() {
     if (!user) return
     setLoading(true)
     
-    const { data: notifs } = await supabase
-      .from('notifications')
-      .select(`*, actor:profiles!notifications_actor_id_profiles_fkey(id, full_name, username, avatar_url)`)
-      .eq('user_id', user.id)
-      .order('created_at', { ascending: false })
-      .limit(80)
-      
-    if (notifs) {
-      const states = await checkFollowStates(notifs)
-      setFollowStates(states)
-      setNotifications(notifs)
+    // Fetch notifications AND pending follow requests
+    const [notifsRes, requestsRes] = await Promise.all([
+      supabase
+        .from('notifications')
+        .select(`
+          *,
+          actor:actor_id(id, username, full_name, avatar_url, is_verified)
+        `)
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false })
+        .limit(50),
+      supabase
+        .from('follows')
+        .select(`
+          status,
+          actor:follower_id(id, username, full_name, avatar_url, is_verified)
+        `)
+        .eq('following_id', user.id)
+        .eq('status', 'pending')
+    ])
+    
+    let allNotifs = notifsRes.data || []
+    
+    // Add pending requests as virtual notifications
+    if (requestsRes.data && requestsRes.data.length > 0) {
+      const requestNotifs = requestsRes.data.map((r: any) => ({
+        id: `request-${r.actor.id}`,
+        actor_id: r.actor.id,
+        actor: r.actor,
+        type: 'follow_request',
+        created_at: new Date().toISOString(),
+        is_request: true
+      }))
+      allNotifs = [...requestNotifs, ...allNotifs]
     }
-    setLoading(false)
-  }, [user, checkFollowStates])
 
+    setNotifications(allNotifs)
+    const states = await checkFollowStates(allNotifs)
+    setFollowStates(states)
+    setLoading(false)
+  }, [user, checkFollowStates, supabase])
   const toggleFollow = async (actorId: string) => {
     if (!user) return
     const isFollowing = followStates[actorId]
+    // Optimistic update
     setFollowStates(prev => ({ ...prev, [actorId]: !isFollowing }))
+    
     if (isFollowing) {
       await supabase.from('follows').delete().eq('follower_id', user.id).eq('following_id', actorId)
     } else {
-      await supabase.from('follows').insert({ follower_id: user.id, following_id: actorId })
+      await supabase.rpc('handle_follow_request', { p_target_id: actorId })
     }
   }
 
@@ -241,19 +269,67 @@ export default function NotificationsPage() {
                   </Link>
                   {' '}
                   <span className="text-zinc-500 dark:text-zinc-400 font-normal">
-                    {notif.type === 'follow' ? 'followed you' : getAction(notif.type)}
+                    {notif.type === 'follow_request' ? 'requested to follow you' : notif.type === 'follow' ? 'followed you' : getAction(notif.type)}
                   </span>
                 </p>
                 <p className="text-[12px] text-zinc-400 mt-0.5">{timeAgo(notif.created_at)}</p>
               </div>
 
-              {/* Follow action button — only for follow notifications */}
-              {isFollow && notif.actor_id !== user?.id && (
+              {/* Action area */}
+              {notif.type === 'follow_request' ? (
+                <div className="flex gap-2">
+                  <button
+                    onClick={async () => {
+                      if (!user) return;
+                      const { error } = await supabase
+                        .from('follows')
+                        .update({ status: 'accepted' })
+                        .eq('follower_id', notif.actor_id)
+                        .eq('following_id', user.id)
+                      if (!error) {
+                        setNotifications(prev => prev.filter(n => n.id !== notif.id))
+                        // Send notification back
+                        await supabase.from('notifications').insert({
+                          user_id: notif.actor_id,
+                          actor_id: user.id,
+                          type: 'follow'
+                        })
+                      }
+                    }}
+                    className="px-4 py-1.5 bg-blue-600 text-white rounded-lg text-[13px] font-bold hover:bg-blue-700 transition-colors"
+                  >
+                    Confirm
+                  </button>
+                  <button
+                    onClick={async () => {
+                      if (!user) return;
+                      await supabase
+                        .from('follows')
+                        .delete()
+                        .eq('follower_id', notif.actor_id)
+                        .eq('following_id', user.id)
+                      setNotifications(prev => prev.filter(n => n.id !== notif.id))
+                    }}
+                    className="px-4 py-1.5 bg-zinc-100 dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 rounded-lg text-[13px] font-bold hover:bg-zinc-200 dark:hover:bg-zinc-700 transition-colors"
+                  >
+                    Delete
+                  </button>
+                </div>
+              ) : isFollow && (
                 <button
-                  onClick={() => toggleFollow(notif.actor_id)}
-                  className={`flex-none px-4 py-1.5 rounded-xl text-[13px] font-bold transition-all ${
+                  onClick={async () => {
+                    if (!user) return;
+                    if (isFollowingBack) {
+                      await supabase.from('follows').delete().eq('follower_id', user.id).eq('following_id', notif.actor_id)
+                      setFollowStates(prev => ({ ...prev, [notif.actor_id]: false }))
+                    } else {
+                      await supabase.rpc('handle_follow_request', { p_target_id: notif.actor_id })
+                      setFollowStates(prev => ({ ...prev, [notif.actor_id]: true }))
+                    }
+                  }}
+                  className={`px-4 py-1.5 rounded-lg text-[13px] font-bold transition-all ${
                     isFollowingBack
-                      ? 'border border-zinc-200 dark:border-zinc-700 text-zinc-700 dark:text-zinc-300 bg-transparent'
+                      ? 'bg-zinc-100 dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100'
                       : 'bg-black dark:bg-white text-white dark:text-black'
                   }`}
                 >

@@ -203,10 +203,10 @@ function buildRecommendedFeed(postsData: any[] | null, myReposts: string[], myLi
 
 // ── Select strings — only existing columns ────────────────────────────────────
 
-const POST_SEL = `id, content, image_url, image_urls, video_url, title, created_at, creator_id, view_count, hide_counts, is_archived, settings, quoted_post_id, is_ghost, expires_at, quoted_post:quoted_post_id(id, content, profiles:creator_id(id, username, full_name, avatar_url)), profiles:creator_id(id, full_name, username, avatar_url, is_verified, last_seen, settings, fcm_token), likes(count), comments(count), reposts(count)`
+const POST_SEL = `id, content, image_url, image_urls, video_url, title, created_at, creator_id, view_count, hide_counts, is_archived, settings, quoted_post_id, is_ghost, expires_at, quoted_post:quoted_post_id(id, content, profiles:creator_id(id, username, full_name, avatar_url)), profiles:creator_id(id, full_name, username, avatar_url, is_verified, last_seen), likes(count), comments(count), reposts(count)`
 
 // Use simple join (no FK alias) to avoid PostgREST join resolution errors
-const REPOST_SEL = `created_at, user_id, profiles:user_id(id, full_name, username, avatar_url, is_verified), post:posts(id, content, image_url, image_urls, video_url, title, created_at, creator_id, view_count, hide_counts, is_archived, settings, quoted_post_id, is_ghost, expires_at, quoted_post:quoted_post_id(id, content, profiles:creator_id(id, username, full_name, avatar_url)), profiles:creator_id(id, full_name, username, avatar_url, is_verified, last_seen, settings), likes(count), comments(count), reposts(count))`
+const REPOST_SEL = `created_at, user_id, profiles:user_id(id, full_name, username, avatar_url, is_verified), post:posts(id, content, image_url, image_urls, video_url, title, created_at, creator_id, view_count, hide_counts, is_archived, settings, quoted_post_id, is_ghost, expires_at, quoted_post:quoted_post_id(id, content, profiles:creator_id(id, username, full_name, avatar_url)), profiles:creator_id(id, full_name, username, avatar_url, is_verified, last_seen), likes(count), comments(count), reposts(count))`
 
 // ── Main Feed ─────────────────────────────────────────────────────────────────
 
@@ -356,42 +356,39 @@ export function Feed() {
     }
 
     if (activeTab === 'for_you') {
-      const currentUserId = currentUser?.id
-      
-      let postsQuery = supabase.from('posts')
-        .select(POST_SEL)
-        .or('expires_at.is.null,expires_at.gt.now()')
-        .order('created_at', { ascending: false })
-        .limit(PAGE_SIZE)
+      const { data, error } = await supabase.rpc('get_foryou_feed', {
+        p_viewer_id: user?.id,
+        p_limit: PAGE_SIZE,
+        p_cursor_time: currentCursor || new Date().toISOString()
+      })
 
-      if (currentCursor) {
-        postsQuery = postsQuery.lt('created_at', currentCursor)
+      if (error) {
+        console.error('Error fetching ranked feed:', error)
+        // Fallback to simple query if RPC fails
+        let fallback = await supabase.from('posts')
+          .select(POST_SEL)
+          .order('created_at', { ascending: false })
+          .limit(PAGE_SIZE)
+        if (currentCursor) fallback = fallback.lt('created_at', currentCursor)
+        const { data: fallbackData } = await fallback
+        const feed = buildRecommendedFeed(fallbackData || [], [], [])
+        setPosts(isLoadMore ? [...posts, ...feed] : feed)
+        setCursor(feed[feed.length - 1]?.created_at || null)
+        setHasMore((fallbackData?.length || 0) === PAGE_SIZE)
+      } else {
+        const feed = data.map((p: any) => ({
+          ...p,
+          likes_count: p.likes_count || 0,
+          comments_count: p.comments_count || 0,
+          reposts_count: p.reposts_count || 0,
+          profiles: p.creator_id ? { id: p.creator_id } : null // Temporary shell
+        }))
+        
+        setPosts(isLoadMore ? [...posts, ...feed] : feed)
+        setCursor(feed[feed.length - 1]?.created_at || null)
+        setHasMore(feed.length === PAGE_SIZE)
       }
-
-      const [{ data: pd }, { data: md }, { data: ld }] = await Promise.all([
-        postsQuery,
-        currentUserId
-          ? supabase.from('reposts').select('post_id').eq('user_id', currentUserId)
-          : Promise.resolve({ data: [] }),
-        currentUserId
-          ? supabase.from('likes').select('post_id, reaction_type').eq('user_id', currentUserId)
-          : Promise.resolve({ data: [] })
-      ])
-
-      const myReposts = (md || []).map((r: any) => r.post_id)
-      const myLikes = ld || []
-      const newFeed = buildRecommendedFeed(pd, myReposts, myLikes)
       
-      const updatedPosts = isLoadMore 
-        ? [...posts, ...newFeed].filter((v, i, a) => a.findIndex(t => t.id === v.id) === i)
-        : newFeed
-
-      setPosts(updatedPosts)
-      
-      const lastItem = updatedPosts[updatedPosts.length - 1]
-      setCursor(lastItem?.created_at || null)
-      
-      setHasMore(pd?.length === PAGE_SIZE)
       setInitialLoad(false)
       setLoadingMore(false)
     }

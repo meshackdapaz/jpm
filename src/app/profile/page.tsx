@@ -45,7 +45,7 @@ function ProfileContent() {
   
   const [followers, setFollowers] = useState(0)
   const [following, setFollowing] = useState(0)
-  const [isFollowing, setIsFollowing] = useState(false)
+  const [followStatus, setFollowStatus] = useState<null | 'pending' | 'accepted'>(null)
   
   const [currentUserProfile, setCurrentUserProfile] = useState<any>(null)
   const [editData, setEditData] = useState<any>({
@@ -85,7 +85,7 @@ function ProfileContent() {
         supabase.from('follows').select('*', { count: 'exact', head: true }).eq('following_id', id),
         supabase.from('follows').select('*', { count: 'exact', head: true }).eq('follower_id', id),
         currentUser && currentUser.id !== id 
-          ? supabase.from('follows').select('*').eq('follower_id', currentUser.id).eq('following_id', id).maybeSingle()
+          ? supabase.from('follows').select('status').eq('follower_id', currentUser.id).eq('following_id', id).maybeSingle()
           : Promise.resolve({ data: null }),
         supabase.from('posts').select(postSel).eq('creator_id', id).order('is_pinned', { ascending: false }).order('created_at', { ascending: false }).limit(20),
         supabase.from('reposts').select(`created_at, user_id, profiles:user_id(id, full_name, username, avatar_url, is_verified, last_seen, settings), post:posts(${postSel})`).eq('user_id', id).order('created_at', { ascending: false }).limit(20),
@@ -96,6 +96,7 @@ function ProfileContent() {
       if (profileRes.data) {
         const pd = profileRes.data
         setProfile(pd)
+        setFollowStatus(followCheckRes.data?.status || null)
         setEditData({
           full_name: pd.full_name || '',
           bio: pd.bio || '',
@@ -113,7 +114,7 @@ function ProfileContent() {
       }
       setFollowers(followersRes.count || 0)
       setFollowing(followingRes.count || 0)
-      setIsFollowing(!!followCheckRes.data)
+      setFollowStatus(followCheckRes.data?.status || null)
 
       let combinedFeed: any[] = []
 
@@ -233,14 +234,26 @@ function ProfileContent() {
 
   const handleFollow = async () => {
     if (!currentUser || !id) return
-    if (isFollowing) {
+    
+    if (followStatus === 'accepted' || followStatus === 'pending') {
+      // Unfollow or Cancel Request
       await supabase.from('follows').delete().eq('follower_id', currentUser.id).eq('following_id', id)
-      setIsFollowing(false)
+      setFollowStatus(null)
+      setFollowers(prev => Math.max(0, prev - (followStatus === 'accepted' ? 1 : 0)))
     } else {
-      await supabase.from('follows').insert({ follower_id: currentUser.id, following_id: id })
-      setIsFollowing(true)
-      if (currentUser.id !== id) {
-        await supabase.from('notifications').insert({ user_id: id, actor_id: currentUser.id, type: 'follow' })
+      // Follow or Request
+      const { data, error } = await supabase.rpc('handle_follow_request', { p_target_id: id })
+      if (!error) {
+        setFollowStatus(data as any)
+        if (data === 'accepted') {
+          setFollowers(prev => prev + 1)
+          if (currentUser.id !== id) {
+            await supabase.from('notifications').insert({ user_id: id, actor_id: currentUser.id, type: 'follow' })
+          }
+        } else {
+          // It's a request, maybe send a 'request' notification
+          await supabase.from('notifications').insert({ user_id: id, actor_id: currentUser.id, type: 'follow_request' })
+        }
       }
     }
   }
@@ -416,39 +429,52 @@ function ProfileContent() {
         <div className="flex items-start justify-between mb-4">
           <div className="flex-grow min-w-0 pr-4">
             {/* Fixed Name/Username Info */}
-            <h1 className="text-[24px] font-black leading-tight flex items-center gap-1.5">
+            <h1 className="text-[26px] font-black leading-tight flex items-center gap-2">
               {profile?.full_name}
               {profile?.is_verified && <VerifiedBadge className="w-5 h-5" />}
+              {profile?.is_private && <LockClosedIcon className="w-5 h-5 text-zinc-400" />}
             </h1>
-            <p className="text-zinc-500 text-[14px] mt-0.5">@{profile?.username}</p>
-            {profile?.bio && <p className="mt-2 text-[14px] whitespace-pre-wrap text-zinc-800 dark:text-zinc-200 leading-snug">{profile.bio}</p>}
+            <p className="text-zinc-500 text-[15px] font-medium mt-0.5">@{profile?.username}</p>
+            {profile?.bio && <p className="mt-3 text-[15px] whitespace-pre-wrap text-zinc-800 dark:text-zinc-200 leading-snug tracking-tight font-medium">{profile.bio}</p>}
             
+            {/* Stats Grid */}
+            <div className="flex gap-8 mt-6">
+              <div className="flex flex-col">
+                <span className="font-black text-[18px] text-zinc-900 dark:text-zinc-100 tabular-nums leading-none">{followers}</span>
+                <span className="text-[13px] font-bold text-zinc-500 uppercase tracking-widest mt-1">Followers</span>
+              </div>
+              <div className="flex flex-col">
+                <span className="font-black text-[18px] text-zinc-900 dark:text-zinc-100 tabular-nums leading-none">{following}</span>
+                <span className="text-[13px] font-bold text-zinc-500 uppercase tracking-widest mt-1">Following</span>
+              </div>
+            </div>
+
             {/* Social Icons Row */}
-            <div className="flex items-center gap-4 mt-4 min-h-[40px]">
+            <div className="flex items-center gap-5 mt-6 min-h-[40px]">
               {(profile?.tiktok_url || profile?.instagram_url || profile?.facebook_url || profile?.website_url) ? (
                 <>
               {profile?.tiktok_url && (
                 <a href={profile.tiktok_url} target="_blank" rel="noopener noreferrer"
-                  className="text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors" title="TikTok">
-                  <svg className="w-5 h-5 fill-current" viewBox="0 0 24 24"><path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-5.2 1.74 2.89 2.89 0 0 1 2.31-4.64 2.93 2.93 0 0 1 .88.13V9.4a6.84 6.84 0 0 0-1-.05A6.33 6.33 0 0 0 5 20.1a6.34 6.34 0 0 0 10.86-4.43v-7a8.16 8.16 0 0 0 4.77 1.52v-3.4a4.85 4.85 0 0 1-1.04-.1z"/></svg>
+                  className="text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 transition-all hover:scale-110" title="TikTok">
+                  <svg className="w-5.5 h-5.5 fill-current" viewBox="0 0 24 24"><path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-5.2 1.74 2.89 2.89 0 0 1 2.31-4.64 2.93 2.93 0 0 1 .88.13V9.4a6.84 6.84 0 0 0-1-.05A6.33 6.33 0 0 0 5 20.1a6.34 6.34 0 0 0 10.86-4.43v-7a8.16 8.16 0 0 0 4.77 1.52v-3.4a4.85 4.85 0 0 1-1.04-.1z"/></svg>
                 </a>
               )}
               {profile?.instagram_url && (
                 <a href={profile.instagram_url} target="_blank" rel="noopener noreferrer"
-                  className="text-zinc-500 dark:text-zinc-400 hover:text-pink-600 transition-colors" title="Instagram">
-                  <svg className="w-5 h-5 fill-current" viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.981 1.28.058 1.688.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.058-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z"/></svg>
+                  className="text-zinc-500 dark:text-zinc-400 hover:text-pink-600 transition-all hover:scale-110" title="Instagram">
+                  <svg className="w-5.5 h-5.5 fill-current" viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.981 1.28.058 1.688.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.058-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z"/></svg>
                 </a>
               )}
               {profile?.facebook_url && (
                 <a href={profile.facebook_url} target="_blank" rel="noopener noreferrer"
-                  className="text-zinc-500 dark:text-zinc-400 hover:text-blue-600 transition-colors" title="Facebook">
-                  <svg className="w-5 h-5 fill-current" viewBox="0 0 24 24"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
+                  className="text-zinc-500 dark:text-zinc-400 hover:text-blue-600 transition-all hover:scale-110" title="Facebook">
+                  <svg className="w-5.5 h-5.5 fill-current" viewBox="0 0 24 24"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
                 </a>
               )}
                   {profile?.website_url && (
                     <a href={profile.website_url} target="_blank" rel="noopener noreferrer"
-                      className="text-zinc-500 dark:text-zinc-400 hover:text-blue-400 transition-colors" title="Website">
-                      <GlobeAltIcon className="w-5 h-5" />
+                      className="text-zinc-500 dark:text-zinc-400 hover:text-blue-400 transition-all hover:scale-110" title="Website">
+                      <GlobeAltIcon className="w-6 h-6" />
                     </a>
                   )}
                 </>
@@ -464,20 +490,14 @@ function ProfileContent() {
                     })
                     setShowSocialLinks(true)
                   }}
-                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-zinc-50 dark:bg-zinc-900 text-zinc-500 text-[12px] font-bold border border-dashed border-zinc-200 dark:border-zinc-800 hover:border-zinc-300 dark:hover:border-zinc-700 transition-all"
+                  className="flex items-center gap-2 px-4 py-2 rounded-xl bg-zinc-50 dark:bg-zinc-900 text-zinc-500 text-[13px] font-black border border-zinc-200 dark:border-zinc-800 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-all active:scale-95"
                 >
                   <UserPlusIcon className="w-4 h-4" />
-                  Add social links
+                  Add links
                 </button>
               )}
             </div>
 
-            {/* Follower count */}
-            <button className="mt-3 flex items-center gap-1.5 text-zinc-500 text-[13px] hover:text-zinc-700 dark:hover:text-zinc-300 transition-colors">
-              <span className="font-bold text-zinc-900 dark:text-zinc-100">{followers}</span> followers
-              <span className="text-zinc-300 dark:text-zinc-700 mx-0.5">·</span>
-              <span className="font-bold text-zinc-900 dark:text-zinc-100">{following}</span> following
-            </button>
           </div>
 
           {/* Avatar — top right with + button for owner */}
@@ -498,89 +518,153 @@ function ProfileContent() {
           </div>
         </div>
 
-        {/* Action buttons row */}
-        <div className="flex gap-2 mb-1">
-            {isOwner ? (
-              <>
+      {/* Action buttons row */}
+      <div className="flex gap-2 mb-1 px-4">
+        {isOwner ? (
+          <>
+            <button
+              onClick={() => router.push('/settings?tab=status')}
+              className="flex-1 py-2 border border-zinc-200 dark:border-zinc-700 rounded-xl text-[14px] font-bold text-zinc-900 dark:text-zinc-100 hover:bg-zinc-50 dark:hover:bg-zinc-900 transition-colors"
+            >
+              Edit profile
+            </button>
+            <button
+              onClick={() => setShowQRCode(true)}
+              className="px-3 py-2 border border-zinc-200 dark:border-zinc-700 rounded-xl text-zinc-900 dark:text-zinc-100 hover:bg-zinc-50 dark:hover:bg-zinc-900 transition-colors"
+              title="Show QR Code"
+            >
+              <QrCodeIcon className="w-5 h-5" />
+            </button>
+            <button
+              onClick={async () => {
+                const siteUrl = 'https://jpmtz.online';
+                const url = `${siteUrl}/profile?id=${profile.id}`;
+                if (navigator.share) {
+                  await navigator.share({
+                    title: `${profile.full_name}'s Profile`,
+                    text: `Check out @${profile.username} on JPM`,
+                    url
+                  });
+                } else {
+                  await navigator.clipboard.writeText(url);
+                  alert('Link copied to clipboard!');
+                }
+              }}
+              className="flex-1 py-2 border border-zinc-200 dark:border-zinc-700 rounded-xl text-[14px] font-bold text-zinc-900 dark:text-zinc-100 hover:bg-zinc-50 dark:hover:bg-zinc-900 transition-colors"
+            >
+              Share profile
+            </button>
+          </>
+        ) : (
+          <>
+            {currentUserProfile?.is_admin && (
+              <button onClick={handleToggleVerify} className={`px-4 py-2 text-sm border rounded-xl font-bold ${
+                profile?.is_verified ? 'border-red-400 text-red-500' : 'bg-black text-white border-black'
+              }`}>
+                {profile?.is_verified ? 'Unverify' : 'Verify'}
+              </button>
+            )}
+            <button
+              onClick={() => setShowQRCode(true)}
+              className="px-3 py-2 border border-zinc-200 dark:border-zinc-700 rounded-xl text-zinc-900 dark:text-zinc-100 hover:bg-zinc-50 dark:hover:bg-zinc-900 transition-colors"
+              title="Show QR Code"
+            >
+              <QrCodeIcon className="w-5 h-5" />
+            </button>
+            <button
+              onClick={() => {
+                if (!currentUser) {
+                  window.dispatchEvent(new CustomEvent('show-login-prompt', { detail: { message: `Join JPM to follow ${profile?.full_name}` } }))
+                  return
+                }
+                handleFollow()
+              }}
+              className={`flex-1 py-2 rounded-xl text-[14px] font-bold transition-all ${
+                followStatus
+                  ? 'border border-zinc-200 dark:border-zinc-700 text-zinc-700 dark:text-zinc-300'
+                  : 'bg-black dark:bg-white text-white dark:text-black'
+              }`}
+            >
+              {followStatus === 'pending' ? 'Requested' : followStatus === 'accepted' ? 'Following' : 'Follow'}
+            </button>
+            {currentUser && (
+              <Link
+                href={`/messages?userId=${id}`}
+                className="flex-1 py-2 border border-zinc-200 dark:border-zinc-700 rounded-xl text-[14px] font-bold text-center text-zinc-700 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-zinc-900 transition-colors"
+              >
+                Message
+              </Link>
+            )}
+          </>
+        )}
+      </div>
+
+      {/* ── Content Tabs & Feed ── */}
+      <div className="border-t border-zinc-100 dark:border-zinc-900 mt-6">
+        {profile?.is_private && !isOwner && followStatus !== 'accepted' ? (
+          <div className="flex flex-col items-center justify-center py-24 px-10 text-center space-y-4">
+            <div className="w-16 h-16 rounded-full border-2 border-zinc-900 dark:border-zinc-100 flex items-center justify-center mb-2">
+              <LockClosedIcon className="w-8 h-8" />
+            </div>
+            <div>
+              <h3 className="text-[18px] font-black tracking-tight">This account is private</h3>
+              <p className="text-[14px] text-zinc-500 mt-1 max-w-[240px] mx-auto leading-snug">Follow this account to see their photos and videos.</p>
+            </div>
+          </div>
+        ) : (
+          <>
+            <div className="flex border-b border-zinc-100 dark:border-zinc-900 overflow-x-auto hide-scrollbar">
+              {(isOwner 
+                ? ['posts', 'replies', 'media', 'reposts', 'likes', 'archive'] as const
+                : ['posts', 'replies', 'media', 'reposts', 'likes'] as const
+              ).map(tab => (
                 <button
-                  onClick={() => router.push('/settings?tab=status')}
-                  className="flex-1 py-2 border border-zinc-200 dark:border-zinc-700 rounded-xl text-[14px] font-bold text-zinc-900 dark:text-zinc-100 hover:bg-zinc-50 dark:hover:bg-zinc-900 transition-colors"
-                >
-                  Edit profile
-                </button>
-                <button
-                  onClick={() => setShowQRCode(true)}
-                  className="px-3 py-2 border border-zinc-200 dark:border-zinc-700 rounded-xl text-zinc-900 dark:text-zinc-100 hover:bg-zinc-50 dark:hover:bg-zinc-900 transition-colors"
-                  title="Show QR Code"
-                >
-                  <QrCodeIcon className="w-5 h-5" />
-                </button>
-                <button
-                  onClick={async () => {
-                    const siteUrl = 'https://jpmtz.online';
-                    const url = `${siteUrl}/profile?id=${profile.id}`;
-                    if (navigator.share) {
-                      await navigator.share({
-                        title: `${profile.full_name}'s Profile`,
-                        text: `Check out @${profile.username} on JPM`,
-                        url
-                      });
-                    } else {
-                      await navigator.clipboard.writeText(url);
-                      alert('Link copied to clipboard!');
-                    }
-                  }}
-                  className="flex-1 py-2 border border-zinc-200 dark:border-zinc-700 rounded-xl text-[14px] font-bold text-zinc-900 dark:text-zinc-100 hover:bg-zinc-50 dark:hover:bg-zinc-900 transition-colors"
-                >
-                  Share profile
-                </button>
-              </>
-            ) : (
-              <>
-                {currentUserProfile?.is_admin && (
-                  <button onClick={handleToggleVerify} className={`px-4 py-2 text-sm border rounded-xl font-bold ${
-                    profile?.is_verified ? 'border-red-400 text-red-500' : 'bg-black text-white border-black'
-                  }`}>
-                    {profile?.is_verified ? 'Unverify' : 'Verify'}
-                  </button>
-                )}
-                <button
-                  onClick={() => setShowQRCode(true)}
-                  className="px-3 py-2 border border-zinc-200 dark:border-zinc-700 rounded-xl text-zinc-900 dark:text-zinc-100 hover:bg-zinc-50 dark:hover:bg-zinc-900 transition-colors"
-                  title="Show QR Code"
-                >
-                  <QrCodeIcon className="w-5 h-5" />
-                </button>
-                <button
-                  onClick={() => {
-                    if (!currentUser) {
-                      window.dispatchEvent(new CustomEvent('show-login-prompt', { detail: { message: `Join JPM to follow ${profile?.full_name}` } }))
-                      return
-                    }
-                    handleFollow()
-                  }}
-                  className={`flex-1 py-2 rounded-xl text-[14px] font-bold transition-all ${
-                    isFollowing
-                      ? 'border border-zinc-200 dark:border-zinc-700 text-zinc-700 dark:text-zinc-300'
-                      : 'bg-black dark:bg-white text-white dark:text-black'
+                  key={tab}
+                  onClick={() => setActiveTab(tab as any)}
+                  className={`flex-1 py-3.5 text-[13px] font-semibold capitalize relative whitespace-nowrap min-w-0 transition-colors ${
+                    activeTab === tab
+                      ? 'text-black dark:text-white'
+                      : 'text-zinc-400 dark:text-zinc-500 hover:text-zinc-600 dark:hover:text-zinc-300'
                   }`}
                 >
-                  {isFollowing ? 'Following' : 'Follow'}
+                  {tab === 'posts' ? 'Threads' : tab.charAt(0).toUpperCase() + tab.slice(1)}
+                  {activeTab === tab && (
+                    <span className="absolute bottom-0 left-1/2 -translate-x-1/2 w-10 h-[2px] bg-black dark:bg-white rounded-full" />
+                  )}
                 </button>
-                {currentUser && (
-                  <Link
-                    href={`/messages?userId=${id}`}
-                    className="flex-1 py-2 border border-zinc-200 dark:border-zinc-700 rounded-xl text-[14px] font-bold text-center text-zinc-700 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-zinc-900 transition-colors"
-                  >
-                    Message
-                  </Link>
-                )}
-              </>
-            )}
-          </div>
-        </div>
+              ))}
+            </div>
+            
+            <div className="divide-y divide-zinc-200 dark:divide-zinc-800">
+              {(() => {
+                const filteredPosts = posts.filter((post: any) => {
+                  if (activeTab === 'reposts') return post.is_repost && !post.is_archived
+                  if (activeTab === 'likes')   return post.is_liked_tab && !post.is_archived
+                  if (activeTab === 'archive') return post.is_bookmarked_tab
+                  if (activeTab === 'media')   return !post.is_repost && !post.is_liked_tab && !post.is_bookmarked_tab && !post.is_archived && (post.image_url || (post.image_urls && post.image_urls.length > 0))
+                  if (activeTab === 'replies') return !post.is_repost && !post.is_liked_tab && !post.is_bookmarked_tab && !post.is_archived && post.parent_id
+                  return !post.is_repost && !post.is_archived && !post.is_liked_tab && !post.is_bookmarked_tab // 'posts' (Echo) tab
+                })
 
-      {/* ── Social Links Modal ── */}
+                return (
+                  <>
+                    {filteredPosts.map((post: any, index: number) => {
+                      const showAd = index > 0 && index % 3 === 2;
+                      return (
+                        <div key={`${post.id}-${post.is_repost}`}>
+                          <Post post={post} />
+                          {showAd && <InlineFeedAd adId="ca-app-pub-8166782428171770/3966636178" />}
+                        </div>
+                      )
+                    })}
+                    {filteredPosts.length === 0 && <div className="p-8 text-center text-zinc-400 text-sm">No {activeTab === 'posts' ? 'thread' : activeTab} yet.</div>}
+                  </>
+                )
+              })()}
+            </div>
+          </>
+        )}
+         {/* ── Social Links Modal ── */}
       {showSocialLinks && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/40 backdrop-blur-sm animate-in fade-in duration-200">
           <div className="bg-white dark:bg-zinc-900 w-[92%] max-w-[400px] rounded-[28px] overflow-hidden flex flex-col shadow-2xl animate-in zoom-in-95 duration-200">
@@ -588,7 +672,7 @@ function ProfileContent() {
               <h2 className="text-[20px] font-bold">Social Links</h2>
               <button onClick={() => setShowSocialLinks(false)} className="absolute right-5 top-5 text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200"><XMarkIcon className="w-6 h-6" /></button>
             </div>
-            <div className="px-6 py-5 space-y-4">
+            <div className="px-6 py-5 space-y-4 overflow-y-auto max-h-[60vh]">
               {/* TikTok */}
               <div className="relative">
                 <div className="absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none">
@@ -653,84 +737,11 @@ function ProfileContent() {
           </div>
         </div>
       )}
-
-      {/* Profile editing moved to Settings page */}
-
-
-      {/* ── Content Tabs — Echo style ── */}
-      <div className="border-t border-zinc-100 dark:border-zinc-900 mt-2">
-        <div className="flex border-b border-zinc-100 dark:border-zinc-900 overflow-x-auto hide-scrollbar">
-          {(isOwner 
-            ? ['posts', 'replies', 'media', 'reposts', 'likes', 'archive'] as const
-            : ['posts', 'replies', 'media', 'reposts', 'likes'] as const
-          ).map(tab => (
-            <button
-              key={tab}
-              onClick={() => setActiveTab(tab as any)}
-              className={`flex-1 py-3.5 text-[13px] font-semibold capitalize relative whitespace-nowrap min-w-0 transition-colors ${
-                activeTab === tab
-                  ? 'text-black dark:text-white'
-                  : 'text-zinc-400 dark:text-zinc-500 hover:text-zinc-600 dark:hover:text-zinc-300'
-              }`}
-            >
-              {tab === 'posts' ? 'Threads' : tab.charAt(0).toUpperCase() + tab.slice(1)}
-              {activeTab === tab && (
-                <span className="absolute bottom-0 left-1/2 -translate-x-1/2 w-10 h-[2px] bg-black dark:bg-white rounded-full" />
-              )}
-            </button>
-          ))}
-        </div>
-        
-        <div className="divide-y divide-zinc-200 dark:divide-zinc-800">
-          {(() => {
-            const isPrivate = profile?.settings?.isPrivate
-            const canSeeContent = !isPrivate || isFollowing || isOwner
-
-            if (!canSeeContent) return (
-              <div className="p-12 text-center text-zinc-500">
-                <LockClosedIcon className="w-10 h-10 mx-auto mb-4 opacity-20" />
-                <h3 className="text-xl font-bold">This account is private</h3>
-              </div>
-            )
-
-            const filteredPosts = posts.filter((post: any) => {
-              if (activeTab === 'reposts') return post.is_repost && !post.is_archived
-              if (activeTab === 'likes')   return post.is_liked_tab && !post.is_archived
-              if (activeTab === 'archive') return post.is_bookmarked_tab
-              if (activeTab === 'media')   return !post.is_repost && !post.is_liked_tab && !post.is_bookmarked_tab && !post.is_archived && (post.image_url || (post.image_urls && post.image_urls.length > 0))
-              if (activeTab === 'replies') return !post.is_repost && !post.is_liked_tab && !post.is_bookmarked_tab && !post.is_archived && post.parent_id
-              return !post.is_repost && !post.is_archived && !post.is_liked_tab && !post.is_bookmarked_tab // 'posts' (Echo) tab
-            })
-
-            return (
-              <>
-                {filteredPosts.map((post: any, index: number) => {
-                  const showAd = index > 0 && index % 3 === 2;
-                  return (
-                    <div key={`${post.id}-${post.is_repost}`}>
-                      <Post post={post} />
-                      {showAd && <InlineFeedAd adId="ca-app-pub-8166782428171770/3966636178" />}
-                    </div>
-                  )
-                })}
-                {filteredPosts.length === 0 && <div className="p-8 text-center text-zinc-400 text-sm">No {activeTab === 'posts' ? 'thread' : activeTab} yet.</div>}
-              </>
-            )
-          })()}
-        </div>
-      </div>
       {/* Bottom spacer for mobile nav */}
       <div className="h-28 sm:h-8" style={{ paddingBottom: 'env(safe-area-inset-bottom)' }} />
       {/* QR Code Modal */}
-      {(() => {
-        // QR code points to Play Store so scanning downloads the app
-        const playStoreUrl = 'https://play.google.com/store/apps/details?id=com.jpm.app';
-        const profileUrl = `https://jpmtz.online/profile?id=${profile.id}`;
-        const qrValue = playStoreUrl; // Scan = download the app
-        
-        if (!showQRCode || typeof document === 'undefined') return null;
-        
-        return createPortal(
+      {(showQRCode && typeof document !== 'undefined') ? (
+        createPortal(
           <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200" onClick={() => setShowQRCode(false)}>
             <div 
               className="bg-white dark:bg-zinc-900 w-full max-w-sm rounded-[32px] overflow-hidden shadow-2xl border border-zinc-100 dark:border-zinc-800 animate-in zoom-in-95 duration-200"
@@ -750,18 +761,10 @@ function ProfileContent() {
                 <div className="flex flex-col items-center">
                   <div className="p-6 bg-white rounded-[24px] shadow-inner mb-6 ring-1 ring-zinc-100">
                     <QRCodeSVG 
-                      value={qrValue}
+                      value="https://play.google.com/store/apps/details?id=com.jpm.app"
                       size={200}
                       level="H"
                       includeMargin={false}
-                      imageSettings={profile?.avatar_url ? {
-                        src: profile.avatar_url,
-                        x: undefined,
-                        y: undefined,
-                        height: 40,
-                        width: 40,
-                        excavate: true,
-                      } : undefined}
                     />
                   </div>
                   
@@ -798,6 +801,7 @@ function ProfileContent() {
                     </button>
                     <button
                       onClick={async () => {
+                        const playStoreUrl = 'https://play.google.com/store/apps/details?id=com.jpm.app';
                         if (navigator.share) {
                           await navigator.share({
                             title: 'Download JPM App',
@@ -819,8 +823,10 @@ function ProfileContent() {
             </div>
           </div>,
           document.body
-        );
-      })()}
+        )
+      ) : null}
+        </div>
+      </div>
     </AppLayout>
   )
 }
