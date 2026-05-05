@@ -12,7 +12,6 @@
     "assets:generate": "npx @capacitor/assets generate --ios"
   },
   "dependencies": {
-    "@brandonknudsen/admob-native-advanced": "^1.1.2",
     "@capacitor-community/admob": "^8.0.0",
     "@capacitor-firebase/messaging": "^8.1.0",
     "@capacitor/android": "^8.2.0",

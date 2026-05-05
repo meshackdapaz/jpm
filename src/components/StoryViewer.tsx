@@ -9,6 +9,7 @@ import Link from 'next/link'
 import { motion, AnimatePresence } from 'framer-motion'
 import { XMarkIcon, ChevronLeftIcon, ChevronRightIcon, EyeIcon, HeartIcon, PaperAirplaneIcon } from '@heroicons/react/24/outline'
 import { HeartIcon as HeartIconSolid } from '@heroicons/react/24/solid'
+import { FloatingOverlayAd } from './FloatingOverlayAd'
 
 function timeLeft(expiresAt: string) {
   const diff = Math.max(0, new Date(expiresAt).getTime() - Date.now())
@@ -108,18 +109,32 @@ export function StoryViewer({ stories, startIndex, onClose }: { stories: any[], 
     }
   }, [userIndex, slideIndex, currentGroup, groupedStories])
 
+  // Record View
+  const seenIdsRef = useRef<Set<string>>(new Set())
+
   useEffect(() => {
-    if (!current || !user) return
+    if (!current || !user || seenIdsRef.current.has(current.id)) return
     
-    // Only count as view if not seen yet
+    // Only count if not seen yet (including from DB state)
     if (!current.is_seen) {
-      current.is_seen = true // mark locally seen
-      setLocalViews(prev => ({ ...prev, [current.id]: (current.view_count || 0) + 1 }))
+      seenIdsRef.current.add(current.id)
       
-      // Fire and forget view recording
-      supabase.from('story_views').insert({ story_id: current.id, viewer_id: user.id }).then()
+      // Update local state immediately for UX
+      setLocalViews(prev => ({ 
+        ...prev, 
+        [current.id]: (prev[current.id] ?? current.view_count ?? 0) + 1 
+      }))
+      
+      // Persist to DB
+      supabase.from('story_views')
+        .insert({ story_id: current.id, viewer_id: user.id })
+        .then(({ error }: { error: any }) => {
+          if (error && error.code !== '23505') {
+            console.error('[StoryViewer] Error recording view:', error)
+          }
+        })
     }
-  }, [current, user])
+  }, [current?.id, user?.id, supabase])
   useEffect(() => {
     // Check if liked
     const checkLike = async () => {
@@ -472,6 +487,9 @@ export function StoryViewer({ stories, startIndex, onClose }: { stories: any[], 
                )}
              </AnimatePresence>
           </div>
+
+          {/* Facebook-style Overlay Ad */}
+          <FloatingOverlayAd />
 
           {/* Bottom Action Bar */}
           <div className="absolute bottom-0 left-0 right-0 z-40 px-4 pb-[calc(1.75rem+env(safe-area-inset-bottom))] bg-gradient-to-t from-black/90 via-black/40 to-transparent pt-20">

@@ -8,6 +8,7 @@ import { createClient } from '@/lib/supabase/client'
 import { useAuth } from './AuthProvider'
 import { VerifiedBadge } from './VerifiedBadge'
 import { MagnifyingGlassIcon } from '@heroicons/react/24/outline'
+import { InArticleAd } from './InArticleAd'
 
 type TrendingPost = {
   id: string
@@ -338,6 +339,16 @@ export function RightSidebar({ mobile = false }: { mobile?: boolean }) {
         </section>
       )}
 
+      {/* Advertisement */}
+      <div className="bg-white dark:bg-[#0a0a0a] rounded-[24px] border border-zinc-100 dark:border-zinc-800/80 overflow-hidden shadow-sm p-4">
+        <div className="flex items-center justify-between mb-3 px-1">
+          <span className="text-[10px] font-black uppercase tracking-widest text-zinc-400">Sponsored</span>
+        </div>
+        <div className="w-full min-h-[250px] bg-zinc-50 dark:bg-zinc-900/50 rounded-xl overflow-hidden flex items-center justify-center">
+          <InArticleAd />
+        </div>
+      </div>
+
       {/* Footer */}
       <div className="px-1">
         <p className="text-zinc-400 text-[11px] leading-relaxed">
@@ -429,6 +440,16 @@ export function RightSidebar({ mobile = false }: { mobile?: boolean }) {
               </div>
             </div>
           ))}
+        </div>
+      </div>
+
+      {/* Advertisement */}
+      <div className="bg-white dark:bg-[#0a0a0a] rounded-[24px] border border-zinc-100 dark:border-zinc-800/80 overflow-hidden shadow-sm p-4 mt-2">
+        <div className="flex items-center justify-between mb-3 px-1">
+          <span className="text-[10px] font-black uppercase tracking-widest text-zinc-400">Sponsored</span>
+        </div>
+        <div className="w-full min-h-[250px] bg-zinc-50 dark:bg-zinc-900/50 rounded-xl overflow-hidden flex items-center justify-center">
+          <InArticleAd />
         </div>
       </div>
 

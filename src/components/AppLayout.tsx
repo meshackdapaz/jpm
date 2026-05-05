@@ -37,6 +37,7 @@ import { ChatBubbleLeftRightIcon as MessagesOutline, PencilSquareIcon as PlusOut
 import { useAuth } from './AuthProvider'
 import { CreatePost } from './CreatePost'
 import { RightSidebar } from './RightSidebar'
+import { LeftSidebarAd } from './LeftSidebarAd'
 import { ToastNotification } from './ToastNotification'
 import { App } from '@capacitor/app'
 import { PushNotifications } from '@capacitor/push-notifications'
@@ -241,6 +242,30 @@ export function AppLayout({ children, fullBleed = false, wide = false, hideSideb
     }
   }, [isNative])
 
+  // ── Capacitor Back Button Handler ──────────────────────────────────────
+  useEffect(() => {
+    if (!isNative) return;
+
+    let backListener: any;
+    const setupBackButton = async () => {
+      backListener = await App.addListener('backButton', ({ canGoBack }) => {
+        // If we are at the home root, we should exit the app instead of going back to login
+        if (window.location.pathname === '/' || window.location.pathname === '/home') {
+          App.exitApp();
+        } else if (canGoBack) {
+          window.history.back();
+        } else {
+          App.exitApp();
+        }
+      });
+    };
+    setupBackButton();
+
+    return () => {
+      if (backListener) backListener.remove();
+    };
+  }, [isNative]);
+
   // ── Pull-to-refresh touch handlers ────────────────────────────────────────
   const onTouchStart = useCallback((e: React.TouchEvent) => {
     if (window.scrollY === 0) {
@@ -434,8 +459,9 @@ export function AppLayout({ children, fullBleed = false, wide = false, hideSideb
         {fullBleed ? (
           children
         ) : (
-          <div className={`flex w-full ${(wide || hideSidebar || isPublicRoute) ? 'max-w-6xl' : 'max-w-4xl'} gap-0 lg:gap-8 lg:px-4 justify-center`}>
-            <div className={`flex-1 min-w-0 ${(wide || hideSidebar || isPublicRoute) ? 'max-w-4xl' : 'max-w-xl'} w-full min-h-screen bg-white dark:bg-black ${showNav ? 'sm:ml-[72px]' : 'sm:ml-0'}`}>
+          <div className={`flex w-full ${(wide || hideSidebar || isPublicRoute) ? 'max-w-6xl' : 'max-w-[1400px]'} gap-0 lg:gap-8 lg:px-4 justify-center`}>
+            {!isNative && !hideSidebar && showNav && <LeftSidebarAd />}
+            <div className={`flex-1 min-w-0 ${(wide || hideSidebar || isPublicRoute) ? 'max-w-4xl' : 'max-w-xl'} w-full min-h-screen bg-white dark:bg-black ${showNav ? '2xl:ml-0 sm:ml-[72px]' : 'sm:ml-0'}`}>
               {children}
             </div>
             {!isNative && !hideSidebar && showNav && <RightSidebar />}

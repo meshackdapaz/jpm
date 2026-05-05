@@ -14,6 +14,7 @@ import { RightSidebar } from './RightSidebar'
 import { InlineFeedAd } from './InlineFeedAd'
 import { DirectAd } from './DirectAd'
 import { NativeFeedAd } from './NativeFeedAd'
+import { FloatingOverlayAd } from './FloatingOverlayAd'
 import { motion } from 'framer-motion'
 import { useFeedTelemetry } from '@/hooks/useFeedTelemetry'
 import { Capacitor } from '@capacitor/core'
@@ -568,6 +569,8 @@ export function Feed() {
           </div>
         )}
       </div>
+      {/* Show the floating overlay ad fixed at the bottom of the feed */}
+      <FloatingOverlayAd />
     </div>
   )
 }
