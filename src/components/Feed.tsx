@@ -532,11 +532,13 @@ export function Feed() {
                   <div key={post.is_repost ? `repost-${post.feed_created_at}-${post.id}` : `post-${post.id}`}>
                     <Post post={post} onObserve={observePost} />
                     {showAd && (
-                      directAd ? (
+                      Capacitor.isNativePlatform() ? (
+                        <InlineFeedAd adId="ca-app-pub-8166782428171770/3141151608" />
+                      ) : directAd ? (
                         <DirectAd ad={directAd} />
                       ) : (
-                        // Use InlineFeedAd which connects to our custom native plugin
-                        <InlineFeedAd adId="ca-app-pub-8166782428171770/3141151608" />
+                        // Fallback for web if no direct ad
+                        <div className="p-4 text-center text-zinc-500 text-xs italic">Sponsored</div>
                       )
                     )}
                   </div>

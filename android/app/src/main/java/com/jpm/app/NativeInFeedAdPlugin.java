@@ -10,6 +10,7 @@ import android.widget.TextView;
 import android.widget.FrameLayout;
 import android.graphics.Color;
 import android.graphics.drawable.GradientDrawable;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 
@@ -33,28 +34,25 @@ import com.google.android.gms.ads.nativead.NativeAdView;
 public class NativeInFeedAdPlugin extends Plugin {
 
     private static final String TAG = "NativeInFeedAd";
-
-    // ── IMPORTANT: Replace with your real Native Ad Unit ID from AdMob Dashboard ──
-    // Go to AdMob > Ad units > Create ad unit > Native Advanced
-    // ca-app-pub-3940256099942544/2247696110 (Official Google Test ID)
     private static final String AD_UNIT_ID = "ca-app-pub-3940256099942544/2247696110";
 
     private NativeAd currentNativeAd = null;
     private FrameLayout adContainer = null;
     private boolean isAdLoaded = false;
-    private boolean adVisible = false;
 
     @PluginMethod
     public void initialize(PluginCall call) {
         getActivity().runOnUiThread(() -> {
             try {
-                MobileAds.initialize(getContext(), initStatus -> {
+                MobileAds.initialize(getActivity(), initStatus -> {
+                    Log.d(TAG, "AdMob Initialized");
                     loadAd();
                     JSObject result = new JSObject();
                     result.put("status", "initialized");
                     call.resolve(result);
                 });
             } catch (Exception e) {
+                Log.e(TAG, "Init failed", e);
                 call.reject("AdMob init failed: " + e.getMessage());
             }
         });
@@ -62,17 +60,15 @@ public class NativeInFeedAdPlugin extends Plugin {
 
     private void loadAd() {
         getActivity().runOnUiThread(() -> {
-            AdLoader adLoader = new AdLoader.Builder(getContext(), AD_UNIT_ID)
+            AdLoader adLoader = new AdLoader.Builder(getActivity(), AD_UNIT_ID)
                 .forNativeAd(nativeAd -> {
-                    // Destroy any existing ad first
                     if (currentNativeAd != null) {
                         currentNativeAd.destroy();
                     }
                     currentNativeAd = nativeAd;
                     isAdLoaded = true;
-                    Log.d(TAG, "Native ad loaded successfully");
+                    Log.d(TAG, "Ad loaded successfully");
 
-                    // Notify JS that ad is ready
                     JSObject event = new JSObject();
                     event.put("loaded", true);
                     notifyListeners("adLoaded", event);
@@ -80,113 +76,130 @@ public class NativeInFeedAdPlugin extends Plugin {
                 .withAdListener(new AdListener() {
                     @Override
                     public void onAdFailedToLoad(@NonNull LoadAdError error) {
-                        Log.e(TAG, "Failed to load ad: " + error.getMessage());
+                        Log.e(TAG, "Ad failed to load: " + error.getMessage());
                         isAdLoaded = false;
                         JSObject event = new JSObject();
                         event.put("error", error.getMessage());
                         notifyListeners("adFailedToLoad", event);
+                        
+                        // Toast for debugging
+                        Toast.makeText(getActivity(), "Ad Load Failed: " + error.getMessage(), Toast.LENGTH_SHORT).show();
                     }
                 })
-                .withNativeAdOptions(new NativeAdOptions.Builder().build())
+                .withNativeAdOptions(new NativeAdOptions.Builder()
+                    .setRequestMultipleImages(false)
+                    .setAdChoicesPlacement(NativeAdOptions.ADCHOICES_TOP_RIGHT)
+                    .build())
                 .build();
 
             adLoader.loadAd(new AdRequest.Builder().build());
         });
     }
 
+    private float absoluteYPx = 0f;
+
     @PluginMethod
     public void showAd(PluginCall call) {
         double x = call.getDouble("x", 0.0);
         double y = call.getDouble("y", 0.0);
-        double width = call.getDouble("width", 400.0);
-        double height = call.getDouble("height", 200.0);
+        double width = call.getDouble("width", 360.0);
+        double height = call.getDouble("height", 400.0);
 
         getActivity().runOnUiThread(() -> {
             try {
                 if (!isAdLoaded || currentNativeAd == null) {
-                    // Try to load and queue show
                     call.reject("Ad not loaded yet");
                     return;
                 }
 
                 float density = getContext().getResources().getDisplayMetrics().density;
-                int xPx = (int)(x * density);
-                int yPx = (int)(y * density);
+                float xPx = (float)(x * density);
+                absoluteYPx = (float)(y * density);
                 int widthPx = (int)(width * density);
-                int heightPx = (int)(height * density);
 
-                if (adContainer != null) {
-                    // Update position of existing container
+                if (adContainer == null) {
+                    // Using the WebView's parent instead of the DecorView for better clipping
+                    ViewGroup rootView = (ViewGroup) getBridge().getWebView().getParent();
+                    if (rootView == null) {
+                        rootView = getActivity().getWindow().getDecorView().findViewById(android.R.id.content);
+                    }
+                    adContainer = new FrameLayout(getActivity());
+                    
+                    // Theme detection
+                    boolean isDarkMode = (getContext().getResources().getConfiguration().uiMode & android.content.res.Configuration.UI_MODE_NIGHT_MASK) == android.content.res.Configuration.UI_MODE_NIGHT_YES;
+                    
+                    GradientDrawable bg = new GradientDrawable();
+                    bg.setColor(isDarkMode ? Color.parseColor("#121212") : Color.WHITE);
+                    bg.setCornerRadius(16 * density);
+                    adContainer.setBackground(bg);
+                    adContainer.setElevation(4 * density);
+
+                    // Forward all touches to the WebView so scrolling works 
+                    // even if the user starts their swipe ON the ad.
+                    adContainer.setOnTouchListener((v, event) -> {
+                        if (getBridge() != null && getBridge().getWebView() != null) {
+                            getBridge().getWebView().onTouchEvent(event);
+                        }
+                        // Returning false allows the children (the NativeAdView)
+                        // to still receive the events for clicking.
+                        return false;
+                    });
+
+                    // Inflate
+                    NativeAdView adView = (NativeAdView) LayoutInflater.from(getActivity())
+                        .inflate(R.layout.native_ad_layout, adContainer, false);
+
+                    populateNativeAdView(currentNativeAd, adView);
+                    adContainer.addView(adView);
+
                     FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(widthPx, ViewGroup.LayoutParams.WRAP_CONTENT);
-                    params.leftMargin = xPx;
-                    params.topMargin = yPx;
-                    adContainer.setLayoutParams(params);
+                    params.leftMargin = 0; // Use translationX instead
+                    params.topMargin = 0;  // Use translationY instead
+                    
+                    adContainer.setTranslationX(xPx);
+                    
+                    // Set up Native scroll listener to perfectly sync with WebView scroll
+                    if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.M) {
+                        getBridge().getWebView().setOnScrollChangeListener((v, scrollX, scrollY, oldScrollX, oldScrollY) -> {
+                            if (adContainer != null && adContainer.getVisibility() == View.VISIBLE) {
+                                adContainer.setTranslationY(absoluteYPx - scrollY);
+                            }
+                        });
+                    }
+
+                    // Initial position calculation
+                    int currentScrollY = getBridge().getWebView().getScrollY();
+                    adContainer.setTranslationY(absoluteYPx - currentScrollY);
+                    
+                    rootView.addView(adContainer, params);
+                } else {
                     adContainer.setVisibility(View.VISIBLE);
-                    adVisible = true;
-                    JSObject result = new JSObject();
-                    result.put("shown", true);
-                    call.resolve(result);
-                    return;
+                    updatePositionInternal(y);
                 }
 
-                // First time: inflate and add to root
-                ViewGroup rootView = getActivity().getWindow().getDecorView().findViewById(android.R.id.content);
-                adContainer = new FrameLayout(getContext());
-
-                // Rounded card background
-                GradientDrawable bg = new GradientDrawable();
-                bg.setColor(Color.WHITE);
-                bg.setCornerRadius(24 * density);
-                adContainer.setBackground(bg);
-                adContainer.setElevation(4 * density);
-
-                // Inflate our native ad layout
-                NativeAdView adView = (NativeAdView) LayoutInflater.from(getContext())
-                    .inflate(R.layout.native_ad_layout, adContainer, false);
-
-                // Wire up the native ad data to views
-                populateNativeAdView(currentNativeAd, adView);
-                adContainer.addView(adView);
-
-                FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(widthPx, ViewGroup.LayoutParams.WRAP_CONTENT);
-                params.leftMargin = xPx;
-                params.topMargin = yPx;
-
-                rootView.addView(adContainer, params);
-                adVisible = true;
-                Log.d(TAG, "Native ad shown at x=" + xPx + " y=" + yPx);
-
-                // Preload next ad for when this one scrolls away
-                loadAd();
-
-                JSObject result = new JSObject();
-                result.put("shown", true);
-                call.resolve(result);
+                call.resolve();
 
             } catch (Exception e) {
-                Log.e(TAG, "showAd error: " + e.getMessage());
-                call.reject("showAd failed: " + e.getMessage());
+                Log.e(TAG, "showAd error", e);
+                call.reject(e.getMessage());
             }
         });
+    }
+
+    private void updatePositionInternal(double y) {
+        if (adContainer == null) return;
+        float density = getContext().getResources().getDisplayMetrics().density;
+        absoluteYPx = (float)(y * density);
+        
+        int currentScrollY = getBridge().getWebView().getScrollY();
+        adContainer.setTranslationY(absoluteYPx - currentScrollY);
     }
 
     @PluginMethod
     public void updatePosition(PluginCall call) {
         double y = call.getDouble("y", 0.0);
-
         getActivity().runOnUiThread(() -> {
-            if (adContainer == null) {
-                call.resolve();
-                return;
-            }
-            float density = getContext().getResources().getDisplayMetrics().density;
-            int yPx = (int)(y * density);
-
-            FrameLayout.LayoutParams params = (FrameLayout.LayoutParams) adContainer.getLayoutParams();
-            if (params != null) {
-                params.topMargin = yPx;
-                adContainer.setLayoutParams(params);
-            }
+            updatePositionInternal(y);
             call.resolve();
         });
     }
@@ -194,13 +207,8 @@ public class NativeInFeedAdPlugin extends Plugin {
     @PluginMethod
     public void hideAd(PluginCall call) {
         getActivity().runOnUiThread(() -> {
-            if (adContainer != null) {
-                adContainer.setVisibility(View.GONE);
-                adVisible = false;
-            }
-            JSObject result = new JSObject();
-            result.put("hidden", true);
-            call.resolve(result);
+            if (adContainer != null) adContainer.setVisibility(View.GONE);
+            call.resolve();
         });
     }
 
@@ -217,10 +225,7 @@ public class NativeInFeedAdPlugin extends Plugin {
                 currentNativeAd = null;
             }
             isAdLoaded = false;
-            adVisible = false;
-            JSObject result = new JSObject();
-            result.put("destroyed", true);
-            call.resolve(result);
+            call.resolve();
         });
     }
 
@@ -232,53 +237,57 @@ public class NativeInFeedAdPlugin extends Plugin {
     }
 
     private void populateNativeAdView(NativeAd nativeAd, NativeAdView adView) {
-        // Headline
-        TextView headlineView = adView.findViewById(R.id.ad_headline);
-        if (nativeAd.getHeadline() != null) {
+        try {
+            // Headline
+            TextView headlineView = adView.findViewById(R.id.ad_headline);
             headlineView.setText(nativeAd.getHeadline());
             adView.setHeadlineView(headlineView);
-        }
 
-        // Body
-        TextView bodyView = adView.findViewById(R.id.ad_body);
-        if (nativeAd.getBody() != null) {
-            bodyView.setText(nativeAd.getBody());
-            bodyView.setVisibility(View.VISIBLE);
-            adView.setBodyView(bodyView);
-        } else {
-            bodyView.setVisibility(View.INVISIBLE);
-        }
+            // Body
+            TextView bodyView = adView.findViewById(R.id.ad_body);
+            if (nativeAd.getBody() == null) {
+                bodyView.setVisibility(View.INVISIBLE);
+            } else {
+                bodyView.setVisibility(View.VISIBLE);
+                bodyView.setText(nativeAd.getBody());
+                adView.setBodyView(bodyView);
+            }
 
-        // Icon
-        ImageView iconView = adView.findViewById(R.id.ad_icon);
-        NativeAd.Image icon = nativeAd.getIcon();
-        if (icon != null) {
-            iconView.setImageDrawable(icon.getDrawable());
-            iconView.setVisibility(View.VISIBLE);
-            adView.setIconView(iconView);
-        } else {
-            iconView.setVisibility(View.GONE);
-        }
+            // CTA
+            Button ctaView = adView.findViewById(R.id.ad_call_to_action);
+            if (nativeAd.getCallToAction() == null) {
+                ctaView.setVisibility(View.INVISIBLE);
+            } else {
+                ctaView.setVisibility(View.VISIBLE);
+                ctaView.setText(nativeAd.getCallToAction());
+                adView.setCallToActionView(ctaView);
+            }
 
-        // Call to action button
-        Button callToActionView = adView.findViewById(R.id.ad_call_to_action);
-        if (nativeAd.getCallToAction() != null) {
-            callToActionView.setText(nativeAd.getCallToAction());
-            callToActionView.setVisibility(View.VISIBLE);
-            adView.setCallToActionView(callToActionView);
-        } else {
-            callToActionView.setVisibility(View.INVISIBLE);
-        }
+            // Icon
+            ImageView iconView = adView.findViewById(R.id.ad_icon);
+            if (nativeAd.getIcon() == null) {
+                iconView.setVisibility(View.GONE);
+            } else {
+                iconView.setImageDrawable(nativeAd.getIcon().getDrawable());
+                iconView.setVisibility(View.VISIBLE);
+                adView.setIconView(iconView);
+            }
 
-        // Media view (optional large image)
-        MediaView mediaView = adView.findViewById(R.id.ad_media);
-        adView.setMediaView(mediaView);
-        if (nativeAd.getMediaContent() != null) {
-            mediaView.setMediaContent(nativeAd.getMediaContent());
-            mediaView.setVisibility(View.VISIBLE);
-        }
+            // Media
+            MediaView mediaView = adView.findViewById(R.id.ad_media);
+            if (nativeAd.getMediaContent() != null) {
+                mediaView.setMediaContent(nativeAd.getMediaContent());
+                mediaView.setVisibility(View.VISIBLE);
+                adView.setMediaView(mediaView);
+            } else {
+                mediaView.setVisibility(View.GONE);
+            }
 
-        // Register the native ad — this MUST be called last
-        adView.setNativeAd(nativeAd);
+            // IMPORTANT: setNativeAd last
+            adView.setNativeAd(nativeAd);
+            Log.d(TAG, "NativeAdView populated successfully");
+        } catch (Exception e) {
+            Log.e(TAG, "Error populating ad view", e);
+        }
     }
 }

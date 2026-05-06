@@ -49,9 +49,11 @@ export function useInFeedAd() {
     if (!placeholderRef.current) return
 
     const rect = placeholderRef.current.getBoundingClientRect()
-    const isVisible = rect.top < window.innerHeight && rect.bottom > 0
+    // Calculate the absolute Y position relative to the top of the scrollable document
+    const absoluteY = rect.top + window.scrollY
 
-    if (!isVisible) return
+    // Only show if the ad is somewhere in the document
+    if (rect.height === 0) return
 
     try {
       const { ready } = await NativeInFeedAd.isAdReady()
@@ -59,7 +61,7 @@ export function useInFeedAd() {
 
       await NativeInFeedAd.showAd({
         x: rect.left,
-        y: rect.top,
+        y: absoluteY, // Pass absolute Y, Native layer will calculate scroll offset
         width: rect.width,
         height: rect.height,
       })
@@ -101,15 +103,9 @@ export function useInFeedAd() {
 
     init()
 
-    // Track scroll to update ad position in real-time
-    const onScroll = () => {
-      cancelAnimationFrame(rafRef.current)
-      rafRef.current = requestAnimationFrame(updateAdPosition)
-    }
-
-    window.addEventListener('scroll', onScroll, { passive: true })
-
     // Observe when placeholder enters/exits viewport
+    // Since Native handles the scroll, we just use this to trigger the initial show
+    // or to hide if it gets unmounted/hidden.
     const observer = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
@@ -121,7 +117,8 @@ export function useInFeedAd() {
           }
         })
       },
-      { threshold: 0.1 }
+      // Give a large margin so it loads slightly before coming into view
+      { rootMargin: '500px 0px 500px 0px' }
     )
 
     if (placeholderRef.current) {
@@ -129,15 +126,13 @@ export function useInFeedAd() {
     }
 
     return () => {
-      window.removeEventListener('scroll', onScroll)
       observer.disconnect()
-      cancelAnimationFrame(rafRef.current)
       // Destroy ad when component unmounts
       NativeInFeedAd.destroyAd().catch(() => {})
       isInitialized.current = false
       isAdShown.current = false
     }
-  }, [showAdAtCurrentPosition, updateAdPosition])
+  }, [showAdAtCurrentPosition])
 
   return { placeholderRef }
 }

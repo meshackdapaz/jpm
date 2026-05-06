@@ -8,6 +8,8 @@
 html, body {
   overscroll-behavior-y: auto;
   -webkit-overflow-scrolling: touch;
+  overflow-x: hidden;
+  width: 100%;
 }
 
 /* ── Design tokens ─────────────────────────────────────────────────────────── */
@@ -46,7 +48,8 @@ body {
   color: var(--foreground);
   background: var(--background);
   overscroll-behavior-y: auto;
-  min-width: 320px;
+  overflow-x: hidden;
+  max-width: 100vw;
   -webkit-tap-highlight-color: transparent;
   text-rendering: optimizeLegibility;
   touch-action: pan-x pan-y;

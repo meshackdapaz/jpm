@@ -7,6 +7,7 @@ import { AppLayout } from '@/components/AppLayout'
 import { createClient } from '@/lib/supabase/client'
 import { Post } from '@/components/Post'
 import { InlineFeedAd } from '@/components/InlineFeedAd'
+import { DirectAd } from '@/components/DirectAd'
 import { useSearchParams, useRouter } from 'next/navigation'
 import { useI18n } from '@/lib/i18n'
 import Cropper from 'react-easy-crop'
@@ -15,6 +16,7 @@ import { VerifiedBadge } from '@/components/VerifiedBadge'
 import { useAuth } from '@/components/AuthProvider'
 import { LockClosedIcon, Bars3Icon, ChartBarIcon, ChevronRightIcon, XMarkIcon, UserIcon, GlobeAltIcon, UserPlusIcon, BellIcon, BookmarkIcon, HeartIcon, ClockIcon, AdjustmentsVerticalIcon, UserCircleIcon, QuestionMarkCircleIcon, InformationCircleIcon, ChevronLeftIcon, QrCodeIcon, LinkIcon } from '@heroicons/react/24/outline'
 import { QRCodeSVG } from 'qrcode.react'
+import { Capacitor } from '@capacitor/core'
 import { Switch } from '@headlessui/react'
 
 function ProfileContent() {
@@ -26,6 +28,7 @@ function ProfileContent() {
   const [posts, setPosts] = useState<any[]>([])
   const [activeTab, setActiveTab] = useState<'posts' | 'reposts' | 'replies' | 'media' | 'likes' | 'archive'>('posts')
   const [loading, setLoading] = useState(true)
+  const [directAds, setDirectAds] = useState<any[]>([])
 
   const supabase = createClient()
   const { t } = useI18n()
@@ -73,6 +76,11 @@ function ProfileContent() {
       }
     }
     fetchCurrentUserProfile()
+
+    // Fetch active Direct Ads
+    supabase.from('direct_ads').select('*').eq('is_active', true).then(({ data, error }: { data: any, error: any }) => {
+      if (!error && data && data.length > 0) setDirectAds(data)
+    })
 
     async function fetchProfile() {
       if (!id) return
@@ -427,85 +435,80 @@ function ProfileContent() {
       <div className="px-4 pt-4">
         {/* Top row: display info left, avatar right */}
         <div className="flex items-start justify-between mb-4">
-          <div className="flex-grow min-w-0 pr-4">
-            {/* Fixed Name/Username Info */}
-            <h1 className="text-[26px] font-black leading-tight flex items-center gap-2">
-              {profile?.full_name}
-              {profile?.is_verified && <VerifiedBadge className="w-5 h-5" />}
-              {profile?.is_private && <LockClosedIcon className="w-5 h-5 text-zinc-400" />}
+          <div className="flex-grow min-w-0 pr-3">
+            {/* Name + badges */}
+            <h1 className="text-[24px] font-black leading-tight flex flex-wrap items-center gap-1.5">
+              <span className="break-words">{profile?.full_name}</span>
+              {profile?.is_verified && <VerifiedBadge className="w-5 h-5 flex-shrink-0" />}
+              {profile?.is_private && <LockClosedIcon className="w-4 h-4 text-zinc-400 flex-shrink-0" />}
             </h1>
-            <p className="text-zinc-500 text-[15px] font-medium mt-0.5">@{profile?.username}</p>
-            {profile?.bio && <p className="mt-3 text-[15px] whitespace-pre-wrap text-zinc-800 dark:text-zinc-200 leading-snug tracking-tight font-medium">{profile.bio}</p>}
-            
-            {/* Stats Grid */}
-            <div className="flex gap-8 mt-6">
-              <div className="flex flex-col">
-                <span className="font-black text-[18px] text-zinc-900 dark:text-zinc-100 tabular-nums leading-none">{followers}</span>
-                <span className="text-[13px] font-bold text-zinc-500 uppercase tracking-widest mt-1">Followers</span>
-              </div>
-              <div className="flex flex-col">
-                <span className="font-black text-[18px] text-zinc-900 dark:text-zinc-100 tabular-nums leading-none">{following}</span>
-                <span className="text-[13px] font-bold text-zinc-500 uppercase tracking-widest mt-1">Following</span>
-              </div>
-            </div>
+            <p className="text-zinc-500 text-[14px] font-medium mt-0.5">@{profile?.username}</p>
+            {profile?.bio && <p className="mt-2 text-[14px] whitespace-pre-wrap text-zinc-800 dark:text-zinc-200 leading-snug">{profile.bio}</p>}
+
+            {/* Inline stats: 10 followers · 9 following */}
+            <p className="mt-3 text-[14px] text-zinc-500">
+              <span className="font-bold text-zinc-900 dark:text-zinc-100">{followers}</span>{' followers · '}
+              <span className="font-bold text-zinc-900 dark:text-zinc-100">{following}</span>{' following'}
+            </p>
 
             {/* Social Icons Row */}
-            <div className="flex items-center gap-3 mt-6 min-h-[40px]">
-              {profile?.tiktok_url && (
-                <a href={profile.tiktok_url} target="_blank" rel="noopener noreferrer"
-                  className="w-10 h-10 flex items-center justify-center rounded-xl bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 transition-all hover:scale-110 shadow-sm" title="TikTok">
-                  <svg className="w-5 h-5 fill-current" viewBox="0 0 24 24"><path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-5.2 1.74 2.89 2.89 0 0 1 2.31-4.64 2.93 2.93 0 0 1 .88.13V9.4a6.84 6.84 0 0 0-1-.05A6.33 6.33 0 0 0 5 20.1a6.34 6.34 0 0 0 10.86-4.43v-7a8.16 8.16 0 0 0 4.77 1.52v-3.4a4.85 4.85 0 0 1-1.04-.1z"/></svg>
-                </a>
-              )}
-              {profile?.instagram_url && (
-                <a href={profile.instagram_url} target="_blank" rel="noopener noreferrer"
-                  className="w-10 h-10 flex items-center justify-center rounded-xl bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 text-zinc-500 dark:text-zinc-400 hover:text-pink-600 transition-all hover:scale-110 shadow-sm" title="Instagram">
-                  <svg className="w-5 h-5 fill-current" viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.981 1.28.058 1.688.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.058-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z"/></svg>
-                </a>
-              )}
-              {profile?.facebook_url && (
-                <a href={profile.facebook_url} target="_blank" rel="noopener noreferrer"
-                  className="w-10 h-10 flex items-center justify-center rounded-xl bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 text-zinc-500 dark:text-zinc-400 hover:text-blue-600 transition-all hover:scale-110 shadow-sm" title="Facebook">
-                  <svg className="w-5 h-5 fill-current" viewBox="0 0 24 24"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
-                </a>
-              )}
-              {profile?.website_url && (
-                <a href={profile.website_url} target="_blank" rel="noopener noreferrer"
-                  className="w-10 h-10 flex items-center justify-center rounded-xl bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 text-zinc-500 dark:text-zinc-400 hover:text-blue-400 transition-all hover:scale-110 shadow-sm" title="Website">
-                  <GlobeAltIcon className="w-5 h-5" />
-                </a>
-              )}
-              {isOwner && (
-                <button 
-                  onClick={() => {
-                    setSocialData({
-                      tiktok_url: profile?.tiktok_url || '',
-                      instagram_url: profile?.instagram_url || '',
-                      facebook_url: profile?.facebook_url || '',
-                      website_url: profile?.website_url || ''
-                    })
-                    setShowSocialLinks(true)
-                  }}
-                  className="flex items-center gap-2 px-4 py-2 rounded-xl bg-zinc-50 dark:bg-zinc-900 text-zinc-500 text-[13px] font-black border border-zinc-200 dark:border-zinc-800 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-all active:scale-95"
-                >
-                  <LinkIcon className="w-4 h-4" />
-                  { (profile?.tiktok_url || profile?.instagram_url || profile?.facebook_url || profile?.website_url) ? 'Edit links' : 'Add links' }
-                </button>
-              )}
-            </div>
-
+            {(profile?.tiktok_url || profile?.instagram_url || profile?.facebook_url || profile?.website_url || isOwner) && (
+              <div className="flex items-center flex-wrap gap-2 mt-4">
+                {profile?.tiktok_url && (
+                  <a href={profile.tiktok_url} target="_blank" rel="noopener noreferrer"
+                    className="w-9 h-9 flex items-center justify-center rounded-xl bg-zinc-100 dark:bg-zinc-900 text-zinc-500 dark:text-zinc-400" title="TikTok">
+                    <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24"><path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-5.2 1.74 2.89 2.89 0 0 1 2.31-4.64 2.93 2.93 0 0 1 .88.13V9.4a6.84 6.84 0 0 0-1-.05A6.33 6.33 0 0 0 5 20.1a6.34 6.34 0 0 0 10.86-4.43v-7a8.16 8.16 0 0 0 4.77 1.52v-3.4a4.85 4.85 0 0 1-1.04-.1z"/></svg>
+                  </a>
+                )}
+                {profile?.instagram_url && (
+                  <a href={profile.instagram_url} target="_blank" rel="noopener noreferrer"
+                    className="w-9 h-9 flex items-center justify-center rounded-xl bg-zinc-100 dark:bg-zinc-900 text-zinc-500 dark:text-zinc-400" title="Instagram">
+                    <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.981 1.28.058 1.688.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.058-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z"/></svg>
+                  </a>
+                )}
+                {profile?.facebook_url && (
+                  <a href={profile.facebook_url} target="_blank" rel="noopener noreferrer"
+                    className="w-9 h-9 flex items-center justify-center rounded-xl bg-zinc-100 dark:bg-zinc-900 text-zinc-500 dark:text-zinc-400" title="Facebook">
+                    <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
+                  </a>
+                )}
+                {profile?.website_url && (
+                  <a href={profile.website_url} target="_blank" rel="noopener noreferrer"
+                    className="w-9 h-9 flex items-center justify-center rounded-xl bg-zinc-100 dark:bg-zinc-900 text-zinc-500 dark:text-zinc-400" title="Website">
+                    <GlobeAltIcon className="w-4 h-4" />
+                  </a>
+                )}
+                {isOwner && (
+                  <button
+                    onClick={() => {
+                      setSocialData({
+                        tiktok_url: profile?.tiktok_url || '',
+                        instagram_url: profile?.instagram_url || '',
+                        facebook_url: profile?.facebook_url || '',
+                        website_url: profile?.website_url || ''
+                      })
+                      setShowSocialLinks(true)
+                    }}
+                    className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-zinc-100 dark:bg-zinc-900 text-zinc-500 text-[12px] font-bold"
+                  >
+                    <LinkIcon className="w-3.5 h-3.5" />
+                    {(profile?.tiktok_url || profile?.instagram_url || profile?.facebook_url || profile?.website_url) ? 'Edit links' : 'Add social links'}
+                  </button>
+                )}
+              </div>
+            )}
           </div>
 
-          {/* Avatar — top right with + button for owner */}
+          {/* Avatar — top right */}
           <div className="relative flex-none">
-            <div className="w-[72px] h-[72px] sm:w-24 sm:h-24 rounded-full bg-zinc-200 dark:bg-zinc-800 overflow-hidden ring-[1.5px] ring-zinc-200 dark:ring-zinc-700">
+            <div className="w-[80px] h-[80px] sm:w-24 sm:h-24 rounded-full bg-zinc-200 dark:bg-zinc-800 overflow-hidden ring-2 ring-zinc-200 dark:ring-zinc-800">
               {profile?.avatar_url
                 ? <img src={profile.avatar_url} className="w-full h-full object-cover" alt={profile.full_name} />
                 : <div className="w-full h-full flex items-center justify-center text-2xl font-bold text-zinc-500">{profile?.full_name?.[0] || 'U'}</div>}
             </div>
             {isOwner && (
-              <label className="absolute -bottom-1 -right-1 w-7 h-7 bg-white dark:bg-zinc-950 border-2 border-zinc-200 dark:border-zinc-700 rounded-full flex items-center justify-center cursor-pointer hover:bg-zinc-50 dark:hover:bg-zinc-900 transition-colors shadow-sm">
-                <svg xmlns="http://www.w3.org/2000/svg" className="w-3.5 h-3.5 text-zinc-700 dark:text-zinc-200" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <label className="absolute bottom-0 right-0 w-7 h-7 bg-white dark:bg-zinc-800 border-2 border-white dark:border-black rounded-full flex items-center justify-center cursor-pointer shadow">
+                <svg xmlns="http://www.w3.org/2000/svg" className="w-3.5 h-3.5 text-zinc-800 dark:text-zinc-200" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                   <line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" />
                 </svg>
                 <input type="file" accept="image/*" className="hidden" onChange={handleFileSelect} disabled={uploading} />
@@ -514,19 +517,20 @@ function ProfileContent() {
           </div>
         </div>
 
-      {/* Action buttons row */}
-      <div className="flex gap-2 mb-1">
+      {/* Action buttons row — inside px-4 wrapper */}
+      <div className="px-4">
+      <div className="flex gap-2 mb-2 mt-4 w-full">
         {isOwner ? (
           <>
             <button
               onClick={() => router.push('/settings?tab=status')}
-              className="flex-[2] py-2 border border-zinc-200 dark:border-zinc-700 rounded-xl text-[12px] font-bold text-zinc-900 dark:text-zinc-100 hover:bg-zinc-50 dark:hover:bg-zinc-900 transition-colors whitespace-nowrap truncate px-2"
+              className="flex-1 py-2.5 bg-zinc-100 dark:bg-zinc-900 rounded-2xl text-[13px] font-black text-zinc-900 dark:text-zinc-100 hover:bg-zinc-200 dark:hover:bg-zinc-800 transition-all active:scale-95"
             >
               Edit profile
             </button>
             <button
               onClick={() => setShowQRCode(true)}
-              className="flex-none px-3 py-2 border border-zinc-200 dark:border-zinc-700 rounded-xl text-zinc-900 dark:text-zinc-100 hover:bg-zinc-50 dark:hover:bg-zinc-900 transition-colors"
+              className="w-12 h-11 flex items-center justify-center bg-zinc-100 dark:bg-zinc-900 rounded-2xl text-zinc-900 dark:text-zinc-100 hover:bg-zinc-200 dark:hover:bg-zinc-800 transition-all active:scale-95"
               title="Show QR Code"
             >
               <QrCodeIcon className="w-5 h-5" />
@@ -546,9 +550,9 @@ function ProfileContent() {
                   alert('Link copied to clipboard!');
                 }
               }}
-              className="flex-[2] py-2 border border-zinc-200 dark:border-zinc-700 rounded-xl text-[12px] font-bold text-zinc-900 dark:text-zinc-100 hover:bg-zinc-50 dark:hover:bg-zinc-900 transition-colors whitespace-nowrap truncate px-2"
+              className="flex-1 py-2.5 bg-zinc-100 dark:bg-zinc-900 rounded-2xl text-[13px] font-black text-zinc-900 dark:text-zinc-100 hover:bg-zinc-200 dark:hover:bg-zinc-800 transition-all active:scale-95"
             >
-              Share profile
+              Share
             </button>
           </>
         ) : (
@@ -594,6 +598,7 @@ function ProfileContent() {
           </>
         )}
       </div>
+      </div>
 
       {/* ── Content Tabs & Feed ── */}
       <div className="border-t border-zinc-100 dark:border-zinc-900 mt-6">
@@ -617,7 +622,7 @@ function ProfileContent() {
                 <button
                   key={tab}
                   onClick={() => setActiveTab(tab as any)}
-                  className={`flex-1 py-3.5 text-[13px] font-semibold capitalize relative whitespace-nowrap min-w-0 transition-colors ${
+                  className={`flex-none px-5 py-3.5 text-[14px] font-bold capitalize relative whitespace-nowrap transition-colors ${
                     activeTab === tab
                       ? 'text-black dark:text-white'
                       : 'text-zinc-400 dark:text-zinc-500 hover:text-zinc-600 dark:hover:text-zinc-300'
@@ -645,11 +650,22 @@ function ProfileContent() {
                 return (
                   <>
                     {filteredPosts.map((post: any, index: number) => {
+                      const adIndex = Math.floor(index / 3)
                       const showAd = index > 0 && index % 2 === 1;
+                      const directAd = directAds.length > 0 ? directAds[adIndex % directAds.length] : null;
+
                       return (
                         <div key={`${post.id}-${post.is_repost}`}>
                           <Post post={post} />
-                          {showAd && <InlineFeedAd adId="ca-app-pub-8166782428171770/3966636178" />}
+                          {showAd && (
+                            Capacitor.isNativePlatform() ? (
+                              <InlineFeedAd adId="ca-app-pub-8166782428171770/3966636178" />
+                            ) : directAd ? (
+                              <DirectAd ad={directAd} />
+                            ) : (
+                              <div className="p-4 text-center text-zinc-500 text-xs italic">Sponsored</div>
+                            )
+                          )}
                         </div>
                       )
                     })}
