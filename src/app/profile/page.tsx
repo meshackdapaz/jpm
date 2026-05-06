@@ -493,7 +493,7 @@ function ProfileContent() {
                   className="flex items-center gap-2 px-4 py-2 rounded-xl bg-zinc-50 dark:bg-zinc-900 text-zinc-500 text-[13px] font-black border border-zinc-200 dark:border-zinc-800 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-all active:scale-95"
                 >
                   <LinkIcon className="w-4 h-4" />
-                  Add links
+                  { (profile?.tiktok_url || profile?.instagram_url || profile?.facebook_url || profile?.website_url) ? 'Edit links' : 'Add links' }
                 </button>
               )}
             </div>
