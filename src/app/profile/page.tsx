@@ -550,7 +550,7 @@ function ProfileContent() {
                   alert('Link copied to clipboard!');
                 }
               }}
-              className="flex-1 py-2 border border-zinc-200 dark:border-zinc-700 rounded-xl text-[13px] font-bold text-zinc-900 dark:text-zinc-100 hover:bg-zinc-50 dark:hover:bg-zinc-900 transition-colors whitespace-nowrap truncate px-2"
+              className="flex-[2] py-2 border border-zinc-200 dark:border-zinc-700 rounded-xl text-[12px] font-bold text-zinc-900 dark:text-zinc-100 hover:bg-zinc-50 dark:hover:bg-zinc-900 transition-colors whitespace-nowrap truncate px-2"
             >
               Share profile
             </button>
