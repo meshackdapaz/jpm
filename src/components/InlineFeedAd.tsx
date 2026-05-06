@@ -1,57 +1,46 @@
 'use client'
 
-import React, { useEffect, useRef, useState } from 'react'
+import React from 'react'
 import { Capacitor } from '@capacitor/core'
+import { useInFeedAd } from '@/hooks/useInFeedAd'
 
 /**
- * InlineFeedAd — shows an AdSense fluid ad on web and native.
- * This ensures the ad is inside the DOM and scrolls naturally like a post,
- * avoiding the floating native overlay behavior of AdMob banners.
+ * InlineFeedAd
+ *
+ * On Android (native app): renders an invisible placeholder div. 
+ * The useInFeedAd hook detects this div's position and tells the 
+ * native Kotlin plugin to overlay a real Google AdMob NativeAdView 
+ * precisely on top of it. The result scrolls perfectly with the feed.
+ *
+ * On Web (browser): renders nothing (AdSense rejected, so no ads on web).
  */
-export function InlineFeedAd({ adId = 'ca-app-pub-8166782428171770/3966636178' }: { adId?: string }) {
-  if (Capacitor.isNativePlatform()) {
-    // Native: Render an iframe pointing to the live domain.
-    // This bypasses the localhost origin block in AdSense, and
-    // because it's an iframe, it scrolls perfectly natively with the feed.
-    return (
-      <div className="w-full py-4 border-b border-zinc-100 dark:border-zinc-800 overflow-hidden flex justify-center">
-        <iframe 
-          src="https://jpmtz.online/ad-unit" 
-          width="100%" 
-          height="300" 
-          frameBorder="0" 
-          scrolling="no" 
-          style={{ overflow: 'hidden' }}
-          title="Sponsored Content"
-        />
-      </div>
-    )
-  }
 
-  return <WebFeedAd />
-}
-
-// ── Web & Native: Google AdSense fluid in-feed ad ────────────────────────────
-function WebFeedAd() {
-  useEffect(() => {
-    try {
-      // @ts-ignore
-      ;(window.adsbygoogle = window.adsbygoogle || []).push({})
-    } catch (err) {
-      console.error('AdSense error:', err)
-    }
-  }, [])
+function NativeAdPlaceholder() {
+  const { placeholderRef } = useInFeedAd()
 
   return (
-    <div className="w-full py-4 border-b border-zinc-100 dark:border-zinc-800 overflow-hidden flex justify-center">
-      <ins
-        className="adsbygoogle"
-        style={{ display: 'block', minWidth: '300px', width: '100%' }}
-        data-ad-format="fluid"
-        data-ad-layout-key="-6t+ed+2i-1n-4w"
-        data-ad-client="ca-pub-8166782428171770"
-        data-ad-slot="2820538405"
-      />
+    <div
+      ref={placeholderRef}
+      style={{
+        width: '100%',
+        // Height must roughly match what the native ad will render
+        // Adjust based on your ad content (with media ~300px, without ~120px)
+        minHeight: 120,
+        // Transparent — the native NativeAdView sits on top visually
+        backgroundColor: 'transparent',
+      }}
+      data-ad-slot="native-infeed"
+    />
+  )
+}
+
+export function InlineFeedAd({ adId }: { adId?: string }) {
+  // Only render on native Android/iOS — no web ads (AdSense rejected)
+  if (!Capacitor.isNativePlatform()) return null
+
+  return (
+    <div className="w-full border-b border-zinc-100 dark:border-zinc-800 py-1">
+      <NativeAdPlaceholder />
     </div>
   )
 }
