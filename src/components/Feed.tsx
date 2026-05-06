@@ -525,7 +525,7 @@ export function Feed() {
               }}
               itemContent={(index, post) => {
                 const adIndex = Math.floor(index / 3)
-                const showAd = index > 0 && index % 3 === 2
+                const showAd = index > 0 && index % 2 === 1
                 const directAd = directAds.length > 0 ? directAds[adIndex % directAds.length] : null
 
                 return (
@@ -535,13 +535,8 @@ export function Feed() {
                       directAd ? (
                         <DirectAd ad={directAd} />
                       ) : (
-                        // If no direct ad is available, use Native AdMob on native platform
-                        Capacitor.isNativePlatform() ? (
-                          <NativeFeedAd adUnitId="ca-app-pub-8166782428171770/3141151608" />
-                        ) : (
-                          // Fallback to AdSense on web
-                          <InlineFeedAd adId="ca-app-pub-8166782428171770/3966636178" />
-                        )
+                        // Use InlineFeedAd which connects to our custom native plugin
+                        <InlineFeedAd adId="ca-app-pub-8166782428171770/3141151608" />
                       )
                     )}
                   </div>

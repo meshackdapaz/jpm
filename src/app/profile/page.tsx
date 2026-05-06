@@ -645,7 +645,7 @@ function ProfileContent() {
                 return (
                   <>
                     {filteredPosts.map((post: any, index: number) => {
-                      const showAd = index > 0 && index % 3 === 2;
+                      const showAd = index > 0 && index % 2 === 1;
                       return (
                         <div key={`${post.id}-${post.is_repost}`}>
                           <Post post={post} />

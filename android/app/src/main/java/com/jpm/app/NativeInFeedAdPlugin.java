@@ -36,7 +36,8 @@ public class NativeInFeedAdPlugin extends Plugin {
 
     // ── IMPORTANT: Replace with your real Native Ad Unit ID from AdMob Dashboard ──
     // Go to AdMob > Ad units > Create ad unit > Native Advanced
-    private static final String AD_UNIT_ID = "ca-app-pub-8166782428171770/6571593457";
+    // ca-app-pub-3940256099942544/2247696110 (Official Google Test ID)
+    private static final String AD_UNIT_ID = "ca-app-pub-3940256099942544/2247696110";
 
     private NativeAd currentNativeAd = null;
     private FrameLayout adContainer = null;

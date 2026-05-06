@@ -88,6 +88,12 @@ export function useInFeedAd() {
         NativeInFeedAd.addListener('adFailedToLoad', (data: any) => {
           console.warn('[InFeedAd] Failed to load:', data.error)
         })
+
+        // Check if already ready (in case adLoaded fired before we added listener)
+        const { ready } = await NativeInFeedAd.isAdReady()
+        if (ready) {
+          showAdAtCurrentPosition()
+        }
       } catch (err) {
         console.warn('[InFeedAd] init error:', err)
       }
