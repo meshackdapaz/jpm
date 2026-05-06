@@ -8,7 +8,7 @@ import { createClient } from '@/lib/supabase/client'
 import { useAuth } from './AuthProvider'
 import { VerifiedBadge } from './VerifiedBadge'
 import { MagnifyingGlassIcon } from '@heroicons/react/24/outline'
-import { InArticleAd } from './InArticleAd'
+import { SidebarAd } from './SidebarAd'
 
 type TrendingPost = {
   id: string
@@ -345,7 +345,7 @@ export function RightSidebar({ mobile = false }: { mobile?: boolean }) {
           <span className="text-[10px] font-black uppercase tracking-widest text-zinc-400">Sponsored</span>
         </div>
         <div className="w-full flex-1 bg-zinc-50 dark:bg-zinc-900/50 rounded-xl overflow-hidden flex items-center justify-center">
-          <InArticleAd />
+          <SidebarAd />
         </div>
       </div>
 
@@ -449,7 +449,7 @@ export function RightSidebar({ mobile = false }: { mobile?: boolean }) {
           <span className="text-[10px] font-black uppercase tracking-widest text-zinc-400">Sponsored</span>
         </div>
         <div className="w-full flex-1 bg-zinc-50 dark:bg-zinc-900/50 rounded-xl overflow-hidden flex items-center justify-center">
-          <InArticleAd />
+          <SidebarAd />
         </div>
       </div>
 

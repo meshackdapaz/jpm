@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useEffect } from 'react'
-import { InArticleAd } from './InArticleAd'
+import { SidebarAd } from './SidebarAd'
 
 export function LeftSidebarAd() {
   return (
@@ -11,7 +11,7 @@ export function LeftSidebarAd() {
           <span className="text-[10px] font-black uppercase tracking-widest text-zinc-400">Sponsored</span>
         </div>
         <div className="w-full flex-1 bg-zinc-50 dark:bg-zinc-900/50 rounded-xl overflow-hidden flex items-center justify-center">
-          <InArticleAd />
+          <SidebarAd />
         </div>
       </div>
       
@@ -22,7 +22,7 @@ export function LeftSidebarAd() {
         </div>
         <div className="w-full flex-1 bg-zinc-50 dark:bg-zinc-900/50 rounded-xl overflow-hidden flex items-center justify-center">
            {/* Replace this with a skyscraper ad unit if you have one, or just standard in-article ad */}
-          <InArticleAd />
+          <SidebarAd />
         </div>
       </div>
     </aside>
