@@ -1037,15 +1037,31 @@ export const Post = React.memo(({ post, onObserve }: { post: any; onObserve?: (p
                     exit="exit"
                     className="absolute inset-0 w-full h-full"
                   >
-                    <Image
-                      src={images[imageIndex]}
-                      alt={post.title || `Post image ${imageIndex + 1}`}
-                      width={1080}
-                      height={1350}
-                      className="w-full h-full object-cover drop-shadow-2xl"
-                      unoptimized
-                      onLoad={() => setImageLoaded(true)}
-                    />
+                    <motion.div
+                      drag="x"
+                      dragConstraints={{ left: 0, right: 0 }}
+                      dragElastic={0.7}
+                      onDragEnd={(_, info) => {
+                        const swipe = info.offset.x;
+                        const threshold = 50;
+                        if (swipe < -threshold) {
+                          handleNextImage(new MouseEvent('click') as any);
+                        } else if (swipe > threshold) {
+                          handlePrevImage(new MouseEvent('click') as any);
+                        }
+                      }}
+                      className="w-full h-full"
+                    >
+                      <Image
+                        src={images[imageIndex]}
+                        alt={post.title || `Post image ${imageIndex + 1}`}
+                        width={1080}
+                        height={1350}
+                        className="w-full h-full object-cover drop-shadow-2xl pointer-events-none select-none"
+                        unoptimized
+                        onLoad={() => setImageLoaded(true)}
+                      />
+                    </motion.div>
                   </motion.div>
                 </AnimatePresence>
               </div>

@@ -13,7 +13,7 @@ import Cropper from 'react-easy-crop'
 import { getCroppedImg } from '@/lib/cropImage'
 import { VerifiedBadge } from '@/components/VerifiedBadge'
 import { useAuth } from '@/components/AuthProvider'
-import { LockClosedIcon, Bars3Icon, ChartBarIcon, ChevronRightIcon, XMarkIcon, UserIcon, GlobeAltIcon, UserPlusIcon, BellIcon, BookmarkIcon, HeartIcon, ClockIcon, AdjustmentsVerticalIcon, UserCircleIcon, QuestionMarkCircleIcon, InformationCircleIcon, ChevronLeftIcon, QrCodeIcon } from '@heroicons/react/24/outline'
+import { LockClosedIcon, Bars3Icon, ChartBarIcon, ChevronRightIcon, XMarkIcon, UserIcon, GlobeAltIcon, UserPlusIcon, BellIcon, BookmarkIcon, HeartIcon, ClockIcon, AdjustmentsVerticalIcon, UserCircleIcon, QuestionMarkCircleIcon, InformationCircleIcon, ChevronLeftIcon, QrCodeIcon, LinkIcon } from '@heroicons/react/24/outline'
 import { QRCodeSVG } from 'qrcode.react'
 import { Switch } from '@headlessui/react'
 
@@ -492,7 +492,7 @@ function ProfileContent() {
                   }}
                   className="flex items-center gap-2 px-4 py-2 rounded-xl bg-zinc-50 dark:bg-zinc-900 text-zinc-500 text-[13px] font-black border border-zinc-200 dark:border-zinc-800 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-all active:scale-95"
                 >
-                  <UserPlusIcon className="w-4 h-4" />
+                  <LinkIcon className="w-4 h-4" />
                   Add links
                 </button>
               )}
@@ -524,13 +524,13 @@ function ProfileContent() {
           <>
             <button
               onClick={() => router.push('/settings?tab=status')}
-              className="flex-1 py-2 border border-zinc-200 dark:border-zinc-700 rounded-xl text-[14px] font-bold text-zinc-900 dark:text-zinc-100 hover:bg-zinc-50 dark:hover:bg-zinc-900 transition-colors"
+              className="flex-[2] py-2 border border-zinc-200 dark:border-zinc-700 rounded-xl text-[12px] font-bold text-zinc-900 dark:text-zinc-100 hover:bg-zinc-50 dark:hover:bg-zinc-900 transition-colors whitespace-nowrap truncate px-2"
             >
               Edit profile
             </button>
             <button
               onClick={() => setShowQRCode(true)}
-              className="px-3 py-2 border border-zinc-200 dark:border-zinc-700 rounded-xl text-zinc-900 dark:text-zinc-100 hover:bg-zinc-50 dark:hover:bg-zinc-900 transition-colors"
+              className="flex-none px-3 py-2 border border-zinc-200 dark:border-zinc-700 rounded-xl text-zinc-900 dark:text-zinc-100 hover:bg-zinc-50 dark:hover:bg-zinc-900 transition-colors"
               title="Show QR Code"
             >
               <QrCodeIcon className="w-5 h-5" />
@@ -550,7 +550,7 @@ function ProfileContent() {
                   alert('Link copied to clipboard!');
                 }
               }}
-              className="flex-1 py-2 border border-zinc-200 dark:border-zinc-700 rounded-xl text-[14px] font-bold text-zinc-900 dark:text-zinc-100 hover:bg-zinc-50 dark:hover:bg-zinc-900 transition-colors"
+              className="flex-1 py-2 border border-zinc-200 dark:border-zinc-700 rounded-xl text-[13px] font-bold text-zinc-900 dark:text-zinc-100 hover:bg-zinc-50 dark:hover:bg-zinc-900 transition-colors whitespace-nowrap truncate px-2"
             >
               Share profile
             </button>
@@ -756,70 +756,105 @@ function ProfileContent() {
       {/* ── Social Links Modal (portaled to body) ── */}
       {(showSocialLinks && typeof document !== 'undefined') ? (
         createPortal(
-          <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200" onClick={() => setShowSocialLinks(false)}>
-            <div className="bg-white dark:bg-zinc-900 w-full max-w-[400px] rounded-[28px] overflow-hidden flex flex-col shadow-2xl animate-in zoom-in-95 duration-200" onClick={e => e.stopPropagation()}>
+          <div className="fixed inset-0 z-[9999] flex items-end sm:items-center justify-center bg-black/60 backdrop-blur-sm animate-in fade-in duration-200" onClick={() => setShowSocialLinks(false)}>
+            <div 
+              className="bg-white dark:bg-zinc-900 w-full max-w-[440px] sm:rounded-[32px] rounded-t-[32px] overflow-hidden flex flex-col shadow-2xl animate-in slide-in-from-bottom sm:zoom-in-95 duration-300 sm:duration-200 pb-[env(safe-area-inset-bottom)]" 
+              onClick={e => e.stopPropagation()}
+            >
               <div className="relative px-6 py-5 border-b border-zinc-100 dark:border-zinc-800">
-                <h2 className="text-[20px] font-bold">Social Links</h2>
-                <button onClick={() => setShowSocialLinks(false)} className="absolute right-5 top-5 text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200"><XMarkIcon className="w-6 h-6" /></button>
+                <div className="w-12 h-1 bg-zinc-200 dark:bg-zinc-800 rounded-full mx-auto mb-4 sm:hidden" />
+                <h2 className="text-[20px] font-black tracking-tight">Social Links</h2>
+                <button onClick={() => setShowSocialLinks(false)} className="absolute right-5 top-5 sm:top-5 top-8 p-2 text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-full transition-colors">
+                  <XMarkIcon className="w-6 h-6" />
+                </button>
               </div>
-              <div className="px-6 py-5 space-y-4 overflow-y-auto max-h-[60vh]">
+              
+              <div className="px-6 py-6 space-y-5 overflow-y-auto max-h-[70vh]">
+                <p className="text-[13px] text-zinc-500 font-medium leading-relaxed">Add links to your other profiles. Make sure to include the full URL (e.g. tiktok.com/@username).</p>
+                
                 {/* TikTok */}
-                <div className="relative">
-                  <div className="absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none">
-                    <svg className="w-5 h-5 text-zinc-400 fill-current" viewBox="0 0 24 24"><path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-5.2 1.74 2.89 2.89 0 0 1 2.31-4.64 2.93 2.93 0 0 1 .88.13V9.4a6.84 6.84 0 0 0-1-.05A6.33 6.33 0 0 0 5 20.1a6.34 6.34 0 0 0 10.86-4.43v-7a8.16 8.16 0 0 0 4.77 1.52v-3.4a4.85 4.85 0 0 1-1.04-.1z"/></svg>
+                <div className="space-y-1.5">
+                  <label className="text-[11px] font-black uppercase tracking-wider text-zinc-400 ml-1">TikTok</label>
+                  <div className="relative">
+                    <div className="absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none">
+                      <svg className="w-5 h-5 text-zinc-400 fill-current" viewBox="0 0 24 24"><path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-5.2 1.74 2.89 2.89 0 0 1 2.31-4.64 2.93 2.93 0 0 1 .88.13V9.4a6.84 6.84 0 0 0-1-.05A6.33 6.33 0 0 0 5 20.1a6.34 6.34 0 0 0 10.86-4.43v-7a8.16 8.16 0 0 0 4.77 1.52v-3.4a4.85 4.85 0 0 1-1.04-.1z"/></svg>
+                    </div>
+                    <input type="url" value={socialData.tiktok_url} onChange={e => setSocialData({...socialData, tiktok_url: e.target.value})}
+                      className="w-full pl-12 pr-4 py-3.5 bg-zinc-50 dark:bg-zinc-800/50 border border-zinc-200 dark:border-zinc-700 rounded-2xl outline-none text-[15px] focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all font-medium"
+                      placeholder="tiktok.com/@username" />
                   </div>
-                  <input type="url" value={socialData.tiktok_url} onChange={e => setSocialData({...socialData, tiktok_url: e.target.value})}
-                    className="w-full pl-12 pr-4 py-3 bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-2xl outline-none text-[15px] focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
-                    placeholder="https://tiktok.com/@username" />
                 </div>
+
                 {/* Instagram */}
-                <div className="relative">
-                  <div className="absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none">
-                    <svg className="w-5 h-5 text-zinc-400 fill-current" viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.981 1.28.058 1.688.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.058-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z"/></svg>
+                <div className="space-y-1.5">
+                  <label className="text-[11px] font-black uppercase tracking-wider text-zinc-400 ml-1">Instagram</label>
+                  <div className="relative">
+                    <div className="absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none">
+                      <svg className="w-5 h-5 text-zinc-400 fill-current" viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.981 1.28.058 1.688.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.058-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z"/></svg>
+                    </div>
+                    <input type="url" value={socialData.instagram_url} onChange={e => setSocialData({...socialData, instagram_url: e.target.value})}
+                      className="w-full pl-12 pr-4 py-3.5 bg-zinc-50 dark:bg-zinc-800/50 border border-zinc-200 dark:border-zinc-700 rounded-2xl outline-none text-[15px] focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all font-medium"
+                      placeholder="instagram.com/username" />
                   </div>
-                  <input type="url" value={socialData.instagram_url} onChange={e => setSocialData({...socialData, instagram_url: e.target.value})}
-                    className="w-full pl-12 pr-4 py-3 bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-2xl outline-none text-[15px] focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
-                    placeholder="https://instagram.com/username" />
                 </div>
+
                 {/* Facebook */}
-                <div className="relative">
-                  <div className="absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none">
-                    <svg className="w-5 h-5 text-zinc-400 fill-current" viewBox="0 0 24 24"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
+                <div className="space-y-1.5">
+                  <label className="text-[11px] font-black uppercase tracking-wider text-zinc-400 ml-1">Facebook</label>
+                  <div className="relative">
+                    <div className="absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none">
+                      <svg className="w-5 h-5 text-zinc-400 fill-current" viewBox="0 0 24 24"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
+                    </div>
+                    <input type="url" value={socialData.facebook_url} onChange={e => setSocialData({...socialData, facebook_url: e.target.value})}
+                      className="w-full pl-12 pr-4 py-3.5 bg-zinc-50 dark:bg-zinc-800/50 border border-zinc-200 dark:border-zinc-700 rounded-2xl outline-none text-[15px] focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all font-medium"
+                      placeholder="facebook.com/username" />
                   </div>
-                  <input type="url" value={socialData.facebook_url} onChange={e => setSocialData({...socialData, facebook_url: e.target.value})}
-                    className="w-full pl-12 pr-4 py-3 bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-2xl outline-none text-[15px] focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
-                    placeholder="https://facebook.com/username" />
                 </div>
+
                 {/* Website */}
-                <div className="relative">
-                  <div className="absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none">
-                    <GlobeAltIcon className="w-5 h-5 text-zinc-400" />
+                <div className="space-y-1.5">
+                  <label className="text-[11px] font-black uppercase tracking-wider text-zinc-400 ml-1">Website</label>
+                  <div className="relative">
+                    <div className="absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none">
+                      <GlobeAltIcon className="w-5 h-5 text-zinc-400" />
+                    </div>
+                    <input type="url" value={socialData.website_url} onChange={e => setSocialData({...socialData, website_url: e.target.value})}
+                      className="w-full pl-12 pr-4 py-3.5 bg-zinc-50 dark:bg-zinc-800/50 border border-zinc-200 dark:border-zinc-700 rounded-2xl outline-none text-[15px] focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all font-medium"
+                      placeholder="yourwebsite.com" />
                   </div>
-                  <input type="url" value={socialData.website_url} onChange={e => setSocialData({...socialData, website_url: e.target.value})}
-                    className="w-full pl-12 pr-4 py-3 bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-2xl outline-none text-[15px] focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
-                    placeholder="https://yourwebsite.com" />
                 </div>
               </div>
-              <div className="px-6 pb-6 flex gap-3">
-                <button onClick={() => setShowSocialLinks(false)} className="flex-1 py-3.5 border border-zinc-200 dark:border-zinc-700 rounded-2xl text-[15px] font-bold text-zinc-600 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors">Cancel</button>
+
+              <div className="px-6 py-6 border-t border-zinc-100 dark:border-zinc-800 flex gap-3 bg-zinc-50/50 dark:bg-zinc-900/50">
+                <button onClick={() => setShowSocialLinks(false)} className="flex-1 py-4 border border-zinc-200 dark:border-zinc-700 rounded-2xl text-[15px] font-bold text-zinc-600 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors">Cancel</button>
                 <button
                   disabled={savingSocial}
                   onClick={async () => {
                     if (!id) return
                     setSavingSocial(true)
-                    const { error } = await supabase.from('profiles').update({
-                      tiktok_url: socialData.tiktok_url.trim(),
-                      instagram_url: socialData.instagram_url.trim(),
-                      facebook_url: socialData.facebook_url.trim(),
-                      website_url: socialData.website_url.trim()
-                    }).eq('id', id)
+                    
+                    const normalizeUrl = (url: string) => {
+                      const trimmed = url.trim();
+                      if (!trimmed) return '';
+                      if (trimmed.startsWith('http://') || trimmed.startsWith('https://')) return trimmed;
+                      return `https://${trimmed}`;
+                    };
+
+                    const normalizedData = {
+                      tiktok_url: normalizeUrl(socialData.tiktok_url),
+                      instagram_url: normalizeUrl(socialData.instagram_url),
+                      facebook_url: normalizeUrl(socialData.facebook_url),
+                      website_url: normalizeUrl(socialData.website_url)
+                    };
+
+                    const { error } = await supabase.from('profiles').update(normalizedData).eq('id', id)
                     if (!error) {
-                      setProfile({ ...profile, ...socialData })
+                      setProfile({ ...profile, ...normalizedData })
                       setShowSocialLinks(false)
                     }
                     setSavingSocial(false)
                   }}
-                  className="flex-1 py-3.5 bg-blue-600 hover:bg-blue-700 text-white rounded-2xl text-[15px] font-bold shadow-lg shadow-blue-500/20 transition-all disabled:opacity-50"
+                  className="flex-[1.5] py-4 bg-black dark:bg-white text-white dark:text-black rounded-2xl text-[15px] font-black shadow-xl shadow-black/10 dark:shadow-white/5 hover:opacity-90 transition-all active:scale-[0.98] disabled:opacity-50"
                 >
                   {savingSocial ? 'Saving...' : 'Save Links'}
                 </button>

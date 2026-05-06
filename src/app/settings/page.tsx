@@ -87,17 +87,26 @@ function AccountEditor({ profile, userId, supabase, onSaved }: { profile: any; u
       setSaving(false); return
     }
 
+    const normalizeUrl = (url: string) => {
+      const trimmed = url.trim();
+      if (!trimmed) return '';
+      if (trimmed.startsWith('http://') || trimmed.startsWith('https://')) return trimmed;
+      return `https://${trimmed}`;
+    };
+
+    const normalizedData = {
+      full_name: fullName.trim(), 
+      username: clean,
+      bio: bio.trim(),
+      tiktok_url: normalizeUrl(tiktokUrl),
+      instagram_url: normalizeUrl(instagramUrl),
+      facebook_url: normalizeUrl(facebookUrl),
+      website_url: normalizeUrl(websiteUrl),
+      is_private: isPrivate
+    };
+
     const { data: updated, error: saveErr } = await supabase
-      .from('profiles').update({ 
-        full_name: fullName.trim(), 
-        username: clean,
-        bio: bio.trim(),
-        tiktok_url: tiktokUrl.trim(),
-        instagram_url: instagramUrl.trim(),
-        facebook_url: facebookUrl.trim(),
-        website_url: websiteUrl.trim(),
-        is_private: isPrivate
-      })
+      .from('profiles').update(normalizedData)
       .eq('id', userId).select().single()
 
     if (saveErr) { setError(saveErr.message) } else {
