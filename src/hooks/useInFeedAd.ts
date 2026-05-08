@@ -6,7 +6,7 @@ import { registerPlugin } from '@capacitor/core'
 
 // Register our custom native plugin
 const NativeInFeedAd = registerPlugin<{
-  initialize(): Promise<{ status: string }>
+  initialize(options: { adId?: string }): Promise<{ status: string }>
   showAd(options: { x: number; y: number; width: number; height: number }): Promise<{ shown: boolean }>
   updatePosition(options: { y: number }): Promise<void>
   hideAd(): Promise<{ hidden: boolean }>
@@ -23,7 +23,7 @@ const NativeInFeedAd = registerPlugin<{
  *   const { placeholderRef } = useInFeedAd()
  *   return <div ref={placeholderRef} style={{ height: 200 }} />
  */
-export function useInFeedAd() {
+export function useInFeedAd(adId?: string) {
   const placeholderRef = useRef<HTMLDivElement>(null)
   const isInitialized = useRef(false)
   const isAdShown = useRef(false)
@@ -80,7 +80,7 @@ export function useInFeedAd() {
       isInitialized.current = true
 
       try {
-        await NativeInFeedAd.initialize()
+        await NativeInFeedAd.initialize({ adId })
 
         // Listen for when the ad is loaded and ready
         NativeInFeedAd.addListener('adLoaded', () => {
@@ -127,9 +127,8 @@ export function useInFeedAd() {
 
     return () => {
       observer.disconnect()
-      // Destroy ad when component unmounts
-      NativeInFeedAd.destroyAd().catch(() => {})
-      isInitialized.current = false
+      // Only hide the ad when unmounting, don't destroy it so it's ready for the next placeholder
+      NativeInFeedAd.hideAd().catch(() => {})
       isAdShown.current = false
     }
   }, [showAdAtCurrentPosition])

@@ -464,26 +464,26 @@ export function Feed() {
       <StoriesBar />
       <TabBar />
 
-      {/* "What's new?" User Bar (Mobile Only) */}
-      <div className="sm:hidden px-4 py-4 border-b border-zinc-100 dark:border-zinc-900 flex items-center gap-3">
+      {/* "What's new?" User Bar */}
+      <div className="px-4 py-4 border border-zinc-100 dark:border-zinc-900 sm:rounded-xl mb-4 bg-white dark:bg-black flex items-center gap-4 shadow-sm">
         {user ? (
           <Link href={`/profile?id=${user.id}`} className="flex-none">
             {profileData?.avatar_url ? (
-              <Image src={profileData.avatar_url} alt="You" width={40} height={40} className="rounded-full w-10 h-10 object-cover" unoptimized />
+              <Image src={profileData.avatar_url} alt="You" width={42} height={42} className="rounded-full w-[42px] h-[42px] object-cover ring-1 ring-zinc-100 dark:ring-zinc-800" unoptimized />
             ) : (
-              <div className="w-10 h-10 bg-zinc-100 dark:bg-zinc-900 rounded-full flex items-center justify-center text-zinc-400 font-bold">
+              <div className="w-[42px] h-[42px] bg-zinc-100 dark:bg-zinc-900 rounded-full flex items-center justify-center text-zinc-400 font-bold">
                 {(profileData?.full_name || user.email || 'U')[0].toUpperCase()}
               </div>
             )}
           </Link>
         ) : (
-          <div className="w-10 h-10 bg-zinc-100 dark:bg-zinc-900 rounded-full" />
+          <div className="w-[42px] h-[42px] bg-zinc-100 dark:bg-zinc-900 rounded-full" />
         )}
         <button 
           onClick={() => window.dispatchEvent(new CustomEvent('open-post-modal'))}
-          className="flex-grow text-left text-zinc-400 dark:text-zinc-500 font-medium"
+          className="flex-grow text-left text-zinc-500 dark:text-zinc-400 font-medium text-[15px] bg-zinc-50 dark:bg-zinc-900/50 px-5 py-2.5 rounded-full hover:bg-zinc-100 dark:hover:bg-zinc-900 transition-colors"
         >
-          What's new?
+          What's on your mind?
         </button>
       </div>
 
@@ -532,14 +532,22 @@ export function Feed() {
                   <div key={post.is_repost ? `repost-${post.feed_created_at}-${post.id}` : `post-${post.id}`}>
                     <Post post={post} onObserve={observePost} />
                     {showAd && (
-                      Capacitor.isNativePlatform() ? (
-                        <InlineFeedAd adId="ca-app-pub-8166782428171770/3141151608" />
-                      ) : directAd ? (
-                        <DirectAd ad={directAd} />
-                      ) : (
-                        // Fallback for web if no direct ad
-                        <div className="p-4 text-center text-zinc-500 text-xs italic">Sponsored</div>
-                      )
+                      <div className="w-full">
+                        {Capacitor.isNativePlatform() ? (
+                          // Alternate between AdMob and Direct ads on Mobile
+                          (adIndex % 2 === 0) ? (
+                            <InlineFeedAd adId="ca-app-pub-8166782428171770/3141151608" />
+                          ) : directAd ? (
+                            <DirectAd ad={directAd} />
+                          ) : (
+                            <InlineFeedAd adId="ca-app-pub-8166782428171770/3141151608" />
+                          )
+                        ) : directAd ? (
+                          <DirectAd ad={directAd} />
+                        ) : (
+                          <div className="p-4 text-center text-zinc-500 text-xs italic border-b border-zinc-100 dark:border-zinc-900">Sponsored</div>
+                        )}
+                      </div>
                     )}
                   </div>
                 )

@@ -59,7 +59,7 @@ export function StoriesBar() {
   return (
     <>
       <div
-        className="flex items-center gap-4 px-4 py-3 overflow-x-auto border-b border-zinc-100 dark:border-zinc-900"
+        className="flex items-center gap-4 px-4 py-4 overflow-x-auto bg-white dark:bg-black border border-zinc-100 dark:border-zinc-900 sm:rounded-xl mb-4"
         style={{ scrollbarWidth: 'none' }}
       >
         {user && (

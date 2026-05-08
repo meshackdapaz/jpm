@@ -238,7 +238,7 @@ function SettingsContent() {
     if (!authLoading && !user) router.replace('/login')
   }, [user, authLoading, router])
 
-  const [activeTab, setActiveTab] = useState(tabParam || 'privacy')
+  const [activeTab, setActiveTab] = useState(tabParam || 'status')
 
   useEffect(() => {
     if (tabParam) setActiveTab(tabParam)

@@ -716,325 +716,83 @@ export const Post = React.memo(({ post, onObserve }: { post: any; onObserve?: (p
   if (isDeletedLocally) return null
 
   return (
-    <div className={`border-b border-zinc-200 dark:border-zinc-800 relative ${isArchived ? 'opacity-50 grayscale-[0.5]' : ''}`}>
+    <div className={`border-b border-zinc-100 dark:border-zinc-900 bg-white dark:bg-black relative ${isArchived ? 'opacity-50 grayscale-[0.5]' : ''}`}>
 
       {/* Repost status */}
       {post.is_repost && (
-        <div className="px-12 pt-3 pb-1 text-sm text-zinc-500 font-bold flex items-center gap-2">
+        <div className="px-4 pt-3 pb-1 text-[13px] text-zinc-500 font-bold flex items-center gap-2">
           <ArrowPathRoundedSquareIcon className="w-4 h-4" />
           {post.reposter_name} reposted
         </div>
       )}
 
-      {/* ──────────────────────────────────────
-          Main clickable / post body
-      ────────────────────────────────────── */}
       <div
         ref={(el) => onObserve?.(post.id, el)}
-        onClick={() => setShowComments(!showComments)}
-        className="px-4 py-3 flex flex-col gap-2 transition-colors cursor-pointer group/post"
+        className="py-3 flex flex-col"
       >
-        {/* Row 1: Avatar + author info + caption */}
-        <div className="flex gap-3">
-          {/* Avatar */}
-          <div className="flex-none" onClick={(e) => e.stopPropagation()}>
-            <div className="relative">
+        {/* Header: Avatar + User Info + Menu */}
+        <div className="flex items-center justify-between px-4 mb-3">
+          <div className="flex items-center gap-3">
+            <div className="relative group/avatar">
               {post.is_ghost ? (
-                <div className="w-11 h-11 bg-gradient-to-br from-amber-500/20 to-zinc-900 rounded-full flex items-center justify-center border border-amber-500/50 cursor-default">
-                  <span className="text-[10px] font-black text-amber-500 tracking-tighter">GHOST</span>
+                <div className="w-10 h-10 bg-gradient-to-br from-amber-500/20 to-zinc-900 rounded-full flex items-center justify-center border border-amber-500/50">
+                  <span className="text-[9px] font-black text-amber-500">GHOST</span>
                 </div>
               ) : (
-                <Link href={`/profile?id=${profile.id}`}>
+                <Link href={`/profile?id=${profile.id}`} className="block relative">
                   {profile.avatar_url ? (
                     <Image
                       src={profile.avatar_url}
                       alt={profile.full_name}
-                      width={44}
-                      height={44}
-                      className="rounded-full w-11 h-11 object-cover hover:opacity-80 transition-opacity"
+                      width={40}
+                      height={40}
+                      className="rounded-full w-10 h-10 object-cover ring-1 ring-zinc-100 dark:ring-zinc-800"
+                      unoptimized
                     />
                   ) : (
-                    <div className="w-11 h-11 bg-zinc-200 dark:bg-zinc-800 rounded-full flex items-center justify-center text-zinc-500 font-bold hover:bg-zinc-300 dark:hover:bg-zinc-700 transition-colors">
+                    <div className="w-10 h-10 bg-zinc-100 dark:bg-zinc-900 rounded-full flex items-center justify-center text-zinc-500 font-bold text-sm">
                       {profile.full_name?.[0]?.toUpperCase() || 'A'}
                     </div>
                   )}
                 </Link>
               )}
-              {!post.is_ghost && (() => {
-                const lastSeen = profile.last_seen ? new Date(profile.last_seen) : null
-                const isOnline = lastSeen && (new Date().getTime() - lastSeen.getTime() < 5 * 60 * 1000)
-                const onlinePref = profile.settings?.online || 'Anyone'
-                const shouldShow = isOnline && (onlinePref === 'Anyone' || profile.id === currentUser?.id)
-                if (!shouldShow) return null
-                return <div className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 border-2 border-white dark:border-[#101010] rounded-full" />
-              })()}
             </div>
-          </div>
 
-          {/* Author info + caption */}
-          <div className="flex-grow min-w-0">
-            <div className="flex items-center justify-between mb-0.5">
-              {post.category && (
-                  <span className="inline-block px-2 py-0.5 rounded-full bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 text-zinc-600 dark:text-zinc-400 text-[10px] font-bold uppercase tracking-wider mb-2">
-                    #{post.category}
-                  </span>
-                )}
-              <div className="flex items-center gap-1.5 flex-wrap min-w-0">
+            <div className="flex flex-col min-w-0">
+              <div className="flex items-center gap-1.5 flex-wrap">
                 {post.is_ghost ? (
-                  <span className="font-black text-[15px] leading-snug text-amber-500 truncate max-w-[130px] sm:max-w-none cursor-default">Anonymous Ghost</span>
+                  <span className="font-bold text-[14px]">Anonymous Ghost</span>
                 ) : (
-                  <>
-                    <Link
-                      href={`/profile?id=${profile.id}`}
-                      className="flex items-center gap-1 group/author"
-                      onClick={(e) => e.stopPropagation()}
-                    >
-                      <span className="font-bold text-[15px] leading-snug group-hover/author:underline truncate max-w-[130px] sm:max-w-none">{profile.full_name}</span>
-                      {profile.is_verified && <VerifiedBadge className="w-4 h-4 flex-none" />}
-                      {profile.is_staff && <VerifiedBadge className="w-auto h-3.5 flex-none" type="staff" />}
-                    </Link>
-                    <span className="text-zinc-400 dark:text-zinc-500 text-sm truncate max-w-[100px] sm:max-w-none">@{profile.username}</span>
-                  </>
-                )}
-                <span className="text-zinc-400 text-sm">·</span>
-                <span className="text-zinc-400 text-sm flex-none" title={new Date(post.created_at).toLocaleString()}>{formatRelativeTime(post.created_at)}</span>
-              </div>
-
-              {/* Three dots - Options Menu */}
-              {currentUser?.id === post.creator_id && (
-                <div className="relative">
-                  <button 
-                    onClick={(e) => { e.stopPropagation(); setShowOptions(!showOptions) }}
-                    className={`w-8 h-8 flex items-center justify-center rounded-full transition-colors flex-none -mr-2 ${showOptions ? 'bg-zinc-100 dark:bg-zinc-900 text-zinc-900 dark:text-white' : 'hover:bg-zinc-100 dark:hover:bg-zinc-900 text-zinc-400'}`}
+                  <Link
+                    href={`/profile?id=${profile.id}`}
+                    className="font-bold text-[14px] hover:text-zinc-500 transition-colors truncate"
                   >
-                    <EllipsisHorizontalIcon className="w-5 h-5" />
-                  </button>
-
-                  <AnimatePresence>
-                    {showOptions && (
-                      <>
-                        <div className="fixed inset-0 z-40" onClick={() => setShowOptions(false)} />
-                        <motion.div 
-                          initial={{ opacity: 0, scale: 0.95, y: -10 }}
-                          animate={{ opacity: 1, scale: 1, y: 0 }}
-                          exit={{ opacity: 0, scale: 0.95, y: -10 }}
-                          className="absolute right-0 mt-2 w-48 bg-white dark:bg-zinc-900 rounded-2xl shadow-2xl border border-zinc-100 dark:border-zinc-800 py-2 z-50 overflow-hidden"
-                        >
-                          <button
-                            onClick={(e) => { e.stopPropagation(); setShowOptions(false); setShowDeleteConfirm(true); }}
-                            disabled={isDeleting}
-                            className="w-full px-4 py-3 flex items-center gap-3 text-red-500 hover:bg-red-50 dark:hover:bg-red-950/30 transition-colors text-sm font-bold disabled:opacity-50"
-                          >
-                            <TrashIcon className="w-4 h-4" />
-                            {isDeleting ? 'Deleting...' : 'Delete Post'}
-                          </button>
-                        </motion.div>
-                      </>
-                    )}
-                  </AnimatePresence>
-                </div>
+                    {profile.username || 'user'}
+                  </Link>
+                )}
+                {profile.is_verified && <VerifiedBadge className="w-3.5 h-3.5 flex-none" />}
+                <span className="text-zinc-400 text-xs">·</span>
+                <span className="text-zinc-400 text-xs" title={new Date(post.created_at).toLocaleString()}>{formatRelativeTime(post.created_at)}</span>
+              </div>
+              {post.category && (
+                <span className="text-[10px] font-bold text-sky-500 uppercase tracking-wider">#{post.category}</span>
               )}
             </div>
-            <div className={`relative ${ (post.settings?.isQuote || post.settings?.is_quote) ? 'mt-4 mb-4' : 'mt-0.5' }`}>
-              {(post.settings?.isQuote || post.settings?.is_quote) ? (
-                <div className="relative group/quote mt-4 mb-4">
-                  {/* Subtle background glow */}
-                  <div className="absolute inset-0 bg-gradient-to-br from-sky-500/10 to-transparent dark:from-sky-500/5 dark:to-transparent rounded-[32px] blur-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
-                  
-                  <div className="relative bg-white/40 dark:bg-zinc-900/40 backdrop-blur-xl border border-white/20 dark:border-white/5 rounded-[32px] p-8 sm:p-10 shadow-2xl shadow-black/5 flex flex-col items-center text-center transition-transform duration-500 group-hover:scale-[1.01]">
-                    <div className="mb-6 opacity-20 text-sky-500">
-                      <svg className="w-8 h-8" fill="currentColor" viewBox="0 0 24 24"><path d="M14.017 21L14.017 18C14.017 16.8954 14.9124 16 16.0171 16H19.0171C20.1216 16 21.0171 15.1046 21.0171 14V11C21.0171 9.89543 20.1216 9 19.0171 9H16.0171C14.9124 9 14.017 8.10457 14.017 7V4H21.0171C22.1216 4 23.0171 4.89543 23.0171 6V14C23.0171 17.866 19.8831 21 16.0171 21H14.017ZM1 21L1 18C1 16.8954 1.89543 16 3 16H6C7.10457 16 8 15.1046 8 14V11C8 9.89543 7.10457 9 6 9H3C1.89543 9 1 8.10457 1 7V4H8C9.10457 4 10 4.89543 10 6V14C10 17.866 6.86599 21 3 21H1Z" /></svg>
-                    </div>
-                    
-                    <p className="text-[20px] sm:text-[24px] font-semibold tracking-tight leading-snug text-zinc-900 dark:text-zinc-100 whitespace-pre-wrap break-words">
-                      {post.content}
-                    </p>
-                    
-                    <div className="mt-8 flex items-center gap-3">
-                      <div className="w-1 h-1 rounded-full bg-zinc-300 dark:bg-zinc-700" />
-                      <span className="text-[10px] font-black uppercase tracking-[0.3em] text-zinc-400 dark:text-zinc-500">Reflective Statement</span>
-                      <div className="w-1 h-1 rounded-full bg-zinc-300 dark:bg-zinc-700" />
-                    </div>
-                  </div>
-                </div>
-              ) : (
-                <div className="relative group/caption">
-                  <p className={`text-[15px] leading-relaxed text-zinc-900 dark:text-zinc-100 whitespace-pre-wrap break-words transition-all duration-300 ${!showAnalytics && post.content?.length > 180 ? 'line-clamp-3' : ''}`}>
-                    {post.content}
-                  </p>
-                  {post.content?.length > 180 && !showAnalytics && (
-                    <button className="text-zinc-500 text-[13px] font-bold mt-1 hover:text-blue-500 transition-colors">...more</button>
-                  )}
-                </div>
-              )}
-            </div>
-
-            {/* Quoted Post Preview */}
-            {post.quoted_post && (
-              <div 
-                className="mt-3 mb-1 rounded-2xl border border-zinc-100 dark:border-zinc-800 p-3 bg-zinc-50/50 dark:bg-zinc-900/50 hover:bg-zinc-100/50 dark:hover:bg-zinc-800/50 transition-colors cursor-pointer"
-                onClick={(e) => {
-                  e.stopPropagation()
-                  router.push(`/post?id=${post.quoted_post.id}`)
-                }}
-              >
-                <div className="flex items-center gap-2 mb-1.5">
-                  <div className="w-5 h-5 rounded-full bg-zinc-200 dark:bg-zinc-800 overflow-hidden">
-                    {post.quoted_post.profiles?.avatar_url && (
-                      <Image src={post.quoted_post.profiles.avatar_url} alt="" width={20} height={20} className="w-full h-full object-cover" unoptimized />
-                    )}
-                  </div>
-                  <span className="font-bold text-[11px] tracking-tight">{post.quoted_post.profiles?.full_name}</span>
-                </div>
-                <p className="text-[12px] text-zinc-600 dark:text-zinc-400 line-clamp-2">
-                  {post.quoted_post.content}
-                </p>
-              </div>
-            )}
-
-            {/* ── Poll Display ── */}
-            {poll && (
-              <div className="mt-4 mb-2 space-y-2" onClick={(e) => e.stopPropagation()}>
-                {pollOptions.map((opt) => {
-                  const votes = opt.poll_votes?.[0]?.count || 0
-                  const percent = totalVotes > 0 ? Math.round((votes / totalVotes) * 100) : 0
-                  const isVoted = votedOptionId === opt.id
-                  const isExpired = new Date(poll.ends_at) < new Date()
-
-                  return (
-                    <button
-                      key={opt.id}
-                      disabled={!!votedOptionId || isExpired}
-                      onClick={async (e) => {
-                        e.stopPropagation()
-                        if (!currentUser) {
-                          setLoginPromptMessage('Join JPM to vote on polls')
-                          setShowLoginPrompt(true)
-                          return
-                        }
-                        setVotedOptionId(opt.id)
-                        setTotalVotes(prev => prev + 1)
-                        await supabase.from('poll_votes').insert({
-                          poll_id: poll.id,
-                          option_id: opt.id,
-                          user_id: currentUser.id
-                        })
-                      }}
-                      className="relative w-full h-11 rounded-xl border border-zinc-200 dark:border-zinc-700 overflow-hidden group/poll transition-all active:scale-[0.98]"
-                    >
-                      {/* Progress Bar */}
-                      {(votedOptionId || isExpired) && (
-                        <motion.div 
-                          initial={{ width: 0 }}
-                          animate={{ width: `${percent}%` }}
-                          className={`absolute inset-0 ${isVoted ? 'bg-sky-500/20 dark:bg-sky-500/30' : 'bg-zinc-100 dark:bg-zinc-800'}`}
-                        />
-                      )}
-                      
-                      <div className="absolute inset-0 px-4 flex items-center justify-between text-[15px]">
-                        <span className={`font-bold ${isVoted ? 'text-sky-600 dark:text-sky-400' : 'text-zinc-700 dark:text-zinc-200'}`}>
-                          {opt.option_text}
-                          {isVoted && <span className="ml-2">✓</span>}
-                        </span>
-                        {(votedOptionId || isExpired) && (
-                          <span className="font-black text-zinc-500">{percent}%</span>
-                        )}
-                      </div>
-                    </button>
-                  )
-                })}
-                <div className="flex items-center gap-2 text-[13px] text-zinc-400 mt-2 font-medium">
-                  <span>{totalVotes} votes</span>
-                  <span>·</span>
-                  <span>{new Date(poll.ends_at) < new Date() ? 'Final results' : 'Active poll'}</span>
-                </div>
-              </div>
-            )}
-
           </div>
-        </div>
 
-        {/* Row 2: Full-width Media — Fixed 4:5 Aspect Ratio like IG */}
-        {post.video_url ? (
-          <div
-            className="w-full relative rounded-[20px] overflow-hidden group/video mb-2 aspect-[4/5] bg-zinc-100 dark:bg-zinc-900 shadow-xl"
-            onClick={(e) => e.stopPropagation()}
-          >
-            {/* Blurred background frame */}
-            {(post.image_url || images[0]) && (
-              <div 
-                className="absolute inset-0 z-0 bg-cover bg-center blur-3xl scale-125 opacity-40 select-none pointer-events-none"
-                style={{ backgroundImage: `url(${post.image_url || images[0]})` }} 
-              />
-            )}
+          <div className="relative">
+            <button
+              onClick={() => setShowOptions(!showOptions)}
+              className="p-2 -mr-2 text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors"
+            >
+              <EllipsisHorizontalIcon className="w-6 h-6" />
+            </button>
             
-            <video
-              src={post.video_url}
-              className="w-full h-full object-cover relative z-10 drop-shadow-2xl"
-              controls
-              autoPlay
-              loop
-              muted
-              playsInline
-              poster={post.image_url || undefined}
-            />
-          </div>
-        ) : images.length > 0 && (
-          <div
-            className="w-full relative rounded-[20px] overflow-hidden group/carousel aspect-[4/5] bg-zinc-100 dark:bg-zinc-900 shadow-xl"
-            onClick={(e) => e.stopPropagation()}
-          >
-            {/* Blurred background frame */}
-            {imageLoaded && (
-              <div 
-                className="absolute inset-0 z-0 bg-cover bg-center blur-3xl scale-125 opacity-40 select-none pointer-events-none"
-                style={{ backgroundImage: `url(${images[imageIndex]})` }}
-              />
-            )}
-
-            {dataSaver && !imageLoaded ? (
-              <button 
-                onClick={(e) => { e.stopPropagation(); setImageLoaded(true) }}
-                className="w-full h-full flex flex-col items-center justify-center gap-2 hover:bg-zinc-200 dark:hover:bg-zinc-800 transition-colors relative z-10"
-              >
-                <PhotoIcon className="w-8 h-8 text-zinc-400" />
-                <span className="text-[11px] font-black uppercase tracking-tighter text-zinc-500">Data saver: Click to load</span>
-              </button>
-            ) : (
-              <div className="w-full h-full relative z-10">
-                <AnimatePresence initial={false} custom={direction}>
+            <AnimatePresence>
+              {showOptions && (
+                <>
+                  <div className="fixed inset-0 z-40" onClick={() => setShowOptions(false)} />
                   <motion.div
-                    key={imageIndex}
-                    custom={direction}
-                    variants={{
-                      enter: (direction: number) => ({
-                        x: direction > 0 ? '100%' : '-100%',
-                        opacity: 0,
-                        scale: 1.1
-                      }),
-                      center: {
-                        x: 0,
-                        opacity: 1,
-                        scale: 1,
-                        transition: {
-                          x: { type: "spring", stiffness: 300, damping: 30 },
-                          opacity: { duration: 0.2 },
-                          scale: { duration: 0.4 }
-                        }
-                      },
-                      exit: (direction: number) => ({
-                        x: direction < 0 ? '100%' : '-100%',
-                        opacity: 0,
-                        scale: 0.9,
-                        transition: {
-                          x: { type: "spring", stiffness: 300, damping: 30 },
-                          opacity: { duration: 0.2 }
-                        }
-                      })
-                    }}
-                    initial="enter"
-                    animate="center"
-                    exit="exit"
                     className="absolute inset-0 w-full h-full"
                   >
                     <motion.div

@@ -401,32 +401,44 @@ export function AppLayout({ children, fullBleed = false, wide = false, hideSideb
       {showGuestBar && <GuestTopBar />}
 
       {showNav && (
-        <nav className="fixed top-0 left-0 bottom-0 w-[72px] z-50 hidden sm:flex flex-col items-center justify-between py-6 bg-white dark:bg-black border-r border-zinc-100 dark:border-zinc-900">
-          <div className="flex-shrink-0 mb-8 pt-2">
-            <svg className="w-10 h-10 text-black dark:text-white" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
-              <path d="M12.001 2C6.475 2 2 6.476 2 12s4.475 10 10.001 10C17.522 22 22 17.524 22 12S17.522 2 12.001 2zM12 20c-4.41 0-8-3.589-8-8s3.59-8 8-8 8 3.589 8 8-3.59 8-8 8zm4.5-8c0 2.485-2.015 4.5-4.5 4.5S7.5 14.485 7.5 12s2.015-4.5 4.5-4.5 4.5 2.015 4.5 4.5zm1.5 0c0-3.313-2.687-6-6-6S6 8.687 6 12s2.687 6 6 6c1.293 0 2.49-.409 3.471-1.103l-.985-1.459A4.468 4.468 0 0112 16.5c-2.485 0-4.5-2.015-4.5-4.5S9.515 7.5 12 7.5s4.5 2.015 4.5 4.5v1.125c0 .621-.503 1.125-1.125 1.125S14.25 13.746 14.25 13.125V12c0-1.24-1.01-2.25-2.25-2.25S9.75 10.76 9.75 12s1.01 2.25 2.25 2.25c.655 0 1.24-.28 1.657-.726A2.614 2.614 0 0016.5 13.125V12z"/>
-            </svg>
+      {showNav && (
+        <nav className="fixed top-0 left-0 bottom-0 w-[72px] xl:w-[244px] z-50 hidden sm:flex flex-col items-start justify-between py-8 px-3 xl:px-4 bg-white dark:bg-black border-r border-zinc-100 dark:border-zinc-900 transition-all duration-300">
+          <div className="flex-shrink-0 mb-10 w-full px-3">
+            <Link href="/" className="flex items-center gap-3">
+              <svg className="w-8 h-8 text-black dark:text-white" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                <path d="M12.001 2C6.475 2 2 6.476 2 12s4.475 10 10.001 10C17.522 22 22 17.524 22 12S17.522 2 12.001 2zM12 20c-4.41 0-8-3.589-8-8s3.59-8 8-8 8 3.589 8 8-3.59 8-8 8zm4.5-8c0 2.485-2.015 4.5-4.5 4.5S7.5 14.485 7.5 12s2.015-4.5 4.5-4.5 4.5 2.015 4.5 4.5zm1.5 0c0-3.313-2.687-6-6-6S6 8.687 6 12s2.687 6 6 6c1.293 0 2.49-.409 3.471-1.103l-.985-1.459A4.468 4.468 0 0112 16.5c-2.485 0-4.5-2.015-4.5-4.5S9.515 7.5 12 7.5s4.5 2.015 4.5 4.5v1.125c0 .621-.503 1.125-1.125 1.125S14.25 13.746 14.25 13.125V12c0-1.24-1.01-2.25-2.25-2.25S9.75 10.76 9.75 12s1.01 2.25 2.25 2.25c.655 0 1.24-.28 1.657-.726A2.614 2.614 0 0016.5 13.125V12z"/>
+              </svg>
+              <span className="hidden xl:block font-black text-2xl tracking-tighter">JPM</span>
+            </Link>
           </div>
-
-          <div className="flex flex-col items-center gap-2 flex-grow justify-center">
+ 
+          <div className="flex flex-col items-center xl:items-start gap-1 flex-grow w-full">
             {desktopTabs.map((tab) => {
               const isActive = tab.href
                 ? pathname === tab.href || (pathname.startsWith('/profile') && tab.name === 'Profile')
                 : isPostModalOpen
               const Icon = isActive ? tab.iconSolid : tab.iconOutline
-              const btnClass = `relative w-12 h-12 flex items-center justify-center rounded-2xl ${
+              const btnClass = `group relative w-full h-12 flex items-center justify-center xl:justify-start gap-4 px-3 rounded-xl transition-all ${
                 isActive
-                  ? 'text-black dark:text-white bg-zinc-100 dark:bg-zinc-900'
-                  : 'text-zinc-400 hover:bg-zinc-50 dark:hover:bg-zinc-900/50'
+                  ? 'text-black dark:text-white font-bold'
+                  : 'text-zinc-500 hover:bg-zinc-50 dark:hover:bg-zinc-900/50 hover:text-black dark:hover:text-white'
               }`
+              const iconBox = <div className={`flex items-center justify-center w-7 h-7 transition-transform ${isActive ? 'scale-110' : 'group-hover:scale-110'}`}><Icon className="w-7 h-7" /></div>
+              
               if (tab.action) {
-                return <button key={tab.name} onClick={tab.action} className={btnClass}><Icon className="w-6 h-6" /></button>
+                return (
+                  <button key={tab.name} onClick={tab.action} className={btnClass}>
+                    {iconBox}
+                    <span className={`hidden xl:block text-[16px] ${isActive ? 'font-bold' : 'font-medium'}`}>{tab.name}</span>
+                  </button>
+                )
               }
               return (
                 <Link key={tab.name} href={tab.href as string} className={btnClass}>
-                  <Icon className="w-6 h-6" />
+                  {iconBox}
+                  <span className={`hidden xl:block text-[16px] ${isActive ? 'font-bold' : 'font-medium'}`}>{tab.name}</span>
                   {tab.badge && tab.badge > 0 && (
-                    <span className="absolute top-1.5 right-1.5 bg-red-500 text-white text-[9px] font-black w-4 h-4 flex items-center justify-center rounded-full border-2 border-white dark:border-black">
+                    <span className="absolute top-2 left-7 xl:left-8 bg-red-500 text-white text-[9px] font-black w-4 h-4 flex items-center justify-center rounded-full border-2 border-white dark:border-black">
                       {tab.badge > 9 ? '9+' : tab.badge}
                     </span>
                   )}
@@ -434,23 +446,36 @@ export function AppLayout({ children, fullBleed = false, wide = false, hideSideb
               )
             })}
           </div>
-
-          <div className="mt-8 flex flex-col gap-2">
+ 
+          <div className="mt-auto w-full px-2">
             {mounted && (
               <button
                 onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
-                className="w-12 h-12 flex items-center justify-center text-zinc-400"
+                className="w-full h-12 flex items-center justify-center xl:justify-start gap-4 px-3 text-zinc-500 hover:bg-zinc-50 dark:hover:bg-zinc-900/50 rounded-xl transition-all"
               >
-                {theme === 'dark' ? <SunIcon className="w-6 h-6" /> : <MoonIcon className="w-6 h-6" />}
+                <div className="w-7 h-7 flex items-center justify-center">
+                  {theme === 'dark' ? <SunIcon className="w-6 h-6" /> : <MoonIcon className="w-6 h-6" />}
+                </div>
+                <span className="hidden xl:block text-[16px] font-medium">{theme === 'dark' ? 'Light Appearance' : 'Dark Appearance'}</span>
               </button>
             )}
+            
+            <Link 
+              href="/settings"
+              className="w-full h-12 flex items-center justify-center xl:justify-start gap-4 px-3 mt-1 text-zinc-500 hover:bg-zinc-50 dark:hover:bg-zinc-900/50 rounded-xl transition-all"
+            >
+               <div className="w-7 h-7 flex items-center justify-center">
+                <Cog6ToothIcon className="w-6 h-6" />
+               </div>
+               <span className="hidden xl:block text-[16px] font-medium">Settings</span>
+            </Link>
           </div>
         </nav>
       )}
-
+ 
       {/* ── Main content ─────────────────────────────────────────────────────  */}
       <main
-        className={`flex-grow ${(showNav && pathname === '/') || showGuestBar ? 'pt-[calc(3.5rem+env(safe-area-inset-top))]' : 'pt-[env(safe-area-inset-top)]'} ${showNav ? 'pb-[calc(4.5rem+env(safe-area-inset-bottom))]' : 'pb-0'} font-sans ${showNav && fullBleed ? 'sm:pl-[72px]' : 'flex justify-center'}`}
+        className={`flex-grow ${(showNav && pathname === '/') || showGuestBar ? 'pt-[calc(3.5rem+env(safe-area-inset-top))]' : 'pt-[env(safe-area-inset-top)]'} ${showNav ? 'pb-[calc(4.5rem+env(safe-area-inset-bottom))]' : 'pb-0'} font-sans flex justify-center w-full ${showNav ? 'sm:pl-[72px] xl:pl-[244px]' : ''}`}
         style={{
           transform: ptrPull > 0 ? `translateY(${ptrPull}px)` : 'translateY(0)',
           transition: ptrPull > 0 ? 'none' : 'transform 0.45s cubic-bezier(0.2, 0.8, 0.2, 1)',
@@ -459,12 +484,25 @@ export function AppLayout({ children, fullBleed = false, wide = false, hideSideb
         {fullBleed ? (
           children
         ) : (
-          <div className={`flex w-full ${(wide || hideSidebar || isPublicRoute) ? 'max-w-6xl' : 'max-w-[1400px]'} gap-0 lg:gap-8 lg:px-4 justify-center`}>
-            {!isNative && !hideSidebar && showNav && <LeftSidebarAd />}
-            <div className={`flex-1 min-w-0 ${(wide || hideSidebar || isPublicRoute) ? 'max-w-4xl' : 'max-w-xl'} w-full min-h-screen bg-white dark:bg-black ${showNav ? '2xl:ml-0 sm:ml-[72px]' : 'sm:ml-0'}`}>
+          <div className={`flex w-full max-w-full overflow-x-hidden gap-0 lg:gap-12 justify-center px-4 md:px-8 xl:px-0`}>
+            {/* Left sidebar - Hidden on smaller screens or when wide is true */}
+            {!isNative && !hideSidebar && showNav && !wide && (
+              <div className="hidden 2xl:block">
+                <LeftSidebarAd />
+              </div>
+            )}
+ 
+            {/* Center Feed */}
+            <div className={`flex-grow min-w-0 ${(wide || hideSidebar || isPublicRoute || isPublic) ? 'max-w-5xl' : 'max-w-[630px]'} w-full bg-white dark:bg-black !px-0`}>
               {children}
             </div>
-            {!isNative && !hideSidebar && showNav && <RightSidebar />}
+ 
+            {/* Right Sidebar - Hidden on smaller screens or when wide is true */}
+            {!isNative && !hideSidebar && showNav && !wide && (
+              <div className="hidden lg:block w-[320px] shrink-0">
+                <RightSidebar />
+              </div>
+            )}
           </div>
         )}
       </main>

@@ -17,7 +17,7 @@
             android:theme="@style/AppTheme.NoActionBarLaunch"
             android:launchMode="singleTask"
             android:showOnLockScreen="true"
-            android:windowSoftInputMode="adjustResize"
+            android:windowSoftInputMode="adjustPan"
             android:exported="true">
 
             <intent-filter>
@@ -43,7 +43,7 @@
 
         <meta-data
             android:name="com.google.android.gms.ads.APPLICATION_ID"
-            android:value="ca-app-pub-3940256099942544~3347511713"
+            android:value="ca-app-pub-8166782428171770~2422181294"
             tools:replace="android:value"/>
     </application>
 

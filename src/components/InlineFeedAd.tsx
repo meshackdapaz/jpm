@@ -1,7 +1,7 @@
 'use client'
 
 import React from 'react'
-import { Capacitor } from '@capacitor/core'
+import { Capacitor, registerPlugin } from '@capacitor/core'
 import { useInFeedAd } from '@/hooks/useInFeedAd'
 
 /**
@@ -34,13 +34,27 @@ function NativeAdPlaceholder() {
 }
 
 export function InlineFeedAd({ adId }: { adId?: string }) {
+  const { placeholderRef } = useInFeedAd(adId)
+  const [failed, setFailed] = React.useState(false)
+
+  // Listen for failure to hide the container
+  React.useEffect(() => {
+    if (!Capacitor.isNativePlatform()) return
+    const listener = registerPlugin<any>('NativeInFeedAd').addListener('adFailedToLoad', () => {
+      setFailed(true)
+    })
+    return () => {
+      listener.remove()
+    }
+  }, [])
+
   // Only render on native Android/iOS — no web ads (AdSense rejected)
-  if (!Capacitor.isNativePlatform()) return null
+  if (!Capacitor.isNativePlatform() || failed) return null
 
   return (
     <div className="w-full">
       <div 
-        ref={useInFeedAd().placeholderRef}
+        ref={placeholderRef}
         className="w-full border-b border-zinc-100 dark:border-zinc-900 bg-transparent"
         style={{
           minHeight: 340,

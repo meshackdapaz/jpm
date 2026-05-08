@@ -34,19 +34,36 @@ import com.google.android.gms.ads.nativead.NativeAdView;
 public class NativeInFeedAdPlugin extends Plugin {
 
     private static final String TAG = "NativeInFeedAd";
-    private static final String AD_UNIT_ID = "ca-app-pub-3940256099942544/2247696110";
+    private static String currentAdUnitId = "ca-app-pub-8166782428171770/3141151608"; // Default to feed ID
 
     private NativeAd currentNativeAd = null;
     private FrameLayout adContainer = null;
     private boolean isAdLoaded = false;
+    private boolean isAdLoading = false;
 
     @PluginMethod
     public void initialize(PluginCall call) {
+        String adId = call.getString("adId");
+        
+        // If we already have an ad for this ID and it's loaded, just resolve
+        if (isAdLoaded && currentNativeAd != null && adId != null && adId.equals(currentAdUnitId)) {
+            JSObject result = new JSObject();
+            result.put("status", "already_loaded");
+            call.resolve(result);
+            return;
+        }
+
+        if (adId != null && !adId.isEmpty()) {
+            currentAdUnitId = adId;
+        }
+        
         getActivity().runOnUiThread(() -> {
             try {
                 MobileAds.initialize(getActivity(), initStatus -> {
-                    Log.d(TAG, "AdMob Initialized");
-                    loadAd();
+                    Log.d(TAG, "AdMob Initialized. Loading ad...");
+                    if (!isAdLoading) {
+                        loadAd();
+                    }
                     JSObject result = new JSObject();
                     result.put("status", "initialized");
                     call.resolve(result);
@@ -59,14 +76,18 @@ public class NativeInFeedAdPlugin extends Plugin {
     }
 
     private void loadAd() {
+        if (isAdLoading) return;
+        isAdLoading = true;
+
         getActivity().runOnUiThread(() -> {
-            AdLoader adLoader = new AdLoader.Builder(getActivity(), AD_UNIT_ID)
+            AdLoader adLoader = new AdLoader.Builder(getActivity(), currentAdUnitId)
                 .forNativeAd(nativeAd -> {
                     if (currentNativeAd != null) {
                         currentNativeAd.destroy();
                     }
                     currentNativeAd = nativeAd;
                     isAdLoaded = true;
+                    isAdLoading = false;
                     Log.d(TAG, "Ad loaded successfully");
 
                     JSObject event = new JSObject();
@@ -78,12 +99,22 @@ public class NativeInFeedAdPlugin extends Plugin {
                     public void onAdFailedToLoad(@NonNull LoadAdError error) {
                         Log.e(TAG, "Ad failed to load: " + error.getMessage());
                         isAdLoaded = false;
+                        isAdLoading = false;
+                        
+                        getActivity().runOnUiThread(() -> {
+                            if (adContainer != null) {
+                                adContainer.setVisibility(View.GONE);
+                            }
+                        });
+
                         JSObject event = new JSObject();
                         event.put("error", error.getMessage());
+                        event.put("code", error.getCode());
                         notifyListeners("adFailedToLoad", event);
                         
-                        // Toast for debugging
-                        Toast.makeText(getActivity(), "Ad Load Failed: " + error.getMessage(), Toast.LENGTH_SHORT).show();
+                        if (error.getCode() != AdRequest.ERROR_CODE_NO_FILL) {
+                            Toast.makeText(getActivity(), "Ad Load Failed: " + error.getMessage(), Toast.LENGTH_SHORT).show();
+                        }
                     }
                 })
                 .withNativeAdOptions(new NativeAdOptions.Builder()
@@ -125,14 +156,15 @@ public class NativeInFeedAdPlugin extends Plugin {
                     }
                     adContainer = new FrameLayout(getActivity());
                     
-                    // Theme detection
+                    // Theme detection for background
                     boolean isDarkMode = (getContext().getResources().getConfiguration().uiMode & android.content.res.Configuration.UI_MODE_NIGHT_MASK) == android.content.res.Configuration.UI_MODE_NIGHT_YES;
                     
                     GradientDrawable bg = new GradientDrawable();
-                    bg.setColor(isDarkMode ? Color.parseColor("#121212") : Color.WHITE);
+                    // Use a slightly transparent background initially or clear color
+                    bg.setColor(isDarkMode ? Color.parseColor("#1A121212") : Color.parseColor("#1AFFFFFF"));
                     bg.setCornerRadius(16 * density);
                     adContainer.setBackground(bg);
-                    adContainer.setElevation(4 * density);
+                    adContainer.setElevation(2 * density);
 
                     // Forward all touches to the WebView so scrolling works 
                     // even if the user starts their swipe ON the ad.
