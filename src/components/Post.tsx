@@ -595,15 +595,11 @@ export const Post = React.memo(({ post, onObserve }: { post: any; onObserve?: (p
   const handleDelete = async (e?: React.MouseEvent) => {
     if (e) e.stopPropagation()
     setShowDeleteConfirm(false)
-    
     setIsDeleting(true)
     triggerHaptic(ImpactStyle.Heavy)
-    setShowOptions(false)
 
     try {
-      const { error } = await supabase.from('posts').delete().eq('id', post.id)
-      if (error) throw error
-
+      // 1. Delete media from storage if exists
       if (images.length > 0) {
         try {
           const fileNames = images.map((url: string) => {
@@ -615,14 +611,23 @@ export const Post = React.memo(({ post, onObserve }: { post: any; onObserve?: (p
           console.error('Storage cleanup failed:', storageErr)
         }
       }
+
+      // 2. Delete post from DB
+      const { error } = await supabase.from('posts').delete().eq('id', post.id)
+      if (error) throw error
       
-      triggerHaptic(ImpactStyle.Medium)
       setIsDeletedLocally(true)
-    } catch (error: any) {
-      alert('Error deleting post: ' + error.message)
+    } catch (error) {
+      console.error('Delete error:', error)
       setIsDeleting(false)
     }
   }
+
+  const handleReport = () => {
+    triggerHaptic(ImpactStyle.Medium)
+    alert('Thank you for your report. Our team will review this post shortly.')
+  }
+
 
   const [showComments, setShowComments] = useState(false)
   const [commentList, setCommentList] = useState<any[]>([])
@@ -793,54 +798,119 @@ export const Post = React.memo(({ post, onObserve }: { post: any; onObserve?: (p
                 <>
                   <div className="fixed inset-0 z-40" onClick={() => setShowOptions(false)} />
                   <motion.div
-                    className="absolute inset-0 w-full h-full"
+                    initial={{ opacity: 0, scale: 0.95, y: -10 }}
+                    animate={{ opacity: 1, scale: 1, y: 0 }}
+                    exit={{ opacity: 0, scale: 0.95, y: -10 }}
+                    className="absolute right-0 top-full mt-2 w-48 bg-white dark:bg-zinc-900 border border-zinc-100 dark:border-zinc-800 rounded-2xl shadow-xl z-50 overflow-hidden"
                   >
-                    <motion.div
-                      drag="x"
-                      dragConstraints={{ left: 0, right: 0 }}
-                      dragElastic={0.7}
-                      onDragEnd={(_, info) => {
-                        const swipe = info.offset.x;
-                        const threshold = 50;
-                        if (swipe < -threshold) {
-                          handleNextImage(new MouseEvent('click') as any);
-                        } else if (swipe > threshold) {
-                          handlePrevImage(new MouseEvent('click') as any);
-                        }
-                      }}
-                      className="w-full h-full"
-                    >
-                      <Image
-                        src={images[imageIndex]}
-                        alt={post.title || `Post image ${imageIndex + 1}`}
-                        width={1080}
-                        height={1350}
-                        className="w-full h-full object-cover drop-shadow-2xl pointer-events-none select-none"
-                        unoptimized
-                        onLoad={() => setImageLoaded(true)}
-                      />
-                    </motion.div>
+                    {currentUser?.id === post.creator_id ? (
+                      <>
+                        <button
+                          onClick={toggleArchive}
+                          className="w-full px-4 py-3 text-left text-sm font-bold flex items-center gap-3 hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors"
+                        >
+                          <ArchiveBoxIcon className="w-4 h-4" />
+                          {isArchived ? 'Unarchive' : 'Archive'}
+                        </button>
+                        <button
+                          onClick={() => { setShowOptions(false); setShowDeleteConfirm(true) }}
+                          className="w-full px-4 py-3 text-left text-sm font-bold text-red-500 flex items-center gap-3 hover:bg-red-50 dark:hover:bg-red-950/30 transition-colors"
+                        >
+                          <TrashIcon className="w-4 h-4" />
+                          Delete
+                        </button>
+                      </>
+                    ) : (
+                      <button
+                        onClick={() => { setShowOptions(false); handleReport() }}
+                        className="w-full px-4 py-3 text-left text-sm font-bold text-red-500 flex items-center gap-3 hover:bg-red-50 dark:hover:bg-red-950/30 transition-colors"
+                      >
+                        <FlagIcon className="w-4 h-4" />
+                        Report
+                      </button>
+                    )}
                   </motion.div>
-                </AnimatePresence>
-              </div>
+                </>
+              )}
+            </AnimatePresence>
+          </div>
+        </div>
+
+        {/* Content (Title/Body) */}
+        {(post.title || post.content) && (
+          <div className="px-4 mb-3">
+            {post.title && <h3 className="font-black text-base leading-tight mb-1">{post.title}</h3>}
+            {post.content && <p className="text-[14px] text-zinc-900 dark:text-zinc-100 leading-relaxed whitespace-pre-wrap">{post.content}</p>}
+          </div>
+        )}
+
+        {/* Media Section */}
+        {images.length > 0 && (
+          <div className="relative w-full aspect-square bg-zinc-50 dark:bg-zinc-950 overflow-hidden">
+            <AnimatePresence initial={false}>
+              <motion.div
+                key={imageIndex}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.3 }}
+                className="absolute inset-0"
+              >
+                <motion.div
+                  drag="x"
+                  dragConstraints={{ left: 0, right: 0 }}
+                  dragElastic={0.7}
+                  onDragEnd={(_, info) => {
+                    const swipe = info.offset.x;
+                    const threshold = 50;
+                    if (swipe < -threshold) {
+                      handleNextImage(new MouseEvent('click') as any);
+                    } else if (swipe > threshold) {
+                      handlePrevImage(new MouseEvent('click') as any);
+                    }
+                  }}
+                  className="w-full h-full"
+                >
+                  <Image
+                    src={images[imageIndex]}
+                    alt={post.title || `Post image ${imageIndex + 1}`}
+                    width={1080}
+                    height={1350}
+                    className="w-full h-full object-cover"
+                    unoptimized
+                  />
+                </motion.div>
+              </motion.div>
+            </AnimatePresence>
+
+            {/* Nav Arrows (Desktop) */}
+            {images.length > 1 && (
+              <>
+                <button 
+                  onClick={handlePrevImage}
+                  className="absolute left-3 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 backdrop-blur-md flex items-center justify-center text-white transition-all z-10"
+                >
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M15 19l-7-7 7-7" /></svg>
+                </button>
+                <button 
+                  onClick={handleNextImage}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 backdrop-blur-md flex items-center justify-center text-white transition-all z-10"
+                >
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5l7 7-7 7" /></svg>
+                </button>
+              </>
             )}
 
             {/* Dot indicators */}
             {images.length > 1 && (
-              <>
-                <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1.5 px-2 py-1 rounded-full bg-black/30 backdrop-blur-sm z-10">
-                  {images.map((_: any, i: number) => (
-                    <div
-                      key={i}
-                      className={`h-1.5 rounded-full transition-all duration-300 ${i === imageIndex ? 'w-3 bg-white' : 'w-1.5 bg-white/50'}`}
-                    />
-                  ))}
-                </div>
-                {/* Counter badge */}
-                <div className="absolute top-3 right-3 bg-black/50 text-white text-[10px] font-bold px-2 py-0.5 rounded-full backdrop-blur-sm z-10">
-                  {imageIndex + 1}/{images.length}
-                </div>
-              </>
+              <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-1.5 px-2 py-1.5 rounded-full bg-black/20 backdrop-blur-md z-10">
+                {images.map((_: any, i: number) => (
+                  <div
+                    key={i}
+                    className={`h-1.5 rounded-full transition-all duration-300 ${i === imageIndex ? 'w-3 bg-white' : 'w-1.5 bg-white/50'}`}
+                  />
+                ))}
+              </div>
             )}
           </div>
         )}

@@ -464,9 +464,9 @@ export function Feed() {
       <StoriesBar />
       <TabBar />
 
-      {/* "What's new?" User Bar */}
-      <div className="px-4 py-4 border border-zinc-100 dark:border-zinc-900 sm:rounded-xl mb-4 bg-white dark:bg-black flex items-center gap-4 shadow-sm">
-        {user ? (
+      {/* "What's new?" User Bar - ONLY FOR LOGGED IN USERS */}
+      {user && (
+        <div className="px-4 py-4 border border-zinc-100 dark:border-zinc-900 sm:rounded-xl mb-4 bg-white dark:bg-black flex items-center gap-4 shadow-sm">
           <Link href={`/profile?id=${user.id}`} className="flex-none">
             {profileData?.avatar_url ? (
               <Image src={profileData.avatar_url} alt="You" width={42} height={42} className="rounded-full w-[42px] h-[42px] object-cover ring-1 ring-zinc-100 dark:ring-zinc-800" unoptimized />
@@ -476,16 +476,14 @@ export function Feed() {
               </div>
             )}
           </Link>
-        ) : (
-          <div className="w-[42px] h-[42px] bg-zinc-100 dark:bg-zinc-900 rounded-full" />
-        )}
-        <button 
-          onClick={() => window.dispatchEvent(new CustomEvent('open-post-modal'))}
-          className="flex-grow text-left text-zinc-500 dark:text-zinc-400 font-medium text-[15px] bg-zinc-50 dark:bg-zinc-900/50 px-5 py-2.5 rounded-full hover:bg-zinc-100 dark:hover:bg-zinc-900 transition-colors"
-        >
-          What's on your mind?
-        </button>
-      </div>
+          <button 
+            onClick={() => window.dispatchEvent(new CustomEvent('open-post-modal'))}
+            className="flex-grow text-left text-zinc-500 dark:text-zinc-400 font-medium text-[15px] bg-zinc-50 dark:bg-zinc-900/50 px-5 py-2.5 rounded-full hover:bg-zinc-100 dark:hover:bg-zinc-900 transition-colors"
+          >
+            What's on your mind?
+          </button>
+        </div>
+      )}
 
       {/* Content */}
       <div className="flex-1 relative">

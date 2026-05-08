@@ -17,7 +17,14 @@ import { useAuth } from '@/components/AuthProvider'
 import { LockClosedIcon, Bars3Icon, ChartBarIcon, ChevronRightIcon, XMarkIcon, UserIcon, GlobeAltIcon, UserPlusIcon, BellIcon, BookmarkIcon, HeartIcon, ClockIcon, AdjustmentsVerticalIcon, UserCircleIcon, QuestionMarkCircleIcon, InformationCircleIcon, ChevronLeftIcon, QrCodeIcon, LinkIcon } from '@heroicons/react/24/outline'
 import { QRCodeSVG } from 'qrcode.react'
 import { Capacitor } from '@capacitor/core'
+import { Haptics, ImpactStyle } from '@capacitor/haptics'
 import { Switch } from '@headlessui/react'
+
+const triggerHaptic = (style = ImpactStyle.Light) => {
+  if (Capacitor.isNativePlatform()) {
+    Haptics.impact({ style }).catch(() => {})
+  }
+}
 
 function ProfileContent() {
   const searchParams = useSearchParams()
@@ -266,27 +273,45 @@ function ProfileContent() {
 
   const handleFollow = async () => {
     if (!currentUser || !id) return
+    triggerHaptic(ImpactStyle.Medium)
     
-    if (followStatus === 'accepted' || followStatus === 'pending') {
-      // Unfollow or Cancel Request
-      await supabase.from('follows').delete().eq('follower_id', currentUser.id).eq('following_id', id)
-      setFollowStatus(null)
-      setFollowers(prev => Math.max(0, prev - (followStatus === 'accepted' ? 1 : 0)))
-    } else {
-      // Follow or Request
-      const { data, error } = await supabase.rpc('handle_follow_request', { p_target_id: id })
-      if (!error) {
+    try {
+      if (followStatus === 'accepted' || followStatus === 'pending') {
+        // Unfollow or Cancel Request
+        const { error } = await supabase.from('follows').delete().eq('follower_id', currentUser.id).eq('following_id', id)
+        if (error) throw error
+        setFollowStatus(null)
+        setFollowers(prev => Math.max(0, prev - (followStatus === 'accepted' ? 1 : 0)))
+      } else {
+        // Follow or Request
+        const { data, error: rpcError } = await supabase.rpc('handle_follow_request', { p_target_id: id })
+        if (rpcError) throw rpcError
+        
         setFollowStatus(data as any)
         if (data === 'accepted') {
           setFollowers(prev => prev + 1)
           if (currentUser.id !== id) {
-            await supabase.from('notifications').insert({ user_id: id, actor_id: currentUser.id, type: 'follow' })
+            await supabase.from('notifications').insert({ 
+              user_id: id, 
+              actor_id: currentUser.id, 
+              type: 'follow',
+              title: 'New Follower',
+              message: `${currentUserProfile?.full_name || 'Someone'} started following you`
+            })
           }
-        } else {
-          // It's a request, maybe send a 'request' notification
-          await supabase.from('notifications').insert({ user_id: id, actor_id: currentUser.id, type: 'follow_request' })
+        } else if (data === 'pending') {
+          await supabase.from('notifications').insert({ 
+            user_id: id, 
+            actor_id: currentUser.id, 
+            type: 'follow_request',
+            title: 'Follow Request',
+            message: `${currentUserProfile?.full_name || 'Someone'} requested to follow you`
+          })
         }
       }
+    } catch (err: any) {
+      console.error('[Follow] Error:', err)
+      alert('Failed to update follow status: ' + (err.message || 'Unknown error'))
     }
   }
 
@@ -548,13 +573,13 @@ function ProfileContent() {
         </p>
 
 
-        {/* Action buttons row - USING GRID FOR PERFECT ALIGNMENT */}
-        <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-2 mb-4 mt-2.5 w-full">
+        {/* Action buttons row - USING FLEX FOR RELIABLE BUTTON SIZING */}
+        <div className="flex items-center gap-2 mb-4 mt-2.5 w-full">
           {isOwner ? (
-            <>
+            <div className="flex gap-2 w-full">
               <button
                 onClick={() => setIsEditing(true)}
-                className="flex-1 min-w-0 bg-zinc-100 dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 font-bold py-2.5 px-2 rounded-xl text-[13px] truncate shadow-sm"
+                className="flex-1 bg-zinc-100 dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 font-bold py-2.5 px-2 rounded-xl text-[13px] shadow-sm"
               >
                 Edit profile
               </button>
@@ -566,24 +591,39 @@ function ProfileContent() {
               </button>
               <button
                 onClick={handleShare}
-                className="flex-1 min-w-0 bg-zinc-100 dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 font-bold py-2.5 px-2 rounded-xl text-[13px] truncate shadow-sm"
+                className="flex-1 bg-zinc-100 dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 font-bold py-2.5 px-2 rounded-xl text-[13px] shadow-sm"
               >
                 Share profile
               </button>
-            </>
+            </div>
           ) : (
-            <>
+            <div className="flex gap-2 w-full">
               {currentUserProfile?.is_admin && (
-                <button onClick={handleToggleVerify} className="min-w-0 px-4 py-2 text-sm border rounded-xl font-bold truncate">
+                <button onClick={handleToggleVerify} className="px-4 py-2 text-sm border border-zinc-200 dark:border-zinc-800 rounded-xl font-bold">
                   {profile?.is_verified ? 'Unverify' : 'Verify'}
                 </button>
               )}
+              
               <button
                 onClick={() => setShowQRCode(true)}
-                className="w-11 h-11 flex-shrink-0 flex items-center justify-center border border-zinc-200 dark:border-zinc-700 rounded-xl text-zinc-900 dark:text-zinc-100"
+                className="w-11 h-11 flex-shrink-0 flex items-center justify-center border border-zinc-200 dark:border-zinc-700 rounded-xl text-zinc-900 dark:text-zinc-100 shadow-sm"
               >
                 <QrCodeIcon className="w-5 h-5" />
               </button>
+
+              <button
+                onClick={() => {
+                  if (!currentUser) {
+                    window.dispatchEvent(new CustomEvent('show-login-prompt', { detail: { message: `Join JPM to message ${profile?.full_name}` } }))
+                    return
+                  }
+                  router.push(`/messages?userId=${id}`)
+                }}
+                className="flex-1 bg-zinc-100 dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 font-bold py-2.5 px-2 rounded-xl text-[13px] shadow-sm border border-transparent dark:border-zinc-800"
+              >
+                Message
+              </button>
+
               <button
                 onClick={() => {
                   if (!currentUser) {
@@ -592,7 +632,7 @@ function ProfileContent() {
                   }
                   handleFollow()
                 }}
-                className={`min-w-0 py-2 rounded-xl text-[13px] font-bold transition-all truncate ${
+                className={`flex-1 py-2.5 rounded-xl text-[13px] font-bold transition-all shadow-sm ${
                   followStatus
                     ? 'border border-zinc-200 dark:border-zinc-700 text-zinc-700 dark:text-zinc-300'
                     : 'bg-black dark:bg-white text-white dark:text-black'
@@ -600,7 +640,7 @@ function ProfileContent() {
               >
                 {followStatus === 'pending' ? 'Requested' : followStatus === 'accepted' ? 'Following' : 'Follow'}
               </button>
-            </>
+            </div>
           )}
         </div>
       </div>

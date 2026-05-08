@@ -31,7 +31,7 @@ export function FloatingOverlayAd() {
              Here we inject the Google Ad. 
              We restrict its height so it stays looking like a sleek overlay. 
            */}
-           <div className="w-full min-h-[100px] max-h-[120px] overflow-hidden rounded-xl bg-white/5 flex items-center justify-center">
+           <div className="w-full min-h-[50px] max-h-[120px] overflow-hidden rounded-xl bg-white/5 flex items-center justify-center">
              <InArticleAd />
            </div>
         </div>

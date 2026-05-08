@@ -440,7 +440,16 @@ function MessagesContent() {
     const secret = getSharedSecret(user.id, selected.id)
     const encryptedContent = await encryptMessage(text, secret)
     const { error } = await supabase.from('messages').insert({ sender_id: user.id, receiver_id: selected.id, content: encryptedContent })
-    supabase.from('notifications').insert({ user_id: selected.id, actor_id: user.id, type: 'message', read: false })
+    
+    // Notify the receiver
+    await supabase.from('notifications').insert({ 
+      user_id: selected.id, 
+      actor_id: user.id, 
+      type: 'message', 
+      title: 'New Message',
+      message: `You have a new message from ${user.user_metadata?.full_name || 'Someone'}`,
+      is_read: false 
+    })
     
     // ── Send Background Push Notification ──
     if (selected.fcm_token) {

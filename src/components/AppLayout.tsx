@@ -401,7 +401,6 @@ export function AppLayout({ children, fullBleed = false, wide = false, hideSideb
       {showGuestBar && <GuestTopBar />}
 
       {showNav && (
-      {showNav && (
         <nav className="fixed top-0 left-0 bottom-0 w-[72px] xl:w-[244px] z-50 hidden sm:flex flex-col items-start justify-between py-8 px-3 xl:px-4 bg-white dark:bg-black border-r border-zinc-100 dark:border-zinc-900 transition-all duration-300">
           <div className="flex-shrink-0 mb-10 w-full px-3">
             <Link href="/" className="flex items-center gap-3">
@@ -484,7 +483,7 @@ export function AppLayout({ children, fullBleed = false, wide = false, hideSideb
         {fullBleed ? (
           children
         ) : (
-          <div className={`flex w-full max-w-full overflow-x-hidden gap-0 lg:gap-12 justify-center px-4 md:px-8 xl:px-0`}>
+          <div className={`flex w-full max-w-full overflow-x-hidden gap-0 lg:gap-6 justify-center px-4 md:px-8 xl:px-0`}>
             {/* Left sidebar - Hidden on smaller screens or when wide is true */}
             {!isNative && !hideSidebar && showNav && !wide && (
               <div className="hidden 2xl:block">
@@ -493,13 +492,13 @@ export function AppLayout({ children, fullBleed = false, wide = false, hideSideb
             )}
  
             {/* Center Feed */}
-            <div className={`flex-grow min-w-0 ${(wide || hideSidebar || isPublicRoute || isPublic) ? 'max-w-5xl' : 'max-w-[630px]'} w-full bg-white dark:bg-black !px-0`}>
+            <div className={`flex-grow min-w-0 ${wide ? 'max-w-5xl' : 'max-w-[470px]'} w-full bg-white dark:bg-black !px-0`}>
               {children}
             </div>
  
             {/* Right Sidebar - Hidden on smaller screens or when wide is true */}
             {!isNative && !hideSidebar && showNav && !wide && (
-              <div className="hidden lg:block w-[320px] shrink-0">
+              <div className="hidden lg:block w-[300px] shrink-0">
                 <RightSidebar />
               </div>
             )}

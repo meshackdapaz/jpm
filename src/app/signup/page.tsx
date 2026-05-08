@@ -160,7 +160,7 @@ export default function SignupPage() {
   const years = Array.from({ length: 120 }, (_, i) => currentYear - i)
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-white dark:bg-black overflow-y-auto py-12 px-4 relative">
+    <div className="min-h-screen flex items-center justify-center bg-white dark:bg-black overflow-y-auto pt-20 pb-12 px-4 relative">
       {/* Decorative Rings */}
       <div className="absolute inset-0 z-0 pointer-events-none select-none overflow-hidden fixed">
         <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] border-[1.5px] border-black/10 dark:border-white/10 rounded-full">

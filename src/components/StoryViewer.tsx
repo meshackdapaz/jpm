@@ -516,45 +516,57 @@ export function StoryViewer({ stories, startIndex, onClose }: { stories: any[], 
             </AnimatePresence>
 
             <div className="flex items-center gap-3">
-              <form onSubmit={handleReply} className="flex-grow relative group">
-                <input
-                  type="text"
-                  placeholder="Send message"
-                  value={reply}
-                  onChange={(e) => setReply(e.target.value)}
-                  onFocus={() => {
-                    setIsPaused(true)
-                    setShowReactions(true)
-                  }}
-                  onBlur={() => {
-                    setTimeout(() => {
-                      setIsPaused(false)
-                      setShowReactions(false)
-                    }, 250)
-                  }}
-                  className="w-full bg-white/10 hover:bg-white/15 border border-white/20 rounded-full px-6 py-3 text-white placeholder-white/60 text-[15px] font-semibold outline-none focus:border-white/50 focus:bg-white/20 transition-all backdrop-blur-2xl ring-1 ring-white/5 shadow-inner"
-                />
-              </form>
-              <div className="flex items-center gap-2">
-                <button 
-                  onClick={handleLike}
-                  className="flex-none w-11 h-11 flex items-center justify-center rounded-full bg-white/10 hover:bg-white/20 active:scale-75 transition-all backdrop-blur-2xl border border-white/20 shadow-lg"
+              {user ? (
+                <>
+                  <form onSubmit={handleReply} className="flex-grow relative group">
+                    <input
+                      type="text"
+                      placeholder="Send message"
+                      value={reply}
+                      onChange={(e) => setReply(e.target.value)}
+                      onFocus={() => {
+                        setIsPaused(true)
+                        setShowReactions(true)
+                      }}
+                      onBlur={() => {
+                        setTimeout(() => {
+                          setIsPaused(false)
+                          setShowReactions(false)
+                        }, 250)
+                      }}
+                      className="w-full bg-white/10 hover:bg-white/15 border border-white/20 rounded-full px-6 py-3 text-white placeholder-white/60 text-[15px] font-semibold outline-none focus:border-white/50 focus:bg-white/20 transition-all backdrop-blur-2xl ring-1 ring-white/5 shadow-inner"
+                    />
+                  </form>
+                  <div className="flex items-center gap-2">
+                    <button 
+                      onClick={handleLike}
+                      className="flex-none w-11 h-11 flex items-center justify-center rounded-full bg-white/10 hover:bg-white/20 active:scale-75 transition-all backdrop-blur-2xl border border-white/20 shadow-lg"
+                    >
+                      {isLiked ? (
+                        <HeartIconSolid className="w-6 h-6 text-red-500 drop-shadow-[0_0_8px_rgba(239,68,68,0.5)]" />
+                      ) : (
+                        <HeartIcon className="w-6 h-6 text-white" />
+                      )}
+                    </button>
+                    <button 
+                      onClick={(e) => {
+                        e.stopPropagation()
+                      }}
+                      className="flex-none w-11 h-11 flex items-center justify-center rounded-full bg-white/10 hover:bg-white/20 active:scale-75 transition-all backdrop-blur-2xl border border-white/20 shadow-lg"
+                    >
+                      <PaperAirplaneIcon className="w-6 h-6 text-white -rotate-45 -translate-y-0.5" />
+                    </button>
+                  </div>
+                </>
+              ) : (
+                <Link
+                  href="/login"
+                  onClick={(e) => e.stopPropagation()}
+                  className="w-full bg-white/10 hover:bg-white/20 border border-white/20 rounded-full py-3 text-center text-white text-[15px] font-bold backdrop-blur-2xl transition-all"
                 >
-                  {isLiked ? (
-                    <HeartIconSolid className="w-6 h-6 text-red-500 drop-shadow-[0_0_8px_rgba(239,68,68,0.5)]" />
-                  ) : (
-                    <HeartIcon className="w-6 h-6 text-white" />
-                  )}
-                </button>
-                <button 
-                  onClick={(e) => {
-                    e.stopPropagation()
-                  }}
-                  className="flex-none w-11 h-11 flex items-center justify-center rounded-full bg-white/10 hover:bg-white/20 active:scale-75 transition-all backdrop-blur-2xl border border-white/20 shadow-lg"
-                >
-                  <PaperAirplaneIcon className="w-6 h-6 text-white -rotate-45 -translate-y-0.5" />
-                </button>
-              </div>
+                  Sign in to reply
+                </Link>
+              )}
             </div>
           </div>
         </motion.div>
