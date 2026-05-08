@@ -733,10 +733,10 @@ export const Post = React.memo(({ post, onObserve }: { post: any; onObserve?: (p
 
       <div
         ref={(el) => onObserve?.(post.id, el)}
-        className="py-3 flex flex-col"
+        className="py-2 flex flex-col"
       >
         {/* Header: Avatar + User Info + Menu */}
-        <div className="flex items-center justify-between px-4 mb-3">
+        <div className="flex items-center justify-between px-4 mb-2">
           <div className="flex items-center gap-3">
             <div className="relative group/avatar">
               {post.is_ghost ? (
@@ -836,11 +836,10 @@ export const Post = React.memo(({ post, onObserve }: { post: any; onObserve?: (p
           </div>
         </div>
 
-        {/* Content (Title/Body) */}
         {(post.title || post.content) && (
-          <div className="px-4 mb-3">
-            {post.title && <h3 className="font-black text-base leading-tight mb-1">{post.title}</h3>}
-            {post.content && <p className="text-[14px] text-zinc-900 dark:text-zinc-100 leading-relaxed whitespace-pre-wrap">{post.content}</p>}
+          <div className="px-4 mb-2">
+            {post.title && <h3 className="font-black text-[15px] leading-tight mb-0.5">{post.title}</h3>}
+            {post.content && <p className="text-[14px] text-zinc-900 dark:text-zinc-100 leading-snug whitespace-pre-wrap">{post.content}</p>}
           </div>
         )}
 
@@ -916,8 +915,8 @@ export const Post = React.memo(({ post, onObserve }: { post: any; onObserve?: (p
         )}
 
         {/* Row 3: Action buttons */}
-        <div className="flex items-center justify-between w-full text-zinc-500 pt-0.5">
-          <div className="flex items-center gap-4 sm:gap-6 flex-grow">
+        <div className="flex items-center justify-between w-full text-zinc-500 pt-0">
+          <div className="flex items-center gap-4 flex-grow">
             {/* Comments */}
             <button className="flex items-center gap-1 group hover:text-blue-500 transition-colors">
               <div className={`p-2 rounded-full group-hover:bg-blue-50 dark:group-hover:bg-blue-950/30 ${showComments ? 'bg-blue-50 dark:bg-blue-950/30 text-blue-500' : ''}`}>

@@ -354,10 +354,10 @@ function ProfileContent() {
     }
   }
 
-  if (!id) return <AppLayout isPublic><div className="p-8 text-center text-zinc-500">Profile not found</div></AppLayout>
+  if (!id) return <AppLayout><div className="p-8 text-center text-zinc-500">Profile not found</div></AppLayout>
 
   if (loading) return (
-    <AppLayout isPublic>
+    <AppLayout>
       <div className="px-4 pt-8 animate-pulse">
         {/* Skeleton Header: Info Left, Avatar Right */}
         <div className="flex items-start justify-between mb-8">
@@ -401,7 +401,7 @@ function ProfileContent() {
   const isOwner = currentUser?.id === id
 
   return (
-    <AppLayout isPublic>
+    <AppLayout>
       {/* Image Cropper Modal */}
       {selectedImage && (
         <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
@@ -928,7 +928,7 @@ function ProfileContent() {
 
 export default function ProfilePage() {
   return (
-    <Suspense fallback={<AppLayout isPublic><div className="p-8 text-center text-zinc-500 font-bold italic">Loading profile...</div></AppLayout>}>
+    <Suspense fallback={<AppLayout><div className="p-8 text-center text-zinc-500 font-bold italic">Loading profile...</div></AppLayout>}>
       <ProfileContent />
     </Suspense>
   )
