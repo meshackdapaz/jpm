@@ -460,8 +460,8 @@ function ProfileContent() {
         </div>
       </div>
 
-      {/* Desktop header */}
-      <div className="hidden sm:flex sticky top-0 z-30 bg-white/95 dark:bg-black/95 backdrop-blur-xl border-b border-zinc-100 dark:border-zinc-900">
+      {/* Desktop header - Hidden on desktop to match IG profile style */}
+      <div className="sm:hidden sticky top-0 z-30 bg-white/95 dark:bg-black/95 backdrop-blur-xl border-b border-zinc-100 dark:border-zinc-900">
         <div className="flex items-center justify-between px-4 h-14 w-full">
           <div>
             <p className="font-black text-[17px] tracking-tight leading-none">{profile?.full_name || 'Profile'}</p>
@@ -481,167 +481,126 @@ function ProfileContent() {
         </div>
       </div>
 
-      <div className="w-full max-w-full px-4 pt-4 relative box-border overflow-x-hidden">
-        {/* Avatar — LOCKED TO CONTAINER (Prevents drifting off-screen) */}
-        <div className="absolute top-0 right-2 z-[50]">
-          <div className="w-[80px] h-[80px] sm:w-24 sm:h-24 rounded-full bg-zinc-200 dark:bg-zinc-800 overflow-hidden ring-2 ring-white dark:ring-black shadow-lg">
-            {profile?.avatar_url
-              ? <img src={profile.avatar_url} className="w-full h-full object-cover" alt={profile.full_name} />
-              : <div className="w-full h-full flex items-center justify-center text-2xl font-bold text-zinc-500">{profile?.full_name?.[0] || 'U'}</div>}
-          </div>
-          {isOwner && (
-            <label className="absolute bottom-0 right-0 w-7 h-7 bg-white dark:bg-zinc-800 border-2 border-white dark:border-black rounded-full flex items-center justify-center cursor-pointer shadow-lg active:scale-90 transition-transform">
-              <svg xmlns="http://www.w3.org/2000/svg" className="w-3.5 h-3.5 text-zinc-800 dark:text-zinc-200" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                <line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" />
-              </svg>
-              <input type="file" accept="image/*" className="hidden" onChange={handleFileSelect} disabled={uploading} />
-            </label>
-          )}
-        </div>
-
-        {/* Info Section (Leave room for absolute avatar) */}
-        <div className="pr-[90px] mb-1">
-          <h1 className="text-[23px] font-black leading-none inline-flex items-center gap-1.5">
-            <span className="truncate block">{profile?.full_name}</span>
-            <div className="flex items-center gap-1 flex-shrink-0">
-              {profile?.is_verified && <VerifiedBadge className="w-[18px] h-[18px]" />}
-              {profile?.is_private && <LockClosedIcon className="w-4 h-4 text-zinc-400" />}
+      <div className="w-full max-w-4xl mx-auto px-4 py-8">
+        <div className="flex flex-col sm:flex-row items-center sm:items-start gap-8 sm:gap-16 mb-12">
+          {/* Avatar Area */}
+          <div className="flex-shrink-0 relative group/avatar">
+            <div className="w-[120px] h-[120px] sm:w-[150px] sm:h-[150px] rounded-full bg-zinc-200 dark:bg-zinc-800 overflow-hidden ring-4 ring-white dark:ring-black shadow-lg">
+              {profile?.avatar_url
+                ? <img src={profile.avatar_url} className="w-full h-full object-cover" alt={profile.full_name} />
+                : <div className="w-full h-full flex items-center justify-center text-5xl font-bold text-zinc-500">{profile?.full_name?.[0] || 'U'}</div>}
             </div>
-          </h1>
-          <p className="text-zinc-500 text-[13px] font-medium mt-[-2px] truncate opacity-80">@{profile?.username}</p>
-        </div>
-
-        {/* Bio (Full width but constrained) */}
-        {profile?.bio && (
-          <p className="mt-0.5 text-[14px] text-zinc-800 dark:text-zinc-200 leading-tight break-words max-w-full overflow-hidden line-clamp-3 pr-4">
-            {profile.bio}
-          </p>
-        )}
-
-
-        {/* Social Icons Row */}
-        {(profile?.tiktok_url || profile?.instagram_url || profile?.facebook_url || profile?.website_url || isOwner) && (
-          <div className="flex items-center flex-wrap gap-2 mt-2.5">
-            {profile?.tiktok_url && (
-              <a href={profile.tiktok_url} target="_blank" rel="noopener noreferrer"
-                className="w-9 h-9 flex-shrink-0 flex items-center justify-center rounded-xl bg-zinc-100 dark:bg-zinc-900 text-zinc-500 dark:text-zinc-400" title="TikTok">
-                <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24"><path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-5.2 1.74 2.89 2.89 0 0 1 2.31-4.64 2.93 2.93 0 0 1 .88.13V9.4a6.84 6.84 0 0 0-1-.05A6.33 6.33 0 0 0 5 20.1a6.34 6.34 0 0 0 10.86-4.43v-7a8.16 8.16 0 0 0 4.77 1.52v-3.4a4.85 4.85 0 0 1-1.04-.1z"/></svg>
-              </a>
-            )}
-            {profile?.instagram_url && (
-              <a href={profile.instagram_url} target="_blank" rel="noopener noreferrer"
-                className="w-9 h-9 flex-shrink-0 flex items-center justify-center rounded-xl bg-zinc-100 dark:bg-zinc-900 text-zinc-500 dark:text-zinc-400" title="Instagram">
-                <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.981 1.28.058 1.688.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.058-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z"/></svg>
-              </a>
-            )}
-            {profile?.facebook_url && (
-              <a href={profile.facebook_url} target="_blank" rel="noopener noreferrer"
-                className="w-9 h-9 flex-shrink-0 flex items-center justify-center rounded-xl bg-zinc-100 dark:bg-zinc-900 text-zinc-500 dark:text-zinc-400" title="Facebook">
-                <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
-              </a>
-            )}
-            {profile?.website_url && (
-              <a href={profile.website_url} target="_blank" rel="noopener noreferrer"
-                className="w-9 h-9 flex-shrink-0 flex items-center justify-center rounded-xl bg-zinc-100 dark:bg-zinc-900 text-zinc-500 dark:text-zinc-400" title="Website">
-                <GlobeAltIcon className="w-4 h-4" />
-              </a>
-            )}
             {isOwner && (
-              <button
-                onClick={() => {
-                  setSocialData({
-                    tiktok_url: profile?.tiktok_url || '',
-                    instagram_url: profile?.instagram_url || '',
-                    facebook_url: profile?.facebook_url || '',
-                    website_url: profile?.website_url || ''
-                  })
-                  setShowSocialLinks(true)
-                }}
-                className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-zinc-100 dark:bg-zinc-900 text-zinc-500 text-[12px] font-bold whitespace-nowrap"
-              >
-                <LinkIcon className="w-3.5 h-3.5" />
-                {(profile?.tiktok_url || profile?.instagram_url || profile?.facebook_url || profile?.website_url) ? 'Edit links' : 'Add social links'}
-              </button>
+              <label className="absolute bottom-1 right-1 w-9 h-9 bg-white dark:bg-zinc-800 border-2 border-white dark:border-black rounded-full flex items-center justify-center cursor-pointer shadow-lg hover:scale-110 active:scale-95 transition-all">
+                <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4 text-zinc-800 dark:text-zinc-200" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                  <line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" />
+                </svg>
+                <input type="file" accept="image/*" className="hidden" onChange={handleFileSelect} disabled={uploading} />
+              </label>
             )}
           </div>
-        )}
 
-        {/* Inline stats: 10 followers · 9 following */}
-        <p className="mt-3 text-[14px] text-zinc-500">
-          <span className="font-bold text-zinc-900 dark:text-zinc-100">{followers}</span>{' followers · '}
-          <span className="font-bold text-zinc-900 dark:text-zinc-100">{following}</span>{' following'}
-        </p>
-
-
-        {/* Action buttons row - USING FLEX FOR RELIABLE BUTTON SIZING */}
-        <div className="flex items-center gap-2 mb-4 mt-2.5 w-full">
-          {isOwner ? (
-            <div className="flex gap-2 w-full">
-              <button
-                onClick={() => setIsEditing(true)}
-                className="flex-1 bg-zinc-100 dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 font-bold py-2.5 px-2 rounded-xl text-[13px] shadow-sm"
-              >
-                Edit profile
-              </button>
-              <button
-                onClick={() => setShowQRCode(true)}
-                className="w-11 h-11 flex-shrink-0 bg-zinc-100 dark:bg-zinc-900 rounded-xl flex items-center justify-center text-zinc-900 dark:text-zinc-100 shadow-sm"
-              >
-                <QrCodeIcon className="w-5 h-5" />
-              </button>
-              <button
-                onClick={handleShare}
-                className="flex-1 bg-zinc-100 dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 font-bold py-2.5 px-2 rounded-xl text-[13px] shadow-sm"
-              >
-                Share profile
-              </button>
+          {/* Info Area */}
+          <div className="flex-grow flex flex-col items-center sm:items-start text-center sm:text-left min-w-0">
+            {/* Row 1: Username + Actions */}
+            <div className="flex flex-col sm:flex-row items-center gap-4 mb-5 w-full sm:w-auto">
+              <h1 className="text-[20px] sm:text-[24px] font-bold tracking-tight inline-flex items-center gap-2">
+                @{profile?.username}
+                {profile?.is_verified && <VerifiedBadge className="w-5 h-5 flex-none" />}
+                {profile?.is_private && <LockClosedIcon className="w-4 h-4 text-zinc-400" />}
+              </h1>
+              
+              <div className="flex items-center gap-2">
+                {isOwner ? (
+                  <>
+                    <button
+                      onClick={() => setIsEditing(true)}
+                      className="px-4 py-1.5 bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 text-black dark:text-white font-bold rounded-lg text-[14px] transition-colors"
+                    >
+                      Edit profile
+                    </button>
+                    <button
+                      onClick={() => router.push('/settings')}
+                      className="p-1.5 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-full transition-colors"
+                    >
+                      <Cog6ToothIcon className="w-6 h-6 text-zinc-600" />
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    <button
+                      onClick={() => {
+                        if (!currentUser) {
+                          window.dispatchEvent(new CustomEvent('show-login-prompt', { detail: { message: `Join JPM to follow ${profile?.full_name}` } }))
+                          return
+                        }
+                        handleFollow()
+                      }}
+                      className={`px-6 py-1.5 rounded-lg text-[14px] font-bold transition-all shadow-sm ${
+                        followStatus === 'accepted'
+                          ? 'bg-zinc-100 dark:bg-zinc-800 text-black dark:text-white hover:bg-zinc-200'
+                          : 'bg-black dark:bg-white text-white dark:text-black hover:opacity-90'
+                      }`}
+                    >
+                      {followStatus === 'pending' ? 'Requested' : followStatus === 'accepted' ? 'Following' : 'Follow'}
+                    </button>
+                    <button
+                      onClick={() => {
+                        if (!currentUser) {
+                          window.dispatchEvent(new CustomEvent('show-login-prompt', { detail: { message: `Join JPM to message ${profile?.full_name}` } }))
+                          return
+                        }
+                        router.push(`/messages?userId=${id}`)
+                      }}
+                      className="px-6 py-1.5 bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 text-black dark:text-white font-bold rounded-lg text-[14px] transition-colors"
+                    >
+                      Message
+                    </button>
+                    <button
+                      onClick={() => setShowQRCode(true)}
+                      className="p-1.5 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-full transition-colors"
+                    >
+                      <QrCodeIcon className="w-6 h-6 text-zinc-600" />
+                    </button>
+                  </>
+                )}
+              </div>
             </div>
-          ) : (
-            <div className="flex gap-2 w-full">
-              {currentUserProfile?.is_admin && (
-                <button onClick={handleToggleVerify} className="px-4 py-2 text-sm border border-zinc-200 dark:border-zinc-800 rounded-xl font-bold">
-                  {profile?.is_verified ? 'Unverify' : 'Verify'}
-                </button>
+
+            {/* Row 2: Stats */}
+            <div className="flex items-center gap-8 mb-5 text-[15px]">
+              <div><span className="font-bold text-black dark:text-white">{posts.length}</span> posts</div>
+              <div className="cursor-pointer hover:opacity-70 transition-opacity"><span className="font-bold text-black dark:text-white">{followers}</span> followers</div>
+              <div className="cursor-pointer hover:opacity-70 transition-opacity"><span className="font-bold text-black dark:text-white">{following}</span> following</div>
+            </div>
+
+            {/* Row 3: Name + Bio */}
+            <div className="w-full">
+              <p className="font-bold text-[15px] mb-1">{profile?.full_name}</p>
+              {profile?.bio && (
+                <p className="text-[14px] text-zinc-800 dark:text-zinc-200 leading-tight whitespace-pre-wrap max-w-md">
+                  {profile.bio}
+                </p>
               )}
               
-              <button
-                onClick={() => setShowQRCode(true)}
-                className="w-11 h-11 flex-shrink-0 flex items-center justify-center border border-zinc-200 dark:border-zinc-700 rounded-xl text-zinc-900 dark:text-zinc-100 shadow-sm"
-              >
-                <QrCodeIcon className="w-5 h-5" />
-              </button>
-
-              <button
-                onClick={() => {
-                  if (!currentUser) {
-                    window.dispatchEvent(new CustomEvent('show-login-prompt', { detail: { message: `Join JPM to message ${profile?.full_name}` } }))
-                    return
-                  }
-                  router.push(`/messages?userId=${id}`)
-                }}
-                className="flex-1 bg-zinc-100 dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 font-bold py-2.5 px-2 rounded-xl text-[13px] shadow-sm border border-transparent dark:border-zinc-800"
-              >
-                Message
-              </button>
-
-              <button
-                onClick={() => {
-                  if (!currentUser) {
-                    window.dispatchEvent(new CustomEvent('show-login-prompt', { detail: { message: `Join JPM to follow ${profile?.full_name}` } }))
-                    return
-                  }
-                  handleFollow()
-                }}
-                className={`flex-1 py-2.5 rounded-xl text-[13px] font-bold transition-all shadow-sm ${
-                  followStatus
-                    ? 'border border-zinc-200 dark:border-zinc-700 text-zinc-700 dark:text-zinc-300'
-                    : 'bg-black dark:bg-white text-white dark:text-black'
-                }`}
-              >
-                {followStatus === 'pending' ? 'Requested' : followStatus === 'accepted' ? 'Following' : 'Follow'}
-              </button>
+              {/* Row 4: Social Links */}
+              {(profile?.tiktok_url || profile?.instagram_url || profile?.facebook_url || profile?.website_url) && (
+                <div className="flex items-center gap-3 mt-4 text-zinc-500">
+                  {profile?.website_url && (
+                    <a href={profile.website_url} target="_blank" rel="noopener noreferrer" className="text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-1 font-semibold text-[14px]">
+                      <GlobeAltIcon className="w-4 h-4" />
+                      {profile.website_url.replace(/^https?:\/\//, '')}
+                    </a>
+                  )}
+                  {profile?.instagram_url && (
+                    <a href={profile.instagram_url} target="_blank" rel="noopener noreferrer" className="hover:text-black dark:hover:text-white">
+                      <svg className="w-5 h-5 fill-current" viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.981 1.28.058 1.688.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.058-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z"/></svg>
+                    </a>
+                  )}
+                </div>
+              )}
             </div>
-          )}
+          </div>
         </div>
       </div>
 

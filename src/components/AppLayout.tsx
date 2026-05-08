@@ -63,7 +63,14 @@ export function AppLayout({ children, fullBleed = false, wide = false, hideSideb
   const [isNative, setIsNative] = useState(false)
 
   const publicRoutes = ['/login', '/signup', '/terms', '/privacy', '/about', '/contact', '/forgot-password', '/reset-password']
-  const isPublicRoute = publicRoutes.includes(pathname)
+  const isPublicRoute = publicRoutes.includes(pathname) || isPublic
+
+  // ── Authentication Gate ────────────────────────────────────────────────────
+  useEffect(() => {
+    if (!authLoading && !currentUser && !isPublicRoute && mounted) {
+      router.replace('/login')
+    }
+  }, [currentUser, authLoading, pathname, isPublicRoute, mounted, router])
 
   // ── Pull-to-refresh state ──────────────────────────────────────────────────
   const [ptrPull, setPtrPull] = useState(0)          // px pulled so far
